@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      containers:
+        - image: containous/whoami
+          name: whoamicontainer
+          ports:
+            - containerPort: 80
+              protocol: TCP
+      restartPolicy: Always
+      
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoamiservice
+  labels:
+    app: whoami
+spec:
+  selector:
+    app: whoami
+  clusterIP: None
+  ports:
+    - port: 80
+      targetPort: 80
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whoamiingress
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`fun.faforever.com`)
+      kind: Rule
+      services:
+        - name: whoamiservice
+          port: 80
+  tls:
+    secretName: cloudflare-tls

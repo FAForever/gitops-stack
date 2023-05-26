@@ -1,0 +1,36 @@
+apiVersion: traefik.io/v1
+kind: IngressRoute
+metadata:
+  name: dashboard
+  namespace: kube-system
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`fun-traefik.faforever.com`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
+      kind: Rule
+      services:
+        - name: api@internal
+          kind: TraefikService
+      middlewares:
+        - name: basic-auth
+
+---
+apiVersion: traefik.io/v1
+kind: Middleware
+metadata:
+  name: basic-auth
+spec:
+  basicAuth:
+    secret: traefik-secret-user
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: traefik-secret-user
+type: kubernetes.io/basic-auth
+data:
+  username: dXNlcg== # username: user
+  password: cGFzc3dvcmQ= # password: password
+
