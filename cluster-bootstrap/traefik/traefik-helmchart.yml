@@ -21,6 +21,18 @@ spec:
     deployment:
       enabled: true
       kind: DaemonSet
+      additionalVolumes:
+        - name: dockersocket
+          hostPath:
+              path: /var/run/docker.sock
+              type: Socket
+
+    additionalVolumeMounts:
+      - name: dockersocket
+        mountPath: /var/run/docker.sock
+
+    additionalArguments:  
+     - "--providers.docker=true"
 
     updateStrategy:
       type: OnDelete
@@ -61,10 +73,11 @@ spec:
         # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
         level: DEBUG
 
-    tlsStore:
-      default:
-        defaultCertificate:
-          secretName: cloudflare-tls
+    # This is bugged on 3.0 helmchart, use the CRD in another file
+    # tlsStore:
+    #   default:
+    #     defaultCertificate:
+    #       secretName: cloudflare-faf-xyz
 
     securityContext:
       capabilities:
@@ -74,3 +87,4 @@ spec:
       runAsGroup: 0
       runAsNonRoot: false
       runAsUser: 0
+

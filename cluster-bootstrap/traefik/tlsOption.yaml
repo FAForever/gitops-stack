@@ -1,10 +1,8 @@
-# This thing is already applied by the helmchart, leaving here for troubleshooting
-
-# apiVersion: traefik.containo.us/v1alpha1
-# kind: TLSStore
-# metadata:
-#   name: default
-#   namespace: kube-system
-# spec:
-#   defaultCertificate:
-#     secretName: cloudflare-tls
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+  namespace: kube-system
+spec:
+  defaultCertificate:
+    secretName: cloudflare-faf-xyz

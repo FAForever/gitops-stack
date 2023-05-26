@@ -46,10 +46,8 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`fun.faforever.com`)
+    - match: Host(`whoami-k8s.faforever.xyz`)
       kind: Rule
       services:
         - name: whoamiservice
           port: 80
-  tls:
-    secretName: cloudflare-tls
