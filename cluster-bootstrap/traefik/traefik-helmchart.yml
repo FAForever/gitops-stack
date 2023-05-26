@@ -13,10 +13,10 @@ spec:
     image:
       tag: "3.0"
 
-    # yolo harder
-    experimental:
-      v3:
-        enabled: true
+    # this seems like it should work but does not lol
+    # experimental:
+    #   v3:
+    #     enabled: true
 
     deployment:
       enabled: true
@@ -49,6 +49,7 @@ spec:
                   values:
                     - traefik
             topologyKey: kubernetes.io/hostname
+
     ports:
       metrics:
         # When using hostNetwork, use another port to avoid conflict with node exporter:
