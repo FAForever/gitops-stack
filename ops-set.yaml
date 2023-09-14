@@ -25,7 +25,7 @@ spec:
         - CreateNamespace=true
       sources:
       - repoURL: git@github.com:FAForever/gitops-stack.git
-        targetRevision: chat
+        targetRevision: HEAD
         path: '{{path}}'
         directory:
           recurse: false
