@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: git@github.com:FAForever/gitops-stack.git
+      repoURL: https://github.com/FAForever/gitops-stack.git
       revision: HEAD
       directories:
       - path: 'ops/*'
@@ -24,8 +24,6 @@ spec:
         syncOptions:
         - CreateNamespace=true
       sources:
-      - repoURL: git@github.com:FAForever/gitops-stack.git
+      - repoURL: https://github.com/FAForever/gitops-stack.git
         targetRevision: HEAD
         path: '{{path}}'
-        directory:
-          recurse: false
