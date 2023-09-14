@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: fosc-k8s
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: git@github.com:FAForever/gitops-stack.git
+      revision: HEAD
+      directories:
+      - path: 'ops/*'
+  template:
+    metadata:
+      name: '{{path.basenameNormalized}}'
+    spec:
+      project: "default"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'faf-ops'
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+        - CreateNamespace=true
+      sources:
+      - repoURL: git@github.com:FAForever/gitops-stack.git
+        targetRevision: chat
+        path: '{{path}}'
+        directory:
+          recurse: false
