@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: fosc-k8s
+  name: faf-k8s
   namespace: argocd
 spec:
   generators:
