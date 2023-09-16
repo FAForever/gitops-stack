@@ -1,0 +1,13 @@
+# This is a temporary workaround to point to the MariaDB instance running in faf-stack
+# (it is exposed to the host though)
+# TODO: Replace as soon as mariadb runs in cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+spec:
+  type: ExternalName
+  externalName: fafprod3
+  ports:
+    - protocol: TCP
+      port: 3306
