@@ -18,7 +18,7 @@ spec:
       project: "default"
       destination:
         server: https://kubernetes.default.svc
-        namespace: 'faf-{{index .path.segments 1}}'
+        namespace: 'faf-{{path[0]}}'
       syncPolicy:
         automated:
           prune: true

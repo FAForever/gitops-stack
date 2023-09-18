@@ -8,6 +8,3 @@ metadata:
 spec:
   type: ExternalName
   externalName: fafprod3
-  ports:
-    - protocol: TCP
-      port: 6900
