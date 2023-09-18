@@ -5,6 +5,8 @@ metadata:
   namespace: faf-apps
   labels:
     app: ory-hydra
+  annotations:
+    reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
   revisionHistoryLimit: 10

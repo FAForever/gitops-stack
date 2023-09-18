@@ -17,5 +17,5 @@ data:
   HYDRA_ISSUER: "https://hydra.{{.Values.baseDomain}}/"
   HYDRA_JWKS_URL: "https://hydra.{{.Values.baseDomain}}/.well-known/jwks.json"
   HYDRA_BASE_ADMIN_URL: "http://ory-hydra:4445"
-  DB_URL: "jdbc:mariadb://faf-db:6900/faf_lobby?ssl=false"
-  DB_USERNAME: faf-user-service
+  DB_URL: "jdbc:mariadb://mariadb:6900/faf_lobby?ssl=false"
+  DB_USERNAME: "faf-user-service"
