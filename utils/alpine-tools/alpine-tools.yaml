@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alpine-tools
+  namespace: faf-ops
+spec:
+  terminationGracePeriodSeconds: 3
+  containers:
+    - name: alpine
+      image: alpine:3
+      command:
+        - /bin/sh
+        - "-c"
+        - "tail -f /dev/null"

@@ -9,6 +9,7 @@ spec:
       repoURL: https://github.com/FAForever/gitops-stack.git
       revision: HEAD
       directories:
+      - path: 'apps/*'
       - path: 'ops/*'
   template:
     metadata:
@@ -17,7 +18,7 @@ spec:
       project: "default"
       destination:
         server: https://kubernetes.default.svc
-        namespace: 'faf-ops'
+        namespace: 'faf-{{index .path.segments 1}}'
       syncPolicy:
         automated:
           prune: true
@@ -27,3 +28,9 @@ spec:
       - repoURL: https://github.com/FAForever/gitops-stack.git
         targetRevision: HEAD
         path: '{{path}}'
+        helm:
+          ignoreMissingValueFiles: true
+          valueFiles:
+            - /config/test.yaml
+
+

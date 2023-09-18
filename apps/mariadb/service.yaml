@@ -10,4 +10,4 @@ spec:
   externalName: fafprod3
   ports:
     - protocol: TCP
-      port: 3306
+      port: 6900

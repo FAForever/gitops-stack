@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ory-hydra
+  namespace: faf-apps
+  labels:
+    app: ory-hydra
+data:
+  URLS_SELF_ISSUER: "https://hydra.{{.Values.baseDomain}}"
+  URLS_LOGIN: "https://user.{{.Values.baseDomain}}/oauth2/login"
+  URLS_CONSENT: "https://user.{{.Values.baseDomain}}/oauth2/consent"
+  STRATEGIES_ACCESS_TOKEN: "jwt"
+  OAUTH2_CLIENT_CREDENTIALS_DEFAULT_GRANT_ALLOWED_SCOPE: "true"

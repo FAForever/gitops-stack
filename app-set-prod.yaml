@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: faf-k8s
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/FAForever/gitops-stack.git
+      revision: HEAD
+      directories:
+      - path: 'apps/*'
+      - path: 'ops/*'
+  template:
+    metadata:
+      name: '{{path.basenameNormalized}}'
+    spec:
+      project: "default"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'faf-{{index .path.segments 1}}'
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+        - CreateNamespace=true
+      sources:
+      - repoURL: https://github.com/FAForever/gitops-stack.git
+        targetRevision: HEAD
+        path: '{{path}}'
+        helm:
+          ignoreMissingValueFiles: true
+          valueFiles:
+            - /config/prod.yaml
+
+
