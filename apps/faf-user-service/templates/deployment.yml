@@ -32,20 +32,17 @@ spec:
                 name: faf-user-service
           ports:
             - containerPort: 8080
-            - name: management-port
-              containerPort: 8081
           startupProbe:
             httpGet:
-              port: management-port
-              path: /actuator/health
+              port: 8080
+              path: /q/health
             failureThreshold: 10
             periodSeconds: 3
           livenessProbe:
             httpGet:
               port: management-port
-              path: /actuator/health
+              path: /q/health
             failureThreshold: 3
             periodSeconds: 10
       restartPolicy: Always
-
 
