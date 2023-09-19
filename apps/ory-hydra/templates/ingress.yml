@@ -1,13 +1,13 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: faf-user-service
+  name: ory-hydra
 spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`user.{{.Values.baseDomain}}`)
+    - match: Host(`hydra.{{.Values.baseDomain}}`)
       kind: Rule
       services:
-        - name: faf-user-service
-          port: 8080
+        - name: ory-hydra
+          port: 4444
