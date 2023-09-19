@@ -6,7 +6,7 @@ metadata:
     app: faf-user-service
 data:
   # Only for testing environments
-  FAF_ENVIRONMENT: "K8S"
+  FAF_ENVIRONMENT: ""
   REAL_IP_HEADER: "Cf-Connecting-Ip"
   PASSWORD_RESET_URL: "https://www.{{.Values.baseDomain}}/account/password/reset"
   REGISTER_ACCOUNT_URL: "https://www.{{.Values.baseDomain}}/account/register"
