@@ -35,6 +35,7 @@ spec:
     additionalArguments:  
      - "--providers.docker=true"
      - "--providers.docker.exposedByDefault=false"
+     - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
     updateStrategy:
       type: OnDelete
