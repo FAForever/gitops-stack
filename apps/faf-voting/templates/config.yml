@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-voting
+  labels:
+    app: faf-voting
+data:
+  CLIENT_ID: faf-voting
+  NODE_ENV: production
+  CALLBACK_URL: https://voting.{{.Values.baseDomain}}/auth
+  API_URL: https://api.{{.Values.baseDomain}}
+  OAUTH_URL: https://hydra.{{.Values.baseDomain}}
+  HOST: https://voting.{{.Values.baseDomain}}

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: faf-voting
+  name: faf-voting
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-voting
+  template:
+    metadata:
+      labels:
+        app: faf-voting
+    spec:
+      containers:
+        - image: faforever/faf-voting:v2.1.1
+          imagePullPolicy: IfNotPresent
+          name: voting
+          envFrom:
+            - configMapRef:
+                name: faf-voting
+            - secretRef:
+                name: faf-voting
+      restartPolicy: Always

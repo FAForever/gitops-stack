@@ -1,0 +1,13 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-voting
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`voting.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-voting
+          port: 3000
