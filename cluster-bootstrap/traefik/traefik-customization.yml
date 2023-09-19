@@ -5,15 +5,15 @@ metadata:
   namespace: kube-system
 spec:
   entryPoints:
-    - websecure
+  - websecure
   routes:
-    - match: Host(`fun-traefik.faforever.xyz`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
-      kind: Rule
-      services:
-        - name: api@internal
-          kind: TraefikService
-      middlewares:
-        - name: basic-auth
+  - match: Host(`fun-traefik.faforever.com`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
+    kind: Rule
+    services:
+    - name: api@internal
+      kind: TraefikService
+    middlewares:
+    - name: basic-auth
 
 ---
 apiVersion: traefik.containo.us/v1alpha1

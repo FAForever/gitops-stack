@@ -9,6 +9,7 @@ spec:
   targetNamespace: kube-system
   version: 23.0.1
   valuesContent: |-
+
     # yolo
     image:
       tag: "3.0"
@@ -33,6 +34,7 @@ spec:
 
     additionalArguments:  
      - "--providers.docker=true"
+     - "--providers.docker.exposedByDefault=false"
 
     updateStrategy:
       type: OnDelete
