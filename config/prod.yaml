@@ -1,2 +1,3 @@
-environment: prod
+environment: k8s
+infisicalSlug: prod
 baseDomain: faforever.com

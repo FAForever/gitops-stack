@@ -6,7 +6,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`user.{{.Values.baseDomain}}`)
+    - match: Host(`user-k8s.{{.Values.baseDomain}}`)
       kind: Rule
       services:
         - name: faf-user-service
