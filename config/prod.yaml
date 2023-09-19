@@ -1,2 +1,2 @@
-environment: k8s
+environment: prod
 baseDomain: faforever.com
