@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-unitdb
+  labels:
+    app: faf-unitdb
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-unitdb
+  template:
+    metadata:
+      labels:
+        app: faf-unitdb
+    spec:
+      containers:
+        - image: faforever/faf-unitdb:v1.4.0
+          imagePullPolicy: Always
+          name: faf-unitdb
+          envFrom:
+            - configMapRef:
+                name: faf-unitdb
+            - secretRef:
+                name: faf-unitdb
+          lifecycle:
+            postStart:
+              # httpGet doesn't work. For some reason Kubernetes always uses https, even if schema is declared as HTTP
+              exec:
+                command:
+                  - sh
+                  - "-c"
+                  - |
+                    sleep 5 && curl "http://localhost/update.php?token=${UNITDB_UPGRADE_SECRET}?version=deploy/faf
+      restartPolicy: Always

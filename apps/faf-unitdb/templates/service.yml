@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: faf-unitdb
+  labels:
+    app: faf-unitdb
+spec:
+  selector:
+    app: faf-unitdb
+  ports:
+    - port: 80
+      targetPort: 80

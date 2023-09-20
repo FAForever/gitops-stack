@@ -1,0 +1,13 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-unitdb
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`unitdb-test.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-unitdb
+          port: 80
