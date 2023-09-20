@@ -6,7 +6,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`unitdb-test.{{.Values.baseDomain}}`)
+    - match: Host(`unitdb.{{.Values.baseDomain}}`)
       kind: Rule
       services:
         - name: faf-unitdb
