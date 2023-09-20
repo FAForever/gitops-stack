@@ -31,6 +31,41 @@ spec:
         helm:
           ignoreMissingValueFiles: true
           valueFiles:
-            - /config/prod.yaml
+          - /config/prod.yaml
 
 
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/FAForever/gitops-stack.git
+      revision: HEAD
+      directories:
+      - path: 'cluster/*'
+  template:
+    metadata:
+      name: '{{path.basenameNormalized}}'
+    spec:
+      project: "default"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basenameNormalized}}'
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+        - CreateNamespace=true
+      sources:
+      - repoURL: https://github.com/FAForever/gitops-stack.git
+        targetRevision: HEAD
+        path: '{{path}}'
+        helm:
+          ignoreMissingValueFiles: true
+          valueFiles:
+          - '/config/prod.yaml'
+          - '{{path}}/values.yaml'

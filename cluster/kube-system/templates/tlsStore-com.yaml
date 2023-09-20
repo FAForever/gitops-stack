@@ -5,4 +5,4 @@ metadata:
   namespace: kube-system
 spec:
   defaultCertificate:
-    secretName: cloudflare-faf-xyz
+    secretName: cloudflare-faf-com
