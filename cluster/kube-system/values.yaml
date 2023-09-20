@@ -1,75 +1,76 @@
-image:
-  tag: "3.0"
+traefik:
+  image:
+    tag: "3.0"
 
-deployment:
-  enabled: true
-  kind: DaemonSet
-  additionalVolumes:
+  deployment:
+    enabled: true
+    kind: DaemonSet
+    additionalVolumes:
+    - name: dockersocket
+      hostPath:
+        path: /var/run/docker.sock
+        type: Socket
+
+  additionalVolumeMounts:
   - name: dockersocket
-    hostPath:
-      path: /var/run/docker.sock
-      type: Socket
+    mountPath: /var/run/docker.sock
 
-additionalVolumeMounts:
-- name: dockersocket
-  mountPath: /var/run/docker.sock
+  additionalArguments:
+  - "--providers.docker=true"
+  - "--providers.docker.exposedByDefault=false"
+  - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
-additionalArguments:
-- "--providers.docker=true"
-- "--providers.docker.exposedByDefault=false"
-- "--entrypoints.websecure.http.encodequerysemicolons=true"
+  updateStrategy:
+    type: OnDelete
 
-updateStrategy:
-  type: OnDelete
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - traefik
+        topologyKey: kubernetes.io/hostname
 
-hostNetwork: true
-dnsPolicy: ClusterFirstWithHostNet
-affinity:
-  podAntiAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-    - labelSelector:
-        matchExpressions:
-        - key: app.kubernetes.io/name
-          operator: In
-          values:
-          - traefik
-      topologyKey: kubernetes.io/hostname
+  ports:
+    metrics:
+      # When using hostNetwork, use another port to avoid conflict with node exporter:
+      # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+      port: 9101
+    web:
+      port: 80
+      redirectTo: websecure
+    websecure:
+      port: 443
 
-ports:
-  metrics:
-    # When using hostNetwork, use another port to avoid conflict with node exporter:
-    # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
-    port: 9101
-  web:
-    port: 80
-    redirectTo: websecure
-  websecure:
-    port: 443
+  # HostNetwork
+  service:
+    enabled: false
 
-# HostNetwork
-service:
-  enabled: false
+  logs:
+    general:
+      # -- By default, the logs use a text format (common), but you can
+      # also ask for the json format in the format option
+      # format: json
+      # By default, the level is set to ERROR.
+      # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
+      level: DEBUG
 
-logs:
-  general:
-    # -- By default, the logs use a text format (common), but you can
-    # also ask for the json format in the format option
-    # format: json
-    # By default, the level is set to ERROR.
-    # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-    level: DEBUG
+  # This is bugged on 3.0 helmchart, use the CRD in another file
+  # tlsStore:
+  #   default:
+  #     defaultCertificate:
+  #       secretName: cloudflare-faf-xyz
 
-# This is bugged on 3.0 helmchart, use the CRD in another file
-# tlsStore:
-#   default:
-#     defaultCertificate:
-#       secretName: cloudflare-faf-xyz
-
-securityContext:
-  capabilities:
-    drop: [ALL]
-    add: [NET_BIND_SERVICE]
-  readOnlyRootFilesystem: true
-  runAsGroup: 0
-  runAsNonRoot: false
-  runAsUser: 0
+  securityContext:
+    capabilities:
+      drop: [ALL]
+      add: [NET_BIND_SERVICE]
+    readOnlyRootFilesystem: true
+    runAsGroup: 0
+    runAsNonRoot: false
+    runAsUser: 0
