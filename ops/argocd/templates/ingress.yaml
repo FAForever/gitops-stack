@@ -1,0 +1,33 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-server
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`argocd.{{.Values.baseDomain}}`)
+      priority: 10
+      services:
+        - name: argocd-server
+          port: 443
+          serversTransport: argocd-server-transport
+
+    - kind: Rule
+      match: Host(`argocd.{{.Values.baseDomain}}`) && Headers(`Content-Type`, `application/grpc`)
+      priority: 11
+      services:
+        - name: argocd-server
+          port: 443
+          serversTransport: argocd-server-transport
+          scheme: h2c
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: ServersTransport
+metadata:
+  name: argocd-server-transport
+spec:
+  serverName: argocd-server
+  insecureSkipVerify: true
