@@ -5,5 +5,7 @@ zfs:
   nodeId: "fafprod3"
   poolName: "tank/faf"
   datasetPrefix: "k8s-"
-  # On NixOS, we need to declare the ZFS binary path explicitly
-  bin: "/run/current-system/sw/bin/zfs"
+# On NixOS, we need to declare the ZFS binary path explicitly
+zfs-localpv:
+  zfs:
+    bin: "/run/current-system/sw/bin/zfs"

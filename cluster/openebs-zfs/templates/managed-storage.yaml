@@ -13,7 +13,7 @@ spec:
     fsType: zfs
     volumeAttributes:
       openebs.io/poolname: {{ $.Values.poolName }} # change the pool name accordingly
-    volumeHandle: {{ $.Values.datasetPrefix}}{{ .name }} # This should be same as the zfs volume name
+    volumeHandle: {{ $.Values.zfs.datasetPrefix}}{{ .name }} # This should be same as the zfs volume name
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -31,7 +31,7 @@ spec:
 apiVersion: zfs.openebs.io/v1
 kind: ZFSVolume
 metadata:
-  name: {{ $.Values.datasetPrefix}}{{ .name }}
+  name: {{ $.Values.zfs.datasetPrefix}}{{ .name }}
 spec:
   capacity: {{ int (trimSuffix "Gi" .size |  mulf 1073741824) | quote}}
   fsType: zfs
