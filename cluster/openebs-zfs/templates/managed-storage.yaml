@@ -51,7 +51,7 @@ spec:
   storageClassName: zfs-localpv
   volumeName: {{ .name }}
   accessModes:
-    - {{ .accessModes }}
+    - ReadWriteOnce
   resources:
     requests:
       storage: {{ .size }}
