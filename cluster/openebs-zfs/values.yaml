@@ -1,0 +1,21 @@
+# On NixOS, we need to declare the ZFS binary path explicitly
+zfs-localpv:
+  zfs:
+    bin: {{ .Values.zfs.bin }}
+datasetPrefix: {{ .Values.zfs.datasetPrefix }}
+managedStorages:
+#  - name: mariadb
+#    namespace: faf-apps
+#    size: 20Gi
+#  - name: mongodb
+#    namespace: faf-apps
+#    size: 20Gi
+#  - name: faf-content
+#    namespace: faf-apps
+#    size: 10Gi
+#  - name: nodebb
+#    namespace: faf-apps
+#    size: 10Gi
+  - name: test
+    namespace: faf-apps
+    size: 10Gi

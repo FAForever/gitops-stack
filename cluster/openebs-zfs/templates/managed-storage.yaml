@@ -1,0 +1,61 @@
+{{- range .Values.managedStorages }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .name }} # some unique name
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: {{ .size }} # size of the volume
+  csi:
+    driver: zfs.csi.openebs.io
+    fsType: zfs
+    volumeAttributes:
+      openebs.io/poolname: {{ $.Values.poolName }} # change the pool name accordingly
+    volumeHandle: {{ $.Values.datasetPrefix}}{{ .name }} # This should be same as the zfs volume name
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: openebs.io/nodeid
+              operator: In
+              values:
+                - {{ $.Values.nodeId }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: zfs-localpv
+  volumeMode: Filesystem
+
+---
+
+apiVersion: zfs.openebs.io/v1
+kind: ZFSVolume
+metadata:
+  name: {{ $.Values.datasetPrefix}}{{ .name }}
+spec:
+  capacity: {{ int (trimSuffix "Gi" .size |  mulf 1073741824) | quote}}
+  fsType: zfs
+  ownerNodeID: {{ $.Values.nodeId }}
+  poolName: storage/faf-k8s
+  shared: 'yes'
+  volumeType: DATASET
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .name }}-pvc
+  namespace: {{ .namespace }}
+spec:
+  storageClassName: zfs-localpv
+  volumeName: {{ .name }}
+  accessModes:
+    - {{ .accessModes }}
+  resources:
+    requests:
+      storage: {{ .size }}
+
+---
+
+{{- end }}

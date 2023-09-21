@@ -1,0 +1,16 @@
+#
+# Storage class for dynamic ZFS PVCs with retain policy
+#
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: zfs-localpv
+parameters:
+  compression: 'off'
+  dedup: 'off'
+  fstype: zfs
+  poolname: {{.Values.zfsPoolName}}
+  recordsize: 4k
+provisioner: zfs.csi.openebs.io
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
