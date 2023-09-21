@@ -36,7 +36,7 @@ spec:
   capacity: {{ int (trimSuffix "Gi" .size |  mulf 1073741824) | quote}}
   fsType: zfs
   ownerNodeID: {{ $.Values.nodeId }}
-  poolName: storage/faf-k8s
+  poolName: {{ $.Values.poolName }}
   shared: 'yes'
   volumeType: DATASET
 
