@@ -12,7 +12,7 @@ spec:
     driver: zfs.csi.openebs.io
     fsType: zfs
     volumeAttributes:
-      openebs.io/poolname: {{ $.Values.poolName }} # change the pool name accordingly
+      openebs.io/poolname: {{ $.Values.zfs.poolName }} # change the pool name accordingly
     volumeHandle: {{ $.Values.zfs.datasetPrefix}}{{ .name }} # This should be same as the zfs volume name
   nodeAffinity:
     required:
@@ -21,7 +21,7 @@ spec:
             - key: openebs.io/nodeid
               operator: In
               values:
-                - {{ $.Values.nodeId }}
+                - {{ $.Values.zfs.nodeId }}
   persistentVolumeReclaimPolicy: Retain
   storageClassName: zfs-localpv
   volumeMode: Filesystem
@@ -35,8 +35,8 @@ metadata:
 spec:
   capacity: {{ int (trimSuffix "Gi" .size |  mulf 1073741824) | quote}}
   fsType: zfs
-  ownerNodeID: {{ $.Values.nodeId }}
-  poolName: {{ $.Values.poolName }}
+  ownerNodeID: {{ $.Values.zfs.nodeId }}
+  poolName: {{ $.Values.zfs.poolName }}
   shared: 'yes'
   volumeType: DATASET
 
