@@ -1,9 +1,9 @@
-environment: test
-infisicalSlug: test
-baseDomain: test.faforever.com
+environment: "test"
+infisicalSlug: "test"
+baseDomain: "test.faforever.com"
 zfs:
-  nodeId: faftest1
-  poolName: tank/faf
+  nodeId: "faftest1"
+  poolName: "tank/faf"
   datasetPrefix: ""
   # On NixOS, we need to declare the ZFS binary path explicitly
-  bin: /run/current-system/sw/bin/zfs
+  bin: "/run/current-system/sw/bin/zfs"
