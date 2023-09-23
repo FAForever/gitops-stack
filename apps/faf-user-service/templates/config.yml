@@ -19,4 +19,3 @@ data:
   HYDRA_BASE_ADMIN_URL: "http://ory-hydra:4445"
   DB_URL: "jdbc:mariadb://mariadb:3306/faf_lobby?ssl=false"
   DB_USERNAME: "faf-user-service"
-  QUARKUS_LOG_LEVEL: "TRACE"
