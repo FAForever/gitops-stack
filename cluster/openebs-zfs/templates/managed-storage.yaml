@@ -28,21 +28,21 @@ spec:
 
 ---
 
-apiVersion: zfs.openebs.io/v1
-kind: ZFSVolume
-metadata:
-  name: {{ $.Values.zfs.datasetPrefix}}{{ .name }}
-  finalizers:
-    - manual
-spec:
-  capacity: {{ int (trimSuffix "Gi" .size |  mulf 1073741824) | quote}}
-  fsType: zfs
-  ownerNodeID: {{ $.Values.zfs.nodeId }}
-  poolName: {{ $.Values.zfs.poolName }}
-  shared: 'yes'
-  volumeType: DATASET
+{{/*apiVersion: zfs.openebs.io/v1*/}}
+{{/*kind: ZFSVolume*/}}
+{{/*metadata:*/}}
+{{/*  name: {{ $.Values.zfs.datasetPrefix}}{{ .name }}*/}}
+{{/*  finalizers:*/}}
+{{/*    - manual*/}}
+{{/*spec:*/}}
+{{/*  capacity: {{ int (trimSuffix "Gi" .size |  mulf 1073741824) | quote}}*/}}
+{{/*  fsType: zfs*/}}
+{{/*  ownerNodeID: {{ $.Values.zfs.nodeId }}*/}}
+{{/*  poolName: {{ $.Values.zfs.poolName }}*/}}
+{{/*  shared: 'yes'*/}}
+{{/*  volumeType: DATASET*/}}
 
----
+{{/*---*/}}
 
 apiVersion: v1
 kind: PersistentVolumeClaim
