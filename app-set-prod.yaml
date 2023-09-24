@@ -20,6 +20,7 @@ spec:
         server: https://kubernetes.default.svc
         namespace: 'faf-{{path[0]}}'
       syncPolicy:
+        preserveResourcesOnDeletion: true
         automated:
           prune: true
         syncOptions:
@@ -56,6 +57,7 @@ spec:
         server: https://kubernetes.default.svc
         namespace: '{{path.basenameNormalized}}'
       syncPolicy:
+        preserveResourcesOnDeletion: true
         automated:
           prune: true
         syncOptions:
