@@ -24,7 +24,7 @@ traefik:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
-      maxSurge: null
+      maxSurge: 0
 
   hostNetwork: true
   dnsPolicy: ClusterFirstWithHostNet
