@@ -21,10 +21,8 @@ traefik:
   - "--entrypoints.websecure.http.encodeQuerySemicolons=true"
 
   updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 0
+    type: Recreate
+    rollingUpdate: null
 
   hostNetwork: true
   dnsPolicy: ClusterFirstWithHostNet
