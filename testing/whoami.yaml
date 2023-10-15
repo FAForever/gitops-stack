@@ -13,14 +13,14 @@ spec:
         app: whoami
     spec:
       containers:
-        - image: containous/whoami
-          name: whoamicontainer
-          ports:
-            - containerPort: 80
-              protocol: TCP
+      - image: containous/whoami
+        name: whoamicontainer
+        ports:
+        - containerPort: 80
+          protocol: TCP
       restartPolicy: Always
-      
-      
+
+
 ---
 apiVersion: v1
 kind: Service
@@ -33,21 +33,21 @@ spec:
     app: whoami
   clusterIP: None
   ports:
-    - port: 80
-      targetPort: 80
+  - port: 80
+    targetPort: 80
 
 ---
 
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: whoamiingress
 spec:
   entryPoints:
-    - websecure
+  - websecure
   routes:
-    - match: Host(`whoami-k8s.faforever.xyz`)
-      kind: Rule
-      services:
-        - name: whoamiservice
-          port: 80
+  - match: Host(`whoami-k8s.faforever.xyz`)
+    kind: Rule
+    services:
+    - name: whoamiservice
+      port: 80
