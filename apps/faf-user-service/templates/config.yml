@@ -20,4 +20,4 @@ data:
   DB_URL: "jdbc:mariadb://mariadb:3306/faf_lobby?ssl=false"
   DB_USERNAME: "faf-user-service"
   LOBBY_URL: "wss://ws.faforever.com"
-  IRC_TOKEN_TTL: 300
+  IRC_TOKEN_TTL: "300"
