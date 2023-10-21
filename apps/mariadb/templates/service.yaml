@@ -7,4 +7,4 @@ metadata:
   name: mariadb
 spec:
   type: ExternalName
-  externalName: fafprod3
+  externalName: {{.Values.hostName}}
