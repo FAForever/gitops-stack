@@ -1,8 +1,9 @@
+hostName: "faftest2"
 environment: "test"
 infisicalSlug: "test"
 baseDomain: "test.faforever.com"
 zfs:
-  nodeId: "faftest1"
+  nodeId: "faftest2"
   poolName: "tank/faf"
   datasetPrefix: ""
 # On NixOS, we need to declare the ZFS binary path explicitly

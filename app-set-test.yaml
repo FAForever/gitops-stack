@@ -1,0 +1,75 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: faf-k8s
+  namespace: argocd
+spec:
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  generators:
+  - git:
+      repoURL: https://github.com/FAForever/gitops-stack.git
+      revision: develop
+      directories:
+      - path: 'apps/*'
+      - path: 'ops/*'
+  template:
+    metadata:
+      name: '{{path.basenameNormalized}}'
+    spec:
+      project: "default"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'faf-{{path[0]}}'
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+        - CreateNamespace=true
+      sources:
+      - repoURL: https://github.com/FAForever/gitops-stack.git
+        targetRevision: develop
+        path: '{{path}}'
+        helm:
+          ignoreMissingValueFiles: true
+          valueFiles:
+          - /config/test.yaml
+
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster
+  namespace: argocd
+spec:
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  generators:
+  - git:
+      repoURL: https://github.com/FAForever/gitops-stack.git
+      revision: develop
+      directories:
+      - path: 'cluster/*'
+  template:
+    metadata:
+      name: '{{path.basenameNormalized}}'
+    spec:
+      project: "default"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basenameNormalized}}'
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+        - CreateNamespace=true
+      sources:
+      - repoURL: https://github.com/FAForever/gitops-stack.git
+        targetRevision: develop
+        path: '{{path}}'
+        helm:
+          ignoreMissingValueFiles: true
+          valueFiles:
+          - '/config/test.yaml'
+          - '{{path}}/values.yaml'
