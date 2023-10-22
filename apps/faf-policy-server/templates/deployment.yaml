@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-policy-server
+  labels:
+    app: faf-policy-server
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-policy-server
+  template:
+    metadata:
+      labels:
+        app: faf-policy-server
+    spec:
+      initContainers:
+        - name: load-uid-verifier
+          image: alpine/git
+          command: [ 'sh', '-c', 'GIT_LFS_SKIP_SMUDGE=1 git clone https://$GITHUB_USER:$GITHUB_TOKEN@github.com/FAForever/uid-verifier.git /tmp/uid-verifier && mv /tmp/uid-verifier/verifier/* /app/verifier' ]
+          envFrom:
+            - secretRef:
+                name: faf-policy-server
+          volumeMounts:
+            - mountPath: /app/verifier
+              name: uid-verifier
+      containers:
+        - image: faforever/faf-policy-server:v1.22
+          imagePullPolicy: Always
+          name: faf-policy-server
+          envFrom:
+            - configMapRef:
+                name: faf-policy-server
+            - secretRef:
+                name: faf-policy-server
+          ports:
+            - containerPort: 8097
+          volumeMounts:
+            - mountPath: /app/verifier
+              name: uid-verifier
+      volumes:
+        - name: uid-verifier
+          emptyDir: {}
