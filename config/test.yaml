@@ -1,7 +1,9 @@
 hostName: "faftest2"
 environment: "test"
 infisicalSlug: "test"
-baseDomain: "test.faforever.com"
+baseDomain: "faforever.xyz"
+traefik:
+  tlsStoreSecret: "cloudflare-faf-xyz"
 zfs:
   nodeId: "faftest2"
   poolName: "tank/faf"
