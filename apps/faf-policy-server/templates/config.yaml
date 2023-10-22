@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-policy-server
+  labels:
+    app: faf-policy-server
+data:
+  APP_PORT: "8097"
+  DATABASE_HOST: "mariadb"
+  DATABASE_PORT: "3306"
+  DATABASE_USER: "faf-policy-server"
+  DATABASE_NAME: "faf_lobby"
+  # Since the application isn't structured correctly yet, this is required to find the 'verifier'
+  PYTHONPATH: "."
