@@ -1,0 +1,8 @@
+# This TLSStore points to a secret that contains a Cloudflare certificate that we use for passthrough
+apiVersion: traefik.io/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+spec:
+  defaultCertificate:
+    secretName: {{.Values.traefik.tlsStoreSecret}}

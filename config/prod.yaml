@@ -2,6 +2,8 @@ hostName: "fafprod3"
 environment: "prod"
 infisicalSlug: "prod"
 baseDomain: "faforever.com"
+traefik:
+  tlsStoreSecret: "cloudflare-faf-com"
 zfs:
   nodeId: "fafprod3"
   poolName: "tank/faf"
