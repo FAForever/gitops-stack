@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-icebreaker
+  labels:
+    app: faf-icebreaker
+data:
+  HYDRA_TOKEN_ISSUER: "https://hydra.{{.Values.baseDomain}}/"
+  HYDRA_JWKS_URL: "https://hydra.{{.Values.baseDomain}}/.well-known/jwks.json"

@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-icebreaker
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`ice.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-icebreaker
+          port: 8080

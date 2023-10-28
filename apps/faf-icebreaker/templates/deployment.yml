@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: faf-user-service
+  name: faf-icebreaker
   labels:
-    app: faf-user-service
+    app: faf-icebreaker
   annotations:
     reloader.stakater.com/auto: "true"
 spec:
@@ -11,25 +11,25 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: faf-user-service
+      app: faf-icebreaker
   template:
     metadata:
       labels:
-        app: faf-user-service
+        app: faf-icebreaker
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
     spec:
       containers:
-        - image: faforever/faf-user-service:3.0.3.2
+        - image: faforever/faf-icebreaker:main
           imagePullPolicy: Always
-          name: faf-user-service
+          name: faf-icebreaker
           envFrom:
             - configMapRef:
-                name: faf-user-service
+                name: faf-icebreaker
             - secretRef:
-                name: faf-user-service
+                name: faf-icebreaker
           ports:
             - containerPort: 8080
           startupProbe:
