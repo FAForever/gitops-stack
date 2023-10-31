@@ -1,6 +1,6 @@
 traefik:
-  image:
-    tag: "v3.0.0-beta3"
+  # image:
+  #   tag: "v3.0.0-beta3"
 
   deployment:
     enabled: true
