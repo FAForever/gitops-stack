@@ -1,6 +1,6 @@
 traefik:
-  # image:
-  #   tag: "2.7.1"
+  image:
+    tag: "2.10"
 
   deployment:
     enabled: true
