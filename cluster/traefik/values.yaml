@@ -44,8 +44,7 @@ traefik:
       port: 9101
     web:
       port: 80
-      redirectTo:
-        port: websecure
+      redirectTo: websecure
     websecure:
       port: 443
 
