@@ -1,6 +1,6 @@
 traefik:
   image:
-    tag: "2.10"
+    tag: "3.0"
 
   deployment:
     enabled: true
@@ -22,7 +22,6 @@ traefik:
 
   updateStrategy:
     type: OnDelete
-    rollingUpdate: null
 
   hostNetwork: true
   dnsPolicy: ClusterFirstWithHostNet
