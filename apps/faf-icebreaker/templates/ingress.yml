@@ -6,7 +6,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`api.{{.Values.baseDomain}}`) && PathPrefix(`/ice`)"
+    - match: Host(`api.{{.Values.baseDomain}}`) && PathPrefix(`/ice`)
       kind: Rule
       services:
         - name: faf-icebreaker
