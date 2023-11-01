@@ -19,5 +19,5 @@ data:
   HYDRA_BASE_ADMIN_URL: "http://ory-hydra:4445"
   DB_URL: "jdbc:mariadb://mariadb:3306/faf_lobby?ssl=false"
   DB_USERNAME: "faf-user-service"
-  LOBBY_URL: "wss://ws.faforever.com"
+  LOBBY_URL: "wss://ws.{{.Values.baseDomain}}"
   IRC_TOKEN_TTL: "300"
