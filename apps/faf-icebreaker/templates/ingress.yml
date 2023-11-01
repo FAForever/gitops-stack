@@ -6,8 +6,20 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`ice.{{.Values.baseDomain}}`)
+    - match: Host(`api.{{.Values.baseDomain}}`) && PathPrefix(`/ice`)"
       kind: Rule
       services:
         - name: faf-icebreaker
           port: 8080
+      middlewares:
+        - name: faf-icebreaker-stripprefix
+---
+
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: faf-icebreaker-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+      - /ice
