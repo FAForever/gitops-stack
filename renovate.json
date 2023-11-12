@@ -8,7 +8,7 @@
         "config:recommended"
     ],
     "baseBranches": [
-        "development"
+        "develop"
     ],
     "dependencyDashboard": true
 }
