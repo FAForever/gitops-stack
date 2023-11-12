@@ -1,0 +1,7 @@
+{
+    "argocd": {
+        "fileMatch": [
+            "\\.yaml$"
+        ]
+    }
+}
