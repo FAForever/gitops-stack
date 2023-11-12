@@ -3,5 +3,12 @@
         "fileMatch": [
             "\\.yaml$"
         ]
-    }
+    },
+    "extends": [
+        "config:recommended"
+    ],
+    "baseBranches": [
+        "development"
+    ],
+    "dependencyDashboard": true
 }
