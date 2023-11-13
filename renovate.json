@@ -4,6 +4,9 @@
             "\\.yaml$"
         ]
     },
+    "kubernetes": {
+        "fileMatch": ["\\.yaml$"]
+    },
     "extends": [
         "config:recommended"
     ],
