@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-website
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`www.{{.Values.baseDomain}}`) || Host(`{{.Values.baseDomain}}`) || Host(`clans.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-website
+          port: 3000

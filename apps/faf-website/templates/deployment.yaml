@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: faf-website
+  name: faf-website
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-website
+  template:
+    metadata:
+      labels:
+        app: faf-website
+    spec:
+      containers:
+        - image: faforever/faf-website:v2.1.0
+          imagePullPolicy: Always
+          name: website
+          envFrom:
+            - configMapRef:
+                name: faf-website
+            - secretRef:
+                name: faf-website
+      restartPolicy: Always
