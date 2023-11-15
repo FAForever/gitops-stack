@@ -34,6 +34,7 @@ spec:
           ignoreMissingValueFiles: true
           valueFiles:
           - /config/test.yaml
+          - '/{{path}}/values-test.yaml'
 
 
 ---
@@ -71,5 +72,5 @@ spec:
         helm:
           ignoreMissingValueFiles: true
           valueFiles:
-          - '/config/test.yaml'
-          - '{{path}}/values.yaml'
+          - /config/test.yaml
+          - '/{{path}}/values-test.yaml'
