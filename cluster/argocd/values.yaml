@@ -1,0 +1,4 @@
+argo-cd:
+  global:
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
