@@ -40,3 +40,12 @@ argo-cd:
                 # Flag which indicates that all user groups and teams should be loaded.
                 loadAllGroups: false
                 useLoginAsID: false
+
+    rbac:
+      policy.csv: |
+        p, role:org-admin, applications, *, *, allow
+        p, role:org-admin, clusters, get, *, allow
+        p, role:org-admin, logs, *, *, allow
+        p, role:org-admin, exec, *, *, allow
+        g, FAForever:argocd-test, role: org-admin
+      scopes: "[FAForever:faforever.xyz]"
