@@ -1,2 +1,4 @@
 certs
 spicy-secrets/**
+**/charts
+.idea
