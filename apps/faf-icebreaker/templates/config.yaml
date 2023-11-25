@@ -10,3 +10,4 @@ data:
   HYDRA_JWKS_URL: "https://hydra.{{.Values.baseDomain}}/.well-known/jwks.json"
   DB_USERNAME: "faf-icebreaker"
   DB_URL: "jdbc:mariadb://mariadb:3306/faf-icebreaker?ssl=false"
+  XIRSYS_ENABLED: "false"
