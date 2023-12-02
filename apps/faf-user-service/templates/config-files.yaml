@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-user-service-mail-templates
+  labels:
+    app: faf-user-mail-templates
+data:
+  "account-activation.html": |-
+{{ tpl (.Files.Get "mail/account-activation.html") . | indent 4 }}
+  "password-reset.html": |-
+{{ tpl (.Files.Get "mail/password-reset.html") . | indent 4 }}
+  "welcome-to-faf.html": |-
+{{ tpl (.Files.Get "mail/welcome-to-faf.html") . | indent 4 }}

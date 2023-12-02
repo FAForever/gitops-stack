@@ -8,8 +8,9 @@ data:
   # Only for testing environments
   FAF_ENVIRONMENT: {{ eq .Values.environment "prod" | ternary "" .Values.environment }}
   REAL_IP_HEADER: "Cf-Connecting-Ip"
+  ACTIVATION_URL_FORMAT: "https://user.{{.Values.baseDomain}}/register/activate?token=%s"
   PASSWORD_RESET_URL: "https://www.{{.Values.baseDomain}}/account/password/reset"
-  REGISTER_ACCOUNT_URL: "https://www.{{.Values.baseDomain}}/account/register"
+  REGISTER_ACCOUNT_URL: "https://user.{{.Values.baseDomain}}/register"
   FAILED_LOGIN_ACCOUNT_THRESHOLD: "5"
   FAILED_LOGIN_ATTEMPT_THRESHOLD: "10"
   FAILED_LOGIN_THROTTLING_MINUTES: "5"
