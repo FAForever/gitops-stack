@@ -16,7 +16,7 @@ spec:
         app: faf-website
     spec:
       containers:
-        - image: faforever/faf-website:v2.1.4
+        - image: faforever/faf-website:v2.1.5
           imagePullPolicy: Always
           name: website
           envFrom:
