@@ -1,0 +1,38 @@
+k8s-monitoring:
+  cluster:
+    name: faftest
+  externalServices:
+    prometheus:
+      hostKey: PROMETHEUS_HOST
+      basicAuth:
+        usernameKey: PROMETHEUS_USERNAME
+        passwordKey: PROMETHEUS_PASSWORD
+      secret:
+        create: false
+        name: grafana-cloud
+        namespace: faf-ops
+    loki:
+      hostKey: LOKI_HOST
+      basicAuth:
+        usernameKey: LOKI_USERNAME
+        passwordKey: LOKI_PASSWORD
+      secret:
+        create: false
+        name: grafana-cloud
+        namespace: faf-ops
+    tempo:
+      hostKey: TEMPO_HOST
+      basicAuth:
+        usernameKey: TEMPO_USERNAME
+        passwordKey: TEMPO_PASSWORD
+      secret:
+        create: false
+        name: grafana-cloud
+        namespace: faf-ops
+  opencost:
+    enabled: false
+  logs:
+    pod_logs:
+      enabled: false
+  traces:
+    enabled: true
