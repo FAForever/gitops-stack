@@ -28,21 +28,25 @@ spec:
 
 ---
 
-{{/*apiVersion: zfs.openebs.io/v1*/}}
-{{/*kind: ZFSVolume*/}}
-{{/*metadata:*/}}
-{{/*  name: {{ $.Values.zfs.datasetPrefix}}{{ .name }}*/}}
-{{/*  finalizers:*/}}
-{{/*    - manual*/}}
-{{/*spec:*/}}
-{{/*  capacity: {{ int (trimSuffix "Gi" .size |  mulf 1073741824) | quote}}*/}}
-{{/*  fsType: zfs*/}}
-{{/*  ownerNodeID: {{ $.Values.zfs.nodeId }}*/}}
-{{/*  poolName: {{ $.Values.zfs.poolName }}*/}}
-{{/*  shared: 'yes'*/}}
-{{/*  volumeType: DATASET*/}}
+apiVersion: zfs.openebs.io/v1
+kind: ZFSVolume
+metadata:
+  name: {{ $.Values.zfs.datasetPrefix}}{{ .name }}
+  # By default, ZFSVolumes come with the finalizer `zfs.openebs.io/finalizer`.
+  # We do not add this, as this causes OpenEBS to actually delete the dataset including all snapshots.
+  # As additional failsafe we add the `manual` finalizer. This requires manual deletion of the finalizer
+  # to actual delete the ZFSVolume resource from K8s.
+  finalizers:
+    - manual
+spec:
+  capacity: {{ int (trimSuffix "Gi" .size |  mulf 1073741824) | quote}}
+  fsType: zfs
+  ownerNodeID: {{ $.Values.zfs.nodeId }}
+  poolName: {{ $.Values.zfs.poolName }}
+  shared: 'yes'
+  volumeType: DATASET
 
-{{/*---*/}}
+---
 
 apiVersion: v1
 kind: PersistentVolumeClaim
