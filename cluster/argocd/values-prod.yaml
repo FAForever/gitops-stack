@@ -30,7 +30,7 @@ argo-cd:
           # Required field for connector name.
           name: GitHub
           config:
-            clientID: 838e6d390d5cf6932ca5
+            clientID: 39d24a49f7ae8dd0c27e
             clientSecret: $dex-github:GITHUB_CLIENT_SECRET
             orgs:
               - name: FAForever
