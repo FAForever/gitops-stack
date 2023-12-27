@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: faf-phpbb3-archive
+  labels:
+    app: faf-phpbb3-archive
+spec:
+  selector:
+    app: faf-phpbb3-archive
+  ports:
+    - port: 80
+      targetPort: 80
