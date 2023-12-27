@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-phpbb3-archive
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`forums.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-phpbb3-archive
+          port: 80
