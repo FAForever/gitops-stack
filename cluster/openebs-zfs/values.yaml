@@ -1,4 +1,7 @@
 managedStorages:
+  - name: faf-phpbb3-archive
+    namespace: faf-apps
+    size: 2Gi
 #  - name: mariadb
 #    namespace: faf-apps
 #    size: 20Gi
@@ -11,6 +14,3 @@ managedStorages:
 #  - name: nodebb
 #    namespace: faf-apps
 #    size: 10Gi
-  - name: test
-    namespace: faf-apps
-    size: 20Gi
