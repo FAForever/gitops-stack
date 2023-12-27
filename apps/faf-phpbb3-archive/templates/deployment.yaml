@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-phpbb3-archive
+  labels:
+    app: faf-phpbb3-archive
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-phpbb3-archive
+  template:
+    metadata:
+      labels:
+        app: faf-phpbb3-archive
+    spec:
+      containers:
+        - image: nginx:1.25.3-alpine-slim
+          imagePullPolicy: Always
+          name: faf-phpbb3-archive
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: phpbb3-archive-pvc
+              mountPath: /data
+              #readOnly: true
+            - name: config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+          startupProbe:
+            httpGet:
+              port: 80
+              path: /health
+            initialDelaySeconds: 10
+            failureThreshold: 30
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: 80
+              path: /health
+            failureThreshold: 3
+            periodSeconds: 10
+      restartPolicy: Always
+      volumes:
+        - name: phpbb3-archive-pvc
+          persistentVolumeClaim:
+            claimName: phpbb3-archive-pvc
+            #readOnly: true
+        - name: config
+          configMap:
+            name: faf-phpbb3-archive
