@@ -22,7 +22,7 @@ spec:
         prometheus.io/path: '/actuator/prometheus'
     spec:
       containers:
-        - image: faforever/faf-user-service:3.1.0
+        - image: faforever/faf-user-service:3.1.1
           imagePullPolicy: Always
           name: faf-user-service
           envFrom:
