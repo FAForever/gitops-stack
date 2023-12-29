@@ -22,7 +22,7 @@ spec:
         prometheus.io/path: '/actuator/prometheus'
     spec:
       containers:
-        - image: faforever/faf-icebreaker:1.0.2.1-alpha
+        - image: faforever/faf-icebreaker:1.0.5
           imagePullPolicy: Always
           name: faf-icebreaker
           envFrom:
