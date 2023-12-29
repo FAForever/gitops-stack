@@ -10,6 +10,7 @@ data:
   REAL_IP_HEADER: "Cf-Connecting-Ip"
   PASSWORD_RESET_URL: "https://www.{{.Values.baseDomain}}/account/password/reset"
   REGISTER_ACCOUNT_URL: "https://www.{{.Values.baseDomain}}/account/register"
+  ACTIVATION_URL_FORMAT: "https://user.{{.Values.baseDomain}}/register/activate?token=%s"
   FAILED_LOGIN_ACCOUNT_THRESHOLD: "5"
   FAILED_LOGIN_ATTEMPT_THRESHOLD: "10"
   FAILED_LOGIN_THROTTLING_MINUTES: "5"
