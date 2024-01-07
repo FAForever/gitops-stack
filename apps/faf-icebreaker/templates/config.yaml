@@ -10,4 +10,4 @@ data:
   SELF_URL: "https://ice.{{.Values.baseDomain}}"
   DB_USERNAME: "faf-icebreaker"
   DB_URL: "jdbc:mariadb://mariadb:3306/faf-icebreaker?ssl=false"
-  XIRSYS_ENABLED: "false"
+  XIRSYS_ENABLED: "true"
