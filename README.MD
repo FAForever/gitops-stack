@@ -30,6 +30,9 @@ For our stack you need to create a service token in the web ui and add this as a
 
 ```sh
 kubectl create secret generic "infisical-service-token" \
+    -n faf-apps \
+    --from-literal=infisicalToken=<your-token-here>
+kubectl create secret generic "infisical-service-token" \
     -n faf-ops \
     --from-literal=infisicalToken=<your-token-here>
 
