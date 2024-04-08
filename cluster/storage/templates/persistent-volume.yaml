@@ -1,0 +1,24 @@
+{{- range .Values.managedStorages }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .pv.name }} # some unique name
+spec:
+  storageClassName: host-path
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: {{ .pv.size }} # size of the volume
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  local:
+    path: {{ coalesce .pv.folderName (printf "%s/%s" $.Values.dataPath .pv.name) }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: openebs.io/nodeid
+              operator: In
+              values:
+                - {{ $.Values.zfs.nodeId }}
+{{- end }}

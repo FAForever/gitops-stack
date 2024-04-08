@@ -1,0 +1,9 @@
+#
+# Storage class for host path configured volumes with retain policy
+#
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: host-path
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer

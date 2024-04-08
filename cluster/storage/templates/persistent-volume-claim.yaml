@@ -1,0 +1,16 @@
+{{- range .Values.managedStorages }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ coalesce .pvc.name (printf "%s-pvc" .pv.name) }}
+  namespace: {{ .pvc.namespace }}
+spec:
+  storageClassName: host-path
+  accessModes:
+    - ReadWriteOnce
+  volumeName: {{ .pv.name }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .pv.size }}
+{{- end }}
