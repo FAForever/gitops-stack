@@ -1,0 +1,27 @@
+dataPath: "/opt/faf/data"
+managedStorages:
+  # template:
+  # - pv:
+  #     name: template
+  #     folderName: optional string, default is pv.name
+  #     size: 10Gi
+  #   pvc:
+  #     name: optional string, default is <pv.name>-pvc
+  #     namespace: faf-apps
+  - pv:
+      name: phpbb3-archive
+      size: 2Gi
+    pvc:
+      namespace: faf-apps
+#  - name: mariadb
+#    namespace: faf-apps
+#    size: 20Gi
+#  - name: mongodb
+#    namespace: faf-apps
+#    size: 20Gi
+#  - name: faf-content
+#    namespace: faf-apps
+#    size: 10Gi
+#  - name: nodebb
+#    namespace: faf-apps
+#    size: 10Gi
