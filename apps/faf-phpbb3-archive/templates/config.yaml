@@ -10,26 +10,21 @@ data:
       listen       80;
       listen  [::]:80;
       server_name  localhost;
+      root   /usr/share/nginx/html/;
 
-      location / {
-        root   /data;
-        index  index.html index.htm index.php;
-      }
-
-      # Migrated configuration
       if ($request_uri ~ ^/(.*)\.html) {
-          return 302 /$1;
+        return 302 /$1;
       }
 
       location ~ \.php? {
-          default_type "text/html";
-          try_files $request_uri $request_uri/  =404;
+        default_type "text/html";
+        try_files $request_uri $request_uri/  =404;
       }
 
       # K8s healtcheck
       # Access the path. If 200 is returned, Nginx can receive requests.
       location /health {
-          access_log off;
-          return 200;
+        access_log off;
+        return 200;
       }
     }
