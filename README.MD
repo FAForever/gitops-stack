@@ -1,3 +1,17 @@
+# What is this?
+
+The gitops stack is the deployment infrastructure of the FAForever project. Currently it only contains a subset of service, but in the long term, all services shall be migrate from faf-stack to here.
+
+# Branching
+
+* **main** branch = Production state
+* **develop** branch = Testing state
+
+Until things are settled the current workflow is:
+* Test changes on develop
+* Cherry pick working stuff on to main
+* Rebase and force push develop afterwards
+
 # Bootstrapping
 
 First, we need to make the cluster gitops-ready by installing ArgoCD:
