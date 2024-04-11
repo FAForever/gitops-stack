@@ -9,6 +9,36 @@ managedStorages:
   #     name: optional string, default is <pv.name>-pvc
   #     namespace: faf-apps
   - pv:
+      name: faf-replays
+      folderName: replays
+      size: 500Gi
+    pvc:
+      namespace: faf-apps
+  - pv:
+      name: faf-maps
+      folderName: maps
+      size: 200Gi
+    pvc:
+      namespace: faf-apps
+  - pv:
+      name: faf-mods
+      folderName: mods
+      size: 200Gi
+    pvc:
+      namespace: faf-apps
+  - pv:
+      name: faf-featured-mods
+      folderName: legacy-featured-mod-files
+      size: 150Gi
+    pvc:
+      namespace: faf-apps
+  - pv:
+      name: faf-content
+      folderName: content
+      size: 50Gi
+    pvc:
+      namespace: faf-apps
+  - pv:
       name: phpbb3-archive
       size: 2Gi
     pvc:
@@ -19,8 +49,6 @@ managedStorages:
 #  - name: mongodb
 #    namespace: faf-apps
 #    size: 20Gi
-#  - name: faf-content
-#    namespace: faf-apps
 #    size: 10Gi
 #  - name: nodebb
 #    namespace: faf-apps

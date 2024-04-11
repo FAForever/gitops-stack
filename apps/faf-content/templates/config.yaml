@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-content
+  labels:
+    app: faf-content
+data:
+  "default.conf": |-
+    server {
+      listen       80;
+      listen  [::]:80;
+      server_name  localhost;
+      root /data;
+
+      # K8s healthcheck
+      # Access the path. If 200 is returned, Nginx can receive requests.
+      location /health {
+        access_log off;
+        return 200;
+      }
+
+      location / {
+        index  index.html index.htm;
+      }
+    }
