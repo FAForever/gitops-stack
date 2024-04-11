@@ -12,7 +12,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   volumeMode: Filesystem
   local:
-    path: {{ coalesce .pv.folderName (printf "%s/%s" $.Values.dataPath .pv.name) }}
+    path: {{ coalesce (printf "%s/%s" $.Values.dataPath .pv.folderName) (printf "%s/%s" $.Values.dataPath .pv.name) }}
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -21,4 +21,7 @@ spec:
               operator: In
               values:
                 - {{ $.Values.zfs.nodeId }}
+
+---
+
 {{- end }}
