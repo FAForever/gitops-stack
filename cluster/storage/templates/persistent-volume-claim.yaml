@@ -13,4 +13,7 @@ spec:
   resources:
     requests:
       storage: {{ .pv.size }}
+
+---
+
 {{- end }}

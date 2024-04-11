@@ -1,0 +1,42 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: cors
+spec:
+  headers:
+    accessControlAllowMethods:
+      - "GET"
+    accessControlAllowOriginList:
+      - "*"
+    accessControlMaxAge: 60
+    addVaryHeader: false
+
+---
+
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-replay-subdomain
+spec:
+  redirectRegex:
+    regex: ^(http|https)://replay.{{.Values.baseDomain}}/(\\d+)
+    replacement: ${1}://api.{{.Values.baseDomain}}/game/${2}/replay"
+
+---
+
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-content
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`content.{{.Values.baseDomain}}`) || Host(`replay.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-content
+          port: 80
+      middlewares:
+        - name: redirect-replay-subdomain
+        - name: cors

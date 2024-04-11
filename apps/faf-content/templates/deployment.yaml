@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-content
+  labels:
+    app: faf-content
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-content
+  template:
+    metadata:
+      labels:
+        app: faf-content
+    spec:
+      containers:
+        - image: nginx:1.25.4-alpine-slim
+          imagePullPolicy: Always
+          name: faf-content
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+            - name: faf-replays-pvc
+              mountPath: /data/replays
+              readOnly: true
+            - name: faf-maps-pvc
+              mountPath: /data/maps
+              readOnly: true
+            - name: faf-mods-pvc
+              mountPath: /data/mods
+              readOnly: true
+            - name: faf-featured-mods-pvc
+              mountPath: /data/legacy-featured-mod-files
+              readOnly: true
+            - name: faf-content-pvc
+              mountPath: /data
+              readOnly: true
+          startupProbe:
+            httpGet:
+              port: 80
+              path: /health
+            initialDelaySeconds: 10
+            failureThreshold: 30
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: 80
+              path: /health
+            failureThreshold: 3
+            periodSeconds: 10
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: faf-content
+        - name: faf-replays-pvc
+          persistentVolumeClaim:
+            claimName: faf-replays-pvc
+            readOnly: true
+        - name: faf-maps-pvc
+          persistentVolumeClaim:
+            claimName: faf-maps-pvc
+            readOnly: true
+        - name: faf-mods-pvc
+          persistentVolumeClaim:
+            claimName: faf-mods-pvc
+            readOnly: true
+        - name: faf-featured-mods-pvc
+          persistentVolumeClaim:
+            claimName: faf-featured-mods-pvc
+            readOnly: true
+        - name: faf-content-pvc
+          persistentVolumeClaim:
+            claimName: faf-content-pvc
+            readOnly: true
