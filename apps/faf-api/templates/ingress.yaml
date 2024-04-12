@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-api
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`api.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-api
+          port: 8010

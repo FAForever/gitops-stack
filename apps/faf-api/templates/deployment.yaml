@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-api
+  labels:
+    app: faf-api
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-api
+  template:
+    metadata:
+      labels:
+        app: faf-api
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8011'
+        prometheus.io/path: '/actuator/prometheus'
+    spec:
+      containers:
+        - image: faforever/faf-java-api:develop
+          imagePullPolicy: Always
+          name: faf-api
+          envFrom:
+            - configMapRef:
+                name: faf-api
+            - secretRef:
+                name: faf-api
+          ports:
+            - containerPort: 8010
+            - name: management-port
+              containerPort: 8011
+          volumeMounts:
+            - name: faf-api-pki
+              mountPath: /pki
+            - name: faf-api-mail
+              mountPath: /config/mail
+            - name: faf-mods-pvc
+              mountPath: /content/mods
+            - name: faf-maps-pvc
+              mountPath: /content/maps
+            - name: faf-featured-mods-pvc
+              mountPath: /content/legacy-featured-mod-files
+          startupProbe:
+            httpGet:
+              port: management-port
+              path: /actuator/health
+            initialDelaySeconds: 10
+            failureThreshold: 30
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: management-port
+              path: /actuator/health
+            failureThreshold: 3
+            periodSeconds: 10
+      restartPolicy: Always
+      volumes:
+        - name: faf-api-pki
+          projected:
+            sources:
+              - secret:
+                  name: faf-api
+                  items:
+                    - key: PUBLIC.KEY
+                      path: public.key
+                    - key: SECRET.KEY
+                      path: secret.key
+            defaultMode: 440
+        - name: faf-api-mail
+          configMap:
+            name: faf-api-mail
+        - name: faf-maps-pvc
+          persistentVolumeClaim:
+            claimName: faf-maps-pvc
+        - name: faf-mods-pvc
+          persistentVolumeClaim:
+            claimName: faf-mods-pvc
+        - name: faf-featured-mods-pvc
+          persistentVolumeClaim:
+            claimName: faf-featured-mods-pvc

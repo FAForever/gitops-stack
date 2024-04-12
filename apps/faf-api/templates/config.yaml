@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-api
+  labels:
+    app: faf-api
+data:
+  FAF_DOMAIN: "{{.Values.baseDomain}}"
+  JAVA_TOOL_OPTIONS: "-Xms256m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
+
+  # App options
+  DATABASE_ADDRESS: "mariadb"
+  DATABASE_NAME: "faf_lobby"
+  DATABASE_USERNAME: "faf-java-api"
+  EMAIL_FROM_ADDRESS: "admin@faforever.com"
+  EMAIL_FROM_NAME: "FAForever"
+  {{ if ne .Values.environment "prod" }}
+  GITHUB_DEPLOYMENT_ENVIRONMENT: "development"
+  {{ end }}
+  LEAGUE_DATABASE_ADDRESS: "mariadb"
+  LEAGUE_DATABASE_NAME: "faf-league"
+  LEAGUE_DATABASE_USERNAME: "faf-java-api"
+  #NODEBB_BASE_URL: "http://faf-nodebb:4567"
+  #NODEBB_USER_ID: "1"
+  RECAPTCHA_ENABLED: "true"
+  RABBIT_HOST: rabbitmq
