@@ -18,7 +18,7 @@ spec:
         app: faf-unitdb
     spec:
       containers:
-        - image: faforever/faf-unitdb:v1.4.1
+        - image: faforever/faf-unitdb:v1.4.2
           imagePullPolicy: Always
           name: faf-unitdb
           envFrom:
