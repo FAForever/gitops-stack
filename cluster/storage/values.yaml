@@ -39,6 +39,11 @@ managedStorages:
     pvc:
       namespace: faf-apps
   - pv:
+      name: wordpress
+      size: 10Gi
+    pvc:
+      namespace: faf-apps
+  - pv:
       name: phpbb3-archive
       size: 2Gi
     pvc:
