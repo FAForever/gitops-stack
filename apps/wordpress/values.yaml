@@ -1,0 +1,15 @@
+wordpress:
+  wordpressSkipInstall: true
+  wordpressEmail: admin@faforever.com
+  mariadb:
+    enabled: false
+  externalDatabase:
+    host: mariadb
+    port: 3306
+    user: faf-wordpress
+    database: fafwordpress
+    existingSecret: wordpress
+  wordpressPlugins: all
+
+  service:
+    type: ClusterIP
