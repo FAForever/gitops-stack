@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: wordpress
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`direct.{{.Values.baseDomain}}`) || Host(`{{.Values.baseDomain}}`) || Host(`clans.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: wordpress
+          port: 80
