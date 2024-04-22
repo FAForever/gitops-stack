@@ -2,3 +2,22 @@ argo-cd:
   global:
     deploymentAnnotations:
       reloader.stakater.com/auto: "true"
+
+    # Get scraped, hopefully
+    addPrometheusAnnotations: true
+
+    # By default, a world-readable Redis is installed by the chart
+    # Quite disastrous
+    networkPolicy:
+      create: true
+
+  server:
+
+    # Avoids a permanent out of sync situation with Ingress resources
+    config:
+      resource.customizations: |-
+        networking.k8s.io/Ingress:
+          health.lua: |
+            hs = {}
+            hs.status = "Healthy"
+            return hs
