@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`grafana.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: monitoring-grafana
+          port: 80
