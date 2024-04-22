@@ -1,0 +1,100 @@
+# Victoria Metrics is a replacement for Prometheus and is mostly fully compatible
+# This chart bundles a Grafana dependency and injects some useful dashboards into it
+victoria-metrics-k8s-stack:
+
+  # Make ArgoCD not explode if a Prometheus CRD gets converted by VM
+  victoria-metrics-operator:
+    operator:
+      disable_prometheus_converter: false
+      prometheus_converter_add_argocd_ignore_annotations: true
+
+  grafana:
+
+    # Disable lots of useless warnings on old dashboards that pull the "wrong" graphing applet
+    # Grafana automatically converts them to the new format, so why complain?
+    grafana.ini:
+      security:
+        angular_support_enabled: false
+
+    admin:
+      existingSecret: grafana
+      userKey: admin-user
+      passwordKey: admin-password
+
+    dashboardProviders:
+      dashboardproviders.yaml:
+        apiVersion: 1
+        providers:
+        - name: 'FAF'
+          orgId: 1
+          folder: 'faf'
+          type: file
+          disableDeletion: true
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/faf
+
+    dashboards:
+      faf:
+        argocd:
+          url: https://raw.githubusercontent.com/argoproj/argo-cd/master/examples/dashboard.json
+          datasource: prometheus
+
+    additionalDataSources:
+    - access: proxy
+      isDefault: false # Don't change this, another one is default and it won't work
+      name: loki
+      orgId: 1
+      type: loki
+      url: http://monitoring-loki-gateway:80
+
+
+# Configuring Loki is quite involved, as the Helm chart seems to be fully production grade for multi-tenant SaaS setups
+# That is way, way too much for us
+# VictoriaLogs is an alternative that we need to evaluate later
+loki:
+
+  deploymentMode: SingleBinary
+  singleBinary:
+    replicas: 1
+
+  # Disable Simple Scalable
+  read:
+    replicas: 0
+  backend:
+    replicas: 0
+  write:
+    replicas: 0
+
+  loki:
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: 'filesystem'
+    auth_enabled: false
+
+    schemaConfig:
+      configs:
+      - from: 2024-01-01
+        store: tsdb
+        index:
+          prefix: index_
+          period: 24h
+        object_store: 'filesystem'
+        schema: v13
+
+  # We know it's working
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
+
+  # Mofo uses 8GB of RAM by default
+  # TODO: reverse engineer loki-stack further and/or move to victorialogs faster
+  chunksCache:
+    enabled: false
+
+promtail:
+  config:
+    clients:
+    - url: http://monitoring-loki-gateway/loki/api/v1/push
