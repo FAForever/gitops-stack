@@ -48,6 +48,11 @@ managedStorages:
       size: 2Gi
     pvc:
       namespace: faf-apps
+  - pv:
+      name: ergochat
+      size: 1Gi
+    pvc:
+      namespace: faf-apps
 #  - name: mariadb
 #    namespace: faf-apps
 #    size: 20Gi
