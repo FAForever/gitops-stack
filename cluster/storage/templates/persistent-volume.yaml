@@ -12,7 +12,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   volumeMode: Filesystem
   local:
-    path: {{ coalesce (printf "%s/%s" $.Values.dataPath .pv.folderName) (printf "%s/%s" $.Values.dataPath .pv.name) }}
+    path: {{ printf "%s/%s" $.Values.dataPath coalesce ( .pv.folderName .pv.name ) }}
   nodeAffinity:
     required:
       nodeSelectorTerms:
