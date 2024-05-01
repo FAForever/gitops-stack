@@ -69,6 +69,10 @@ traefik:
           - "104.24.0.0/14"
           - "172.64.0.0/13"
           - "131.0.72.0/22"
+    irc-plain:
+      port: 6667
+    irc-tls:
+      port: 6697
 
   # HostNetwork
   service:

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ergochat
+  labels:
+    app: ergochat
+spec:
+  serviceName: ergochat
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: ergochat
+  template:
+    metadata:
+      labels:
+        app: ergochat
+    spec:
+      containers:
+        - image: ghcr.io/ergochat/ergo:v2.13.0
+          command: ["sh", "-c", "apk add tini && tini -- /ircd-bin/run.sh"]
+          imagePullPolicy: Always
+          name: ergochat
+          envFrom:
+            - secretRef:
+                name: ergochat
+          ports:
+            - name: irc-plain
+              containerPort: 6667
+            - name: irc-tls
+              containerPort: 6697
+            - name: websocket
+              containerPort: 8097
+          volumeMounts:
+            # Also contains the tls certificates for simplicity.
+            - name: ergochat-data
+              mountPath: /data
+            - name: config
+              mountPath: /ircd
+      restartPolicy: Always
+      volumes:
+        - name: ergochat-data
+          persistentVolumeClaim:
+            claimName: ergochat-pvc
+        - name: config
+          configMap:
+            name: ergochat
+            defaultMode: 0777
