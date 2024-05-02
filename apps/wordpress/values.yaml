@@ -11,4 +11,5 @@ wordpress:
     existingSecret: wordpress
   wordpressPlugins: all
 
-  service: null
+  service:
+    type: ClusterIP
