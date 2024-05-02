@@ -19,7 +19,10 @@ traefik:
   - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
   updateStrategy:
-    type: OnDelete
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: null
 
   hostNetwork: true
   dnsPolicy: ClusterFirstWithHostNet
@@ -44,6 +47,10 @@ traefik:
       redirectTo.port: websecure
     websecure:
       port: 443
+      transport:
+        respondingTimeouts:
+          readTimeout: 0
+
       # Trust the Cloudflare IPs found at https://www.cloudflare.com/en-in/ips/
       forwardedHeaders:
         trustedIPs:
