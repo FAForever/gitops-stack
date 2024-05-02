@@ -10,3 +10,5 @@ wordpress:
     database: fafwordpress
     existingSecret: wordpress
   wordpressPlugins: all
+
+  service: null
