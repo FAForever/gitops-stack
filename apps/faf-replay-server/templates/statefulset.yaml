@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: faf-replay-server
+  labels:
+    app: faf-replay-server
+spec:
+  serviceName: faf-replay-server
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-replay-server
+  template:
+    metadata:
+      labels:
+        app: faf-replay-server
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8011'
+        prometheus.io/path: '/'
+    spec:
+      containers:
+        - image: faforever/faf-rust-replayserver:0.3.2
+          imagePullPolicy: Always
+          name: faf-replay-server
+          envFrom:
+            - configMapRef:
+                name: faf-replay-server
+            - secretRef:
+                name: faf-replay-server
+          ports:
+            - name: replay-stream
+              containerPort: 15000
+          volumeMounts:
+            - name: config
+              mountPath: /config/config.yaml
+              subPath: config.yaml
+            - name: faf-replays-pvc
+              mountPath: /data/replays
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: faf-replay-server
+        - name: faf-replays-pvc
+          persistentVolumeClaim:
+            claimName: faf-replays-pvc

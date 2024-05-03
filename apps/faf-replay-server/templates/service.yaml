@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: faf-replay-server
+  labels:
+    app: faf-replay-server
+spec:
+  selector:
+    app: faf-replay-server
+  ports:
+    - name: replay-stream
+      port: 15000
+      targetPort: 15000
