@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: faf-telemetry-server
+  name: faf-telemetry-server
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-telemetry-server
+  template:
+    metadata:
+      labels:
+        app: faf-telemetry-server
+    spec:
+      containers:
+        - image: faforever/faf-telemetry-server:main
+          imagePullPolicy: Always
+          name: faf-telemetry-server
+          resources:
+            limits:
+              memory: 2Gi # Handle known memory leak with restart
+      restartPolicy: Always
