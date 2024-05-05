@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-lobby-server
+  labels:
+    app: faf-lobby-server
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-lobby-server
+  template:
+    metadata:
+      labels:
+        app: faf-lobby-server
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8011'
+        prometheus.io/path: '/'
+    spec:
+      containers:
+        - image: faforever/faf-python-server:k8s
+          imagePullPolicy: Always
+          name: faf-lobby-server
+          envFrom:
+            - configMapRef:
+                name: faf-lobby-server
+            - secretRef:
+                name: faf-lobby-server
+          volumeMounts:
+            - mountPath: /config/config.yaml
+              name: faf-lobby-server
+              subPath: "config.yaml"
+          ports:
+            - name: websocket
+              containerPort: 8003
+            - name: metrics
+              containerPort: 8011
+            - name: control
+              containerPort: 4000
+          startupProbe:
+            httpGet:
+              port: 2000
+              path: /ready
+            initialDelaySeconds: 10
+            failureThreshold: 30
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: 2000
+              path: /ready
+            failureThreshold: 3
+            periodSeconds: 10
+      restartPolicy: Always
+      volumes:
+        - name: faf-lobby-server
+          configMap:
+            name: faf-lobby-server

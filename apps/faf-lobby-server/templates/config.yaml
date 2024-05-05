@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-lobby-server
+  labels:
+    app: faf-lobby-server
+data:
+  CONFIGURATION_FILE: "/config/config.yaml"
+  "config.yaml": |-
+{{ tpl ( .Files.Get "config/config.yaml" ) . | indent 4 }}
