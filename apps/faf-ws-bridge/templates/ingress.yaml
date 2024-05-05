@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-ws-bridge
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`ws.{{.Values.baseDomain}}`)`)
+      kind: Rule
+      services:
+        - name: faf-ws-bridge
+          port: 8003

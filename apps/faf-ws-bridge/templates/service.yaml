@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: faf-ws-bridge
+  labels:
+    app: faf-ws-bridge
+spec:
+  selector:
+    app: faf-ws-bridge
+  ports:
+    - port: 8003
+      targetPort: 8003
