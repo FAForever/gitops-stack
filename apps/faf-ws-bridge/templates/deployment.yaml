@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: faf-ws-bridge
+  name: faf-ws-bridge
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-ws-bridge
+  template:
+    metadata:
+      labels:
+        app: faf-ws-bridge
+    spec:
+      containers:
+        - image: faforever/ws_bridge_rs:0.1.4
+          args:
+            - "ws_to_tcp"
+            - "-vvv"
+            - "--proxy"
+            - "0.0.0.0:8003"
+            - "--proxy-header-name"
+            - "CF-Connecting-IP"
+            - "faf-lobby-server:8003"
+          imagePullPolicy: Always
+          name: faf-ws-bridge
+          ports:
+            - containerPort: 8003
+      restartPolicy: Always
