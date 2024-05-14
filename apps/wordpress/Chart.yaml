@@ -3,5 +3,5 @@ name: wordpress
 version: 1.0.0
 dependencies:
   - name: wordpress
-    version: 22.1.7
+    version: 22.2.8
     repository: https://charts.bitnami.com/bitnami
