@@ -8,7 +8,7 @@ database:
   pool_size: 8
   host: mariadb
   port: 3306
-  user: faf-aio-replayserver
+  user: faf-legacy-live-replay-server
   name: faf_lobby
 storage:
   vault_path: /data/replays
