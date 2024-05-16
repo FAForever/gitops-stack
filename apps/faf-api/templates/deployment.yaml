@@ -4,6 +4,8 @@ metadata:
   name: faf-api
   labels:
     app: faf-api
+  annotations:
+    reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
   revisionHistoryLimit: 10
