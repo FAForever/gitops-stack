@@ -6,7 +6,7 @@ metadata:
     app: faf-api
 data:
   FAF_DOMAIN: "{{.Values.baseDomain}}"
-  JAVA_TOOL_OPTIONS: "-Xms256m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
+  JAVA_TOOL_OPTIONS: "-Xms1024m -Xmx4096m -XX:+HeapDumpOnOutOfMemoryError"
 
   # App options
   DATABASE_ADDRESS: "mariadb"
