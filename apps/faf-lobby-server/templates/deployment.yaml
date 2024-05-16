@@ -19,6 +19,7 @@ spec:
         prometheus.io/port: '8011'
         prometheus.io/path: '/'
     spec:
+      terminationGracePeriodSeconds: 3600
       containers:
         - image: faforever/faf-python-server:k8s
           imagePullPolicy: Always
