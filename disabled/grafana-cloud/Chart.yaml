@@ -3,5 +3,5 @@ name: grafana-cloud
 version: 1.0.0
 dependencies:
 - name: k8s-monitoring
-  version: 0.13.1
+  version: 0.13.4
   repository: https://grafana.github.io/helm-charts
