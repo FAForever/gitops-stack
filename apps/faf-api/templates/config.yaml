@@ -20,7 +20,7 @@ data:
   LEAGUE_DATABASE_ADDRESS: "mariadb"
   LEAGUE_DATABASE_NAME: "faf-league"
   LEAGUE_DATABASE_USERNAME: "faf-java-api"
-  #NODEBB_BASE_URL: "http://faf-nodebb:4567"
-  #NODEBB_USER_ID: "1"
+  NODEBB_BASE_URL: "http://faf-nodebb:4567"
+  NODEBB_USER_ID: "1"
   RECAPTCHA_ENABLED: "true"
   RABBIT_HOST: rabbitmq
