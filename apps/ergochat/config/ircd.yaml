@@ -827,7 +827,7 @@ datastore:
     port: 3306
     # if socket-path is set, it will be used instead of host:port
     #socket-path: "/var/run/mysqld/mysqld.sock"
-    user: "ergo"
+    user: "ergochat"
     # Define ERGO__DATASTORE__MYSQL__PASSWORD in secret
     # password: "banana"
     history-database: "ergochat"
