@@ -6,7 +6,8 @@ spec:
   rootPasswordSecretKeyRef:
     name: faf-mariadb
     key: ROOT_PASSWORD
-
+    generate: false
+    
   database: evaluation-db
 
   image: mariadb:11.3
