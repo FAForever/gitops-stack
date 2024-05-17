@@ -4,15 +4,8 @@ metadata:
   name: evaluation-db
 spec:
   rootPasswordSecretKeyRef:
-    name: mariadb
-    key: root-password
-    generate: true
-
-  username: testuser
-
-  passwordSecretKeyRef:
-    name: evaluation-db-testuser
-    key: password
+    name: faf-mariadb
+    key: ROOT_PASSWORD
     generate: true
 
   database: evaluation-db
