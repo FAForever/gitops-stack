@@ -24,4 +24,4 @@ data:
   NODEBB_USER_ID: "1"
   RECAPTCHA_ENABLED: "true"
   RABBIT_HOST: rabbitmq
-  LOGGING_LEVEL_COM_FAFOREVER_API_USER: DEBUG
+  REPLAY_DOWNLOAD_URL_FORMAT: https://content.{{.Values.baseDomain}}/replays/%s
