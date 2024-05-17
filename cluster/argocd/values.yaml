@@ -3,8 +3,9 @@ argo-cd:
     deploymentAnnotations:
       reloader.stakater.com/auto: "true"
 
-    # Get scraped, hopefully
-    addPrometheusAnnotations: true
+    # Let's just use the servicemonitors
+    # Requires a custom service scrape anyway 
+    addPrometheusAnnotations: false
 
     # By default, a world-readable Redis is installed by the chart
     # Quite disastrous
@@ -21,3 +22,32 @@ argo-cd:
             hs = {}
             hs.status = "Healthy"
             return hs
+
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+
+  controller:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+  
+  dex:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+
+  repoServer:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+
+  applicationSet:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true

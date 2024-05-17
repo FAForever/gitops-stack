@@ -1,3 +1,7 @@
+# Grabbed from 
+# https://gist.github.com/f41gh7/1fed801c5e288e8a6bdbd931ae0f74fd
+# https://github.com/VictoriaMetrics/VictoriaMetrics/issues/1033
+
 # Unlike kube-prometheus-stack, VM doesn't automatically scrape services that have the prometheus labels set
 # Thanks to copying and pasting from GitHub issues, we can easily workaround the problem
 
@@ -15,16 +19,19 @@ spec:
             [__meta_kubernetes_service_annotation_prometheus_io_scrape]
           action: keep
           regex: "true"
+
         - sourceLabels:
             [__meta_kubernetes_service_annotation_prometheus_io_scheme]
           action: replace
           targetLabel: __scheme__
           regex: (https?)
+
         - sourceLabels:
             [__meta_kubernetes_service_annotation_prometheus_io_path]
           action: replace
           targetLabel: __metrics_path__
           regex: (.+)
+
         - sourceLabels:
             [
               __address__,
@@ -34,6 +41,7 @@ spec:
           targetLabel: __address__
           regex: ([^:]+)(?::\d+)?;(\d+)
           replacement: $1:$2
+          
   namespaceSelector:
     any: true
   selector: {}

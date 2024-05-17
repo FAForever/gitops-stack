@@ -2,11 +2,23 @@
 # This chart bundles a Grafana dependency and injects some useful dashboards into it
 victoria-metrics-k8s-stack:
 
+  # Install prometheus operator crds, allowing them to exist in the cluster without also installing Prometheus
+  prometheus-operator-crds:
+    enabled: true
+
   # Make ArgoCD not explode if a Prometheus CRD gets converted by VM
   victoria-metrics-operator:
     operator:
       disable_prometheus_converter: false
       prometheus_converter_add_argocd_ignore_annotations: true
+  
+  vmagent:
+    spec:
+      extraArgs:
+        promscrape.streamParse: "true"
+        # Store original labels in vmagent's memory by default. This increases the amount of memory used by vmagent
+        # but makes vmagent debugging UI more informative. See: https://docs.victoriametrics.com/vmagent/#relabel-debug
+        promscrape.dropOriginalLabels: "false"
 
   grafana:
 
