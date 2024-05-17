@@ -1,19 +1,21 @@
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: MariaDB
 metadata:
-  name: evaluatiion-db
+  name: evaluation-db
 spec:
   rootPasswordSecretKeyRef:
     name: mariadb
     key: root-password
     generate: true
 
-  username: mariadb
+  username: testuser
+
   passwordSecretKeyRef:
-    name: mariadb
+    name: evaluation-db-testuser
     key: password
     generate: true
-  database: mariadb
+
+  database: evaluation-db
 
   image: mariadb:11.3
   imagePullPolicy: IfNotPresent
