@@ -1,0 +1,32 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: evaluatiion-db
+spec:
+  rootPasswordSecretKeyRef:
+    name: mariadb
+    key: root-password
+    generate: true
+
+  username: mariadb
+  passwordSecretKeyRef:
+    name: mariadb
+    key: password
+    generate: true
+  database: mariadb
+
+  image: mariadb:11.3
+  imagePullPolicy: IfNotPresent
+
+  port: 3306
+
+  storage:
+    size: 1Gi
+
+
+  myCnf: |
+    [mariadb]
+    max_allowed_packet=256M
+
+  metrics:
+    enabled: true
