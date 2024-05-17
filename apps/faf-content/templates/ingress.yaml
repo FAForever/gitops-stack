@@ -20,7 +20,7 @@ metadata:
 spec:
   redirectRegex:
     regex: ^(http|https)://replay.{{.Values.baseDomain}}/(\d+)
-    replacement: ${1}://api.{{.Values.baseDomain}}/game/${2}/replay"
+    replacement: ${1}://api.{{.Values.baseDomain}}/game/${2}/replay
 
 ---
 
