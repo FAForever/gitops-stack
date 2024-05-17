@@ -3,11 +3,19 @@ kind: MariaDB
 metadata:
   name: evaluation-db
 spec:
+
   rootPasswordSecretKeyRef:
     name: faf-mariadb
     key: ROOT_PASSWORD
     generate: false
-    
+
+  
+  username: mariadb
+  passwordSecretKeyRef:
+    name: evaluation-db-mariadb-user
+    key: password
+    generate: true
+
   database: evaluation-db
 
   image: mariadb:11.3
