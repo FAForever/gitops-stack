@@ -42,6 +42,8 @@ spec:
             - name: faf-content-pvc
               mountPath: /data
               readOnly: true
+              mountPropagation: HostToContainer
+
           startupProbe:
             httpGet:
               port: 80
