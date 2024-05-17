@@ -6,7 +6,6 @@ spec:
   rootPasswordSecretKeyRef:
     name: faf-mariadb
     key: ROOT_PASSWORD
-    generate: true
 
   database: evaluation-db
 
