@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  serviceName: rabbitmq
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - image: rabbitmq:3.13.2-management-alpine
+          imagePullPolicy: Always
+          name: rabbitmq
+          ports:
+            - containerPort: 5672
+              name: amqp
+              protocol: TCP
+            - containerPort: 15692
+              name: webinterface
+              protocol: TCP
+          volumeMounts:
+            - name: rabbitmq-pvc
+              mountPath: /var/lib/rabbitmq
+            - name: config
+              mountPath: /etc/rabbitmq/enabled_plugins
+              subPath: enabled_plugins
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: rabbitmq
+        - name: rabbitmq-pvc
+          persistentVolumeClaim:
+            claimName: rabbitmq-pvc
