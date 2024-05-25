@@ -1,10 +1,13 @@
-# This is a temporary workaround to point to the RabbitMQ instance running in faf-stack
-# (it is exposed to the host though)
-# TODO: Replace as soon as rabbitmq runs in cluster
 apiVersion: v1
 kind: Service
 metadata:
   name: rabbitmq
+  labels:
+    app: rabbitmq
 spec:
-  type: ExternalName
-  externalName: {{.Values.hostName}}
+  selector:
+    app: rabbitmq
+  ports:
+    # For access of the webinterface please use port-forwarding (port 15692)
+    - port: 5672
+      targetPort: 5672
