@@ -24,4 +24,5 @@ data:
   NODEBB_USER_ID: "1"
   RECAPTCHA_ENABLED: "true"
   RABBIT_HOST: rabbitmq
+  RABBIT_USERNAME: faf-api
   REPLAY_DOWNLOAD_URL_FORMAT: https://content.{{.Values.baseDomain}}/replays/%s

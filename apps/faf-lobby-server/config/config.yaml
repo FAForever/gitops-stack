@@ -14,7 +14,7 @@ DB_NAME: "faf_lobby"
 MQ_SERVER: "rabbitmq"
 MQ_PORT: 5672
 MQ_VHOST: "/faf-core"
-MQ_USER: "faf-python-server"
+MQ_USER: "faf-lobby-server"
 MQ_EXCHANGE_NAME: "faf-lobby"
 
 ENABLE_METRICS: true
