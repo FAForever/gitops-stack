@@ -8,6 +8,16 @@ victoria-metrics-k8s-stack:
       disable_prometheus_converter: false
       prometheus_converter_add_argocd_ignore_annotations: true
 
+
+  
+  vmagent:
+    spec:
+      extraArgs:
+        promscrape.streamParse: "true"
+        # Store original labels in vmagent's memory by default. This increases the amount of memory used by vmagent
+        # but makes vmagent debugging UI more informative. See: https://docs.victoriametrics.com/vmagent/#relabel-debug
+        promscrape.dropOriginalLabels: "false"
+
   grafana:
 
     # Disable lots of useless warnings on old dashboards that pull the "wrong" graphing applet
