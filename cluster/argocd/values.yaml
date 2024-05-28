@@ -21,3 +21,6 @@ argo-cd:
             hs = {}
             hs.status = "Healthy"
             return hs
+
+    metrics:
+      enabled: true
