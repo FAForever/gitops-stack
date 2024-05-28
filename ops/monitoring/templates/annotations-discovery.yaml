@@ -45,4 +45,7 @@ spec:
           target_label: node
   namespaceSelector:
     any: true
-  selector: {} # You need to specify selector here
+  selector:
+    matchExpressions:
+      - key: prometheus.io/scrape
+        operator: Exists
