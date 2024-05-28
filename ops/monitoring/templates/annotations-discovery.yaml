@@ -43,5 +43,6 @@ spec:
         - source_labels: [__meta_kubernetes_pod_node_name]
           action: replace
           target_label: node
-  namespaceSelector: {} # You need to specify namespaceSelector here
+  namespaceSelector:
+    any: true
   selector: {} # You need to specify selector here
