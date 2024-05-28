@@ -5,7 +5,7 @@ metadata:
 spec:
   discoveryRole: service
   endpoints:
-    - port: http
+    - port: http-metrics
       relabelConfigs:
         # Skip scrape for init containers
         - action: drop
@@ -45,7 +45,4 @@ spec:
           target_label: node
   namespaceSelector:
     any: true
-  selector:
-    matchExpressions:
-      - key: prometheus.io/scrape
-        operator: Exists
+  selector: {}
