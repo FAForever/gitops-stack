@@ -9,7 +9,6 @@ apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMServiceScrape
 metadata:
   name: services
-  jobLabel: "app.kubernetes.io/name"
 spec:
   discoveryRole: "endpoints"
   jobLabel: "app.kubernetes.io/name"
