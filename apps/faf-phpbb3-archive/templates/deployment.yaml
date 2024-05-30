@@ -18,7 +18,7 @@ spec:
         app: faf-phpbb3-archive
     spec:
       containers:
-        - image: nginx:1.26.0-alpine-slim
+        - image: nginx:1.27.0-alpine-slim
           imagePullPolicy: Always
           name: faf-phpbb3-archive
           ports:
