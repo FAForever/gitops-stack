@@ -18,7 +18,7 @@ spec:
         app: faf-content
     spec:
       containers:
-        - image: nginx:1.26.0-alpine-slim
+        - image: nginx:1.27.0-alpine-slim
           imagePullPolicy: Always
           name: faf-content
           ports:
