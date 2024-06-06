@@ -87,7 +87,7 @@ traefik:
       # format: json
       # By default, the level is set to ERROR.
       # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-      level: DEBUG
+      level: ERROR
 
   # This is bugged on 3.0 helmchart, use the CRD in another file
   # tlsStore:
