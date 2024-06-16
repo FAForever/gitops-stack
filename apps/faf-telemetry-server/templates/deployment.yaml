@@ -20,6 +20,8 @@ spec:
           imagePullPolicy: Always
           name: faf-telemetry-server
           resources:
+            requests:
+              memory: 1Gi
             limits:
               memory: 2Gi # Handle known memory leak with restart
       restartPolicy: Always
