@@ -58,6 +58,11 @@ managedStorages:
       size: 1Gi
     pvc:
       namespace: faf-apps
+  - pv:
+      name: debezium
+      size: 1Gi
+    pvc:
+      namespace: faf-apps
 #  - name: mariadb
 #    namespace: faf-apps
 #    size: 20Gi

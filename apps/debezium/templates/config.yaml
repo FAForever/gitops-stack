@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: debezium
+  labels:
+    app: debezium
+data:
+  MARIADB_USER: "faf-java-api" # TODO
+  RABBITMQ_USER: "faf-java-api" # TODO
+  "application.properties": |-
+    debezium.source.connector.class=io.debezium.connector.mysql.MySqlConnector
+    debezium.source.connector.adapter=mariadb
+    debezium.source.database.protocol=jdbc:mariadb
+    debezium.source.database.jdbc.driver=org.mariadb.jdbc.Driver
+    debezium.source.database.hostname=mariadb
+    debezium.source.database.port=3306
+    debezium.source.database.user=${MARIADB_USER:debezium}
+    debezium.source.database.password=${MARIADB_PASSWORD}
+    debezium.source.database.id=faf-lobby
+    debezium.source.database.dbname=faf_lobby
+    debezium.source.database.include.list=faf
+    debezium.source.table.include.list=game_stats,game_player_stats
+    debezium.source.include.schema.changes=false
+    debezium.source.topic.prefix=faf-lobby
+    debezium.sink.type=rabbitmq
+    debezium.sink.rabbitmq.connection.host=rabbitmq
+    debezium.sink.rabbitmq.connection.port=5672
+    debezium.sink.rabbitmq.connection.username=${RABBITMQ_USER:debezium}
+    debezium.sink.rabbitmq.connection.password=${RABBITMQ_PASSWORD}
+    debezium.sink.rabbitmq.connection.virtual.host=/faf-core
+    debezium.sink.rabbitmq.exchange=faf-debezium
+    debezium.sink.rabbitmq.autoCreateRoutingKey=true

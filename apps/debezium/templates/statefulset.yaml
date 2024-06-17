@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: debezium
+  labels:
+    app: debezium
+spec:
+  serviceName: debezium
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: debezium
+  template:
+    metadata:
+      labels:
+        app: debezium
+    spec:
+      containers:
+        - image: debezium/server:2.6.2.Final
+          imagePullPolicy: Always
+          name: debezium
+          volumeMounts:
+            - name: debezium-pvc
+              mountPath: /debezium/data
+            - name: config
+              mountPath: /debezium/conf/application.properties
+              subPath: application.properties
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: debezium
+        - name: debezium-pvc
+          persistentVolumeClaim:
+            claimName: debezium-pvc
