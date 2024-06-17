@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: debezium
+  labels:
+    app: debezium
+data:
+  MARIADB_USER: "root" # TODO
+  MARIADB_DATABASE: "faf_lobby"
+  RABBITMQ_USER: "faf-lobby-server" # TODO
+  "application.properties": |-
+    debezium.source.key.converter.schemas.enable=false
+    debezium.source.value.converter.schemas.enable=false
+    debezium.source.offset.storage.file.filename=/debezium/data/offset
+    debezium.source.connector.class=io.debezium.connector.mysql.MySqlConnector
+    debezium.source.connector.adapter=mariadb
+    debezium.source.database.protocol=jdbc:mariadb
+    debezium.source.database.jdbc.driver=org.mariadb.jdbc.Driver
+    debezium.source.schema.history.internal=io.debezium.storage.file.history.FileSchemaHistory
+    debezium.source.schema.history.internal.file.filename=/debezium/data/schema_history
+    debezium.source.database.ssl.mode=disabled
+    debezium.source.database.hostname=mariadb
+    debezium.source.database.port=3306
+    debezium.source.database.user=${MARIADB_USER:debezium}
+    debezium.source.database.password=${MARIADB_PASSWORD}
+    debezium.source.database.id=faf
+    debezium.source.database.server.id=10297102
+    debezium.source.database.include.list=${MARIADB_DATABASE:faf}
+    debezium.source.include.schema.changes=false
+    debezium.source.topic.prefix=faf
+    debezium.source.snapshot.mode=schema_only
+    debezium.sink.type=rabbitmq
+    debezium.sink.rabbitmq.connection.host=rabbitmq
+    debezium.sink.rabbitmq.connection.port=5672
+    debezium.sink.rabbitmq.connection.username=${RABBITMQ_USER:debezium}
+    debezium.sink.rabbitmq.connection.password=${RABBITMQ_PASSWORD}
+    debezium.sink.rabbitmq.connection.virtual.host=/faf-core
+    debezium.sink.rabbitmq.exchange=faf-debezium
+    debezium.sink.rabbitmq.routingKeyFromTopicName=true
+
+
