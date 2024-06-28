@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-qai
+  labels:
+    app: faf-qai
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-qai
+  template:
+    metadata:
+      labels:
+        app: faf-qai
+    spec:
+      containers:
+        - image: faforever/faf-qai:main
+          imagePullPolicy: Always
+          name: faf-qai
+          envFrom:
+            - configMapRef:
+                name: faf-qai
+            - secretRef:
+                name: faf-qai
+          volumeMounts:
+            - mountPath: /app/Database
+              name: faf-qai
+              subPath: "Database"
+      restartPolicy: Always
+      volumes:
+        - name: faf-qai
+          persistentVolumeClaim:
+            claimName: faf-qai-pvc
