@@ -1,6 +1,8 @@
 hostName: "fafprod3"
 environment: "prod"
-infisicalSlug: "prod"
+infisical:
+  projectSlug: "k3s-cluster-zj-th"
+  envSlug: "prod"
 baseDomain: "faforever.com"
 traefik:
   tlsStoreSecret: "cloudflare-faf-com"
