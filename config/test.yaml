@@ -1,6 +1,8 @@
 hostName: "faftest2"
 environment: "test"
-infisicalSlug: "test"
+infisical:
+  projectSlug: "k3s-cluster-zj-th"
+  envSlug: "test"
 baseDomain: "faforever.xyz"
 traefik:
   tlsStoreSecret: "cloudflare-faf-xyz"
