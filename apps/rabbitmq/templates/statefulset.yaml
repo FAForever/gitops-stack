@@ -17,7 +17,7 @@ spec:
         app: rabbitmq
     spec:
       containers:
-        - image: rabbitmq:3.13.2-management-alpine
+        - image: rabbitmq:3.13.3-management-alpine
           imagePullPolicy: Always
           name: rabbitmq
           ports:
