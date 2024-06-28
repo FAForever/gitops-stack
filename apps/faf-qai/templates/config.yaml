@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-qai
+  labels:
+    app: faf-qai
+data:
+  IRC_SERVER: irc.{{ .Values.baseDomain }}
+  IRC_USER: qai
+  CONFIG__HOST: {{ .Values.baseDomain }}
+  FAFAPI_CLIENT_ID: faf-qai
