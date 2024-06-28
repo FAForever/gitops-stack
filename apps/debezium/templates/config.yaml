@@ -7,7 +7,7 @@ metadata:
 data:
   MARIADB_USER: "root" # TODO
   MARIADB_DATABASE: "faf_lobby"
-  RABBITMQ_USER: "faf-lobby-server" # TODO
+  RABBITMQ_USER: "debezium" # TODO
   "application.properties": |-
     debezium.source.key.converter.schemas.enable=false
     debezium.source.value.converter.schemas.enable=false

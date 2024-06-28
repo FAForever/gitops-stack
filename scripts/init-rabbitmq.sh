@@ -60,4 +60,5 @@ make_user_admin rabbitmq ADMIN_USER
 create_user_for_vhost faf-lobby-server MQ_USER MQ_PASSWORD $VHOST_FAF_CORE
 create_user_for_vhost faf-api RABBIT_USERNAME RABBIT_PASSWORD $VHOST_FAF_CORE
 create_user_for_vhost faf-league-service MQ_USER MQ_PASSWORD $VHOST_FAF_CORE
+create_user_for_vhost debezium RABBITMQ_USER RABBITMQ_PASSWORD $VHOST_FAF_CORE
 
