@@ -5,9 +5,9 @@ metadata:
   labels:
     app: debezium
 data:
-  MARIADB_USER: "root" # TODO
+  MARIADB_USER: "debezium"
   MARIADB_DATABASE: "faf_lobby"
-  RABBITMQ_USER: "debezium" # TODO
+  RABBITMQ_USER: "debezium"
   "application.properties": |-
     debezium.source.key.converter.schemas.enable=false
     debezium.source.value.converter.schemas.enable=false
