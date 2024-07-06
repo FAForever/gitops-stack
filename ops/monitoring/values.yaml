@@ -37,14 +37,14 @@ victoria-metrics-k8s-stack:
       dashboardproviders.yaml:
         apiVersion: 1
         providers:
-        - name: 'FAF'
-          orgId: 1
-          folder: 'faf'
-          type: file
-          disableDeletion: true
-          editable: true
-          options:
-            path: /var/lib/grafana/dashboards/faf
+          - name: 'FAF'
+            orgId: 1
+            folder: 'faf'
+            type: file
+            disableDeletion: true
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/faf
 
     dashboards:
       faf:
@@ -53,60 +53,67 @@ victoria-metrics-k8s-stack:
           datasource: prometheus
 
     additionalDataSources:
-    - access: proxy
-      isDefault: false # Don't change this, another one is default and it won't work
-      name: loki
-      orgId: 1
-      type: loki
-      url: http://monitoring-loki-gateway:80
+      - access: proxy
+        isDefault: false # Don't change this, another one is default and it won't work
+        name: loki
+        orgId: 1
+        type: loki
+        url: http://monitoring-loki-gateway:80
 
 
-# # Configuring Loki is quite involved, as the Helm chart seems to be fully production grade for multi-tenant SaaS setups
-# # That is way, way too much for us
-# # VictoriaLogs is an alternative that we need to evaluate later
-# loki:
+# Configuring Loki is quite involved, as the Helm chart seems to be fully production grade for multi-tenant SaaS setups
+# That is way, way too much for us
+# VictoriaLogs is an alternative that we need to evaluate later
+loki:
 
-  # deploymentMode: SingleBinary
-  # singleBinary:
-    # replicas: 0
+  deploymentMode: SingleBinary
+  singleBinary:
+    replicas: 1
 
-  # # Disable Simple Scalable
-  # read:
-    # replicas: 0
-  # backend:
-    # replicas: 0
-  # write:
-    # replicas: 0
+  # Disable Simple Scalable
+  read:
+    replicas: 0
+  backend:
+    replicas: 0
+  write:
+    replicas: 0
 
-  # loki:
-    # commonConfig:
-      # replication_factor: 0
-    # storage:
-      # type: 'filesystem'
-    # auth_enabled: false
+  loki:
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: 'filesystem'
+    auth_enabled: false
 
-    # schemaConfig:
-      # configs:
-      # - from: 2024-01-01
-        # store: tsdb
-        # index:
-          # prefix: index_
-          # period: 24h
-        # object_store: 'filesystem'
-        # schema: v13
+    schemaConfig:
+      configs:
+        - from: 2024-01-01
+          store: tsdb
+          index:
+            prefix: index_
+            period: 24h
+          object_store: 'filesystem'
+          schema: v13
 
-  # # We know it's working
-  # test:
-    # enabled: false
-  # lokiCanary:
-    # enabled: false
+    compactor:
+      compaction_interval: 10m
+      retention_enabled: true
+      retention_delete_delay: 2h
+      retention_delete_worker_count: 16
+      delete_request_store: filesystem
 
-  # # Mofo uses 8GB of RAM by default
-  # # TODO: reverse engineer loki-stack further and/or move to victorialogs faster
-  # chunksCache:
-    # enabled: false
+  # We know it's working
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
 
-# promtail:
-  # config:
-    # clients:
-    # - url: http://monitoring-loki-gateway/loki/api/v1/push
+  # Mofo uses 8GB of RAM by default
+  # TODO: reverse engineer loki-stack further and/or move to victorialogs faster
+  chunksCache:
+    enabled: false
+
+promtail:
+  config:
+    clients:
+      - url: http://monitoring-loki-gateway/loki/api/v1/push
