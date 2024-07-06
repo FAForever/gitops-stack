@@ -19,6 +19,8 @@ victoria-metrics-k8s-stack:
         # Store original labels in vmagent's memory by default. This increases the amount of memory used by vmagent
         # but makes vmagent debugging UI more informative. See: https://docs.victoriametrics.com/vmagent/#relabel-debug
         promscrape.dropOriginalLabels: "false"
+      externalLabels:
+        test: test
 
   grafana:
 
