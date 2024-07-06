@@ -6,7 +6,7 @@ metadata:
     app: debezium
 spec:
   serviceName: debezium
-  replicas: 1
+  replicas: 0
   revisionHistoryLimit: 10
   selector:
     matchLabels:
