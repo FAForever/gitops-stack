@@ -94,6 +94,13 @@ loki:
           period: 24h
         object_store: 'filesystem'
         schema: v13
+      
+    compactor:
+      compaction_interval: 10m
+      retention_enabled: true
+      retention_delete_delay: 2h
+      retention_delete_worker_count: 16
+      delete_request_store: filesystem
 
   # We know it's working
   test:
