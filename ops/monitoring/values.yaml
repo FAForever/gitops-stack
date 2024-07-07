@@ -61,52 +61,52 @@ victoria-metrics-k8s-stack:
       url: http://monitoring-loki-gateway:80
 
 
-# Configuring Loki is quite involved, as the Helm chart seems to be fully production grade for multi-tenant SaaS setups
-# That is way, way too much for us
-# VictoriaLogs is an alternative that we need to evaluate later
-loki:
+# # Configuring Loki is quite involved, as the Helm chart seems to be fully production grade for multi-tenant SaaS setups
+# # That is way, way too much for us
+# # VictoriaLogs is an alternative that we need to evaluate later
+# loki:
 
-  deploymentMode: SingleBinary
-  singleBinary:
-    replicas: 0
+  # deploymentMode: SingleBinary
+  # singleBinary:
+    # replicas: 0
 
-  # Disable Simple Scalable
-  read:
-    replicas: 0
-  backend:
-    replicas: 0
-  write:
-    replicas: 0
+  # # Disable Simple Scalable
+  # read:
+    # replicas: 0
+  # backend:
+    # replicas: 0
+  # write:
+    # replicas: 0
 
-  loki:
-    commonConfig:
-      replication_factor: 0
-    storage:
-      type: 'filesystem'
-    auth_enabled: false
+  # loki:
+    # commonConfig:
+      # replication_factor: 0
+    # storage:
+      # type: 'filesystem'
+    # auth_enabled: false
 
-    schemaConfig:
-      configs:
-      - from: 2024-01-01
-        store: tsdb
-        index:
-          prefix: index_
-          period: 24h
-        object_store: 'filesystem'
-        schema: v13
+    # schemaConfig:
+      # configs:
+      # - from: 2024-01-01
+        # store: tsdb
+        # index:
+          # prefix: index_
+          # period: 24h
+        # object_store: 'filesystem'
+        # schema: v13
 
-  # We know it's working
-  test:
-    enabled: false
-  lokiCanary:
-    enabled: false
+  # # We know it's working
+  # test:
+    # enabled: false
+  # lokiCanary:
+    # enabled: false
 
-  # Mofo uses 8GB of RAM by default
-  # TODO: reverse engineer loki-stack further and/or move to victorialogs faster
-  chunksCache:
-    enabled: false
+  # # Mofo uses 8GB of RAM by default
+  # # TODO: reverse engineer loki-stack further and/or move to victorialogs faster
+  # chunksCache:
+    # enabled: false
 
-promtail:
-  config:
-    clients:
-    - url: http://monitoring-loki-gateway/loki/api/v1/push
+# promtail:
+  # config:
+    # clients:
+    # - url: http://monitoring-loki-gateway/loki/api/v1/push
