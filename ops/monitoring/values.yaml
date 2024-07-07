@@ -68,7 +68,7 @@ loki:
 
   deploymentMode: SingleBinary
   singleBinary:
-    replicas: 1
+    replicas: 0
 
   # Disable Simple Scalable
   read:
@@ -80,7 +80,7 @@ loki:
 
   loki:
     commonConfig:
-      replication_factor: 1
+      replication_factor: 0
     storage:
       type: 'filesystem'
     auth_enabled: false
