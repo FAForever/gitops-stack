@@ -26,3 +26,5 @@ data:
   RABBIT_HOST: rabbitmq
   RABBIT_USERNAME: faf-api
   REPLAY_DOWNLOAD_URL_FORMAT: https://content.{{.Values.baseDomain}}/replays/%s
+  # temporary bugfix until faf-java-api >3.4.5
+  MOD_PREVIEW_URL_FORMAT: https://content.{{.Values.baseDomain}}/mods/thumbs/%s
