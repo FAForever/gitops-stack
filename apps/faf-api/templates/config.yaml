@@ -28,3 +28,5 @@ data:
   REPLAY_DOWNLOAD_URL_FORMAT: https://content.{{.Values.baseDomain}}/replays/%s
   # temporary bugfix until faf-java-api >3.4.5
   MOD_PREVIEW_URL_FORMAT: https://content.{{.Values.baseDomain}}/mods/thumbs/%s
+  MINIMUM_DAYS_BETWEEN_USERNAME_CHANGE: 90
+  USERNAME_RESERVATION_TIME_IN_MONTHS: 3
