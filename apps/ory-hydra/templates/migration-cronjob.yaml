@@ -20,7 +20,7 @@ spec:
       template:
         spec:
           containers:
-            - image: oryd/hydra:v1.11.10
+            - image: oryd/hydra:v2.2.0
               imagePullPolicy: Always
               name: ory-hydra
               envFrom:
