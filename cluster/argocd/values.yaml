@@ -1,5 +1,9 @@
 argo-cd:
   global:
+
+    image:
+      tag: v2.12.0-rc4
+
     deploymentAnnotations:
       reloader.stakater.com/auto: "true"
 
