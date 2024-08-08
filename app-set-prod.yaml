@@ -12,6 +12,7 @@ spec:
       revision: HEAD
       directories:
       - path: 'apps/*'
+      - path: 'infra/*'
       - path: 'ops/*'
   template:
     metadata:
