@@ -5,4 +5,4 @@ metadata:
 spec:
   type: ExternalName
   # Define mariadb.hostName in config, if you use an external database
-  externalName: {{ default "postgres.postgres.svc.cluster.local" .Values.mariadb.hostName }}
+  externalName: {{ default "postgres.postgres.svc.cluster.local" .Values.postgres.hostName }}
