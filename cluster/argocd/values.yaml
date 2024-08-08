@@ -1,8 +1,8 @@
 argo-cd:
   global:
 
-    image:
-      tag: v2.12.0-rc4
+    # image:
+    #   tag: v2.12.0-rc4
 
     deploymentAnnotations:
       reloader.stakater.com/auto: "true"
@@ -18,7 +18,6 @@ argo-cd:
 
   server:
 
-    # Avoids a permanent out of sync situation with Ingress resources
     config:
       resource.customizations: |-
         networking.k8s.io/Ingress:
@@ -26,7 +25,8 @@ argo-cd:
             hs = {}
             hs.status = "Healthy"
             return hs
-
+            
+    # Avoids a permanent out of sync situation with Ingress resources
     metrics:
       enabled: true
       serviceMonitor:
