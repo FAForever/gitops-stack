@@ -1,0 +1,3 @@
+apiVersion: v2
+name: faf-apps-postgres
+version: 1.0.0
