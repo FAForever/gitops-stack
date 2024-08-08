@@ -9,6 +9,11 @@ managedStorages:
   #     name: optional string, default is <pv.name>-pvc
   #     namespace: faf-apps
   - pv:
+      name: postgres
+      size: 50Gi
+    pvc:
+      namespace: faf-infra
+  - pv:
       name: faf-replays
       folderName: replays
       size: 500Gi
