@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  serviceName: postgres
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - image: postgres:16.4-alpine3.20
+          imagePullPolicy: Always
+          name: postgres
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: postgres
+            - secretRef:
+                name: postgres
+          volumeMounts:
+            - name: postgres-pvc
+              mountPath: /var/lib/postgresql/data
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: postgres
+        - name: postgres-pvc
+          persistentVolumeClaim:
+            claimName: postgres-pvc
