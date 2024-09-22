@@ -15,7 +15,7 @@ spec:
           regex: "true"
         # Match container port with port from annotation
         - action: keep_if_equal
-          source_labels: [__meta_kubernetes_service_annotation_prometheus_io_port, __meta_kubernetes_service_ontainer_port_number]
+          source_labels: [__meta_kubernetes_service_annotation_prometheus_io_port, __meta_kubernetes_service_container_port_number]
         # Set scrape path
         - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
           action: replace
