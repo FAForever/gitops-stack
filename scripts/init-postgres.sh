@@ -49,6 +49,6 @@ create_user_and_db() {
     echo "Granted all privileges on database $DB_NAME to user $DB_USER."
 }
 
-create_user_and_db faf-apps faf-api DATABASE_USERNAME DATABASE_PASSWORD DATABASE_NAME
+create_user_and_db faf-apps wikijs DB_USER DB_PASS DB_NAME
 
 echo "All users and databases have been processed."
