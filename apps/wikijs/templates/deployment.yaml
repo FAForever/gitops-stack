@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wikijs
+  labels:
+    app: wikijs
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: wikijs
+  template:
+    metadata:
+      labels:
+        app: wikijs
+    spec:
+      containers:
+        - image: requarks/wiki:2
+          imagePullPolicy: Always
+          name: wikijs
+          envFrom:
+            - configMapRef:
+                name: wikijs
+            - secretRef:
+                name: wikijs
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: sso-config
+              mountPath: /wiki/server/modules/authentication/faf-hydra
+          startupProbe:
+            httpGet:
+              port: 3000
+              path: /healthz
+            failureThreshold: 10
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /healthz
+            failureThreshold: 3
+            periodSeconds: 10
+      restartPolicy: Always
+      volumes:
+        - name: sso-config
+          configMap:
+            name: wikijs-sso

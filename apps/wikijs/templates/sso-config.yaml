@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wikijs-sso
+  labels:
+    app: wikijs
+data:
+  "definition.yml": |-
+    key: faf-hydra
+    title: FAF Ory Hydra Login
+    author: Sheikah
+    useForm: false
+    isAvailable: true
+    scopes:
+      - openid
+      - public_profile
+    props:
+      clientId:
+        type: String
+        title: Client ID
+        hint: Application Client ID
+        order: 1
+      clientSecret:
+        type: String
+        title: Client Secret
+        hint: Application Client Secret
+        order: 2
+      oauthBaseUrl:
+        type: String
+        title: OAuth Base URL
+        order: 3
+      callbackUrl:
+        type: String
+        title: Callback URL
+        order: 4
+      apiUrl:
+        type: String
+        title: FAF Api Url
+        order: 5
+      logoutURL:
+        type: String
+        title: Logout URL
+        hint: (optional) Logout URL on the OAuth2 provider where the user will be redirected to complete the logout process.
+        order: 6
+  "authentication.js": |-
+    const OidcStrategy = require('passport-openidconnect')
+    const request = require('request')
+
+    module.exports = {
+        init(passport, conf) {
+            passport.use(conf.key,
+                new OidcStrategy({
+                        issuer: conf.oauthBaseUrl + '/',
+                        tokenURL: conf.oauthBaseUrl + '/oauth2/token',
+                        authorizationURL: conf.oauthBaseUrl + '/oauth2/auth',
+                        userInfoURL: conf.oauthBaseUrl + '/userinfo?schema=openid',
+                        clientID: conf.clientId,
+                        clientSecret: conf.clientSecret,
+                        callbackURL: conf.callbackURL,
+                        scope: ['openid', 'public_profile'],
+                        passReqToCallback: true
+                    },
+                    function (req, iss, sub, profile, jwtClaims, accessToken, refreshToken, params, cb) {
+                        const providerKey = req.params.strategy
+                        request.get(
+                            {
+                                url: conf.apiUrl + '/me',
+                                headers: {'Authorization': 'Bearer ' + accessToken}
+                            },
+                            function (e, r, body) {
+                                if (r.statusCode !== 200) {
+                                    console.log('Auth failure: ' + r.statusCode)
+
+                                    return cb(null)
+                                }
+                                let user = JSON.parse(body)
+                                let accountPromise = WIKI.models.users.processProfile({providerKey: providerKey,
+                                    profile: {id: user.data.attributes.userId,
+                                        email: user.data.attributes.userName + "@faforever.com",
+                                        displayName: user.data.attributes.userName}})
+                                accountPromise.then(account => {
+                                    cb(null, account)
+                                })
+                            }
+                        )
+                    }
+                )
+            )
+        },
+        logout(conf) {
+            if (!conf.logoutURL) {
+                return '/'
+            } else {
+                return conf.logoutURL
+            }
+        }
+    }

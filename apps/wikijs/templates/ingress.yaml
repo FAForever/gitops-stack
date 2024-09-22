@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: wikijs
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`wiki.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: wikijs
+          port: 3000
