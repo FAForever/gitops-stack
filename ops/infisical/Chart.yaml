@@ -3,5 +3,5 @@ name: infisical
 version: 1.0.0
 dependencies:
   - name: secrets-operator
-    version: 0.7.1
+    version: 0.7.2
     repository: https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts/
