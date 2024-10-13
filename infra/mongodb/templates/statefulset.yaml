@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  serviceName: mongodb
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - image: mongo:7.0.14
+          imagePullPolicy: Always
+          name: mongodb
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: mongodb
+            - secretRef:
+                name: mongodb
+          volumeMounts:
+            - name: mongodb-pvc
+              mountPath: /data/db
+              subPath: data/db
+            - name: mongodb-pvc
+              mountPath: /data/backup
+              subPath: backup
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: mongodb
+        - name: mongodb-pvc
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
+      securityContext:
+        fsGroup: 999 # MongoDB user

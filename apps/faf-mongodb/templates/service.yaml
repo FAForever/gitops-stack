@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+spec:
+  type: ExternalName
+  # Define mongodb.hostName in config, if you use an external database
+  externalName: {{ default "mongodb.faf-infra.svc.cluster.local" .Values.mongodb.hostName }}
