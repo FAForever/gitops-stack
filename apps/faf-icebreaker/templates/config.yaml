@@ -11,3 +11,5 @@ data:
   DB_USERNAME: "faf-icebreaker"
   DB_URL: "jdbc:mariadb://mariadb:3306/faf-icebreaker?ssl=false"
   XIRSYS_ENABLED: "true"
+  GEOIPUPDATE_EDITION_IDS: "GeoLite2-City"
+
