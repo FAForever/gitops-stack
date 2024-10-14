@@ -5,7 +5,7 @@ traefik:
     kind: DaemonSet
 
   additionalArguments:
-  - "--entrypoints.websecure.http.encodequerysemicolons=true"
+    - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
   updateStrategy:
     type: RollingUpdate
@@ -18,13 +18,13 @@ traefik:
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/name
-            operator: In
-            values:
-            - traefik
-        topologyKey: kubernetes.io/hostname
+        - labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - traefik
+          topologyKey: kubernetes.io/hostname
 
   ports:
     metrics:
