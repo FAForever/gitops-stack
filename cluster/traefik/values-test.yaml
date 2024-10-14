@@ -50,9 +50,9 @@ traefik:
       port: 443
       
       # New setup behind proxy
-      proxyProtocol:
-        trustedIPs:
-          - 10.0.0.0/16
+      # proxyProtocol:
+      #   trustedIPs:
+      #     - 10.0.0.0/16
 
       transport:
         respondingTimeouts:
