@@ -3,6 +3,7 @@ traefik:
   deployment:
     enabled: true
     kind: DaemonSet
+    dnsPolicy: ClusterFirstWithHostNet
     additionalVolumes:
     - name: dockersocket
       hostPath:
@@ -25,7 +26,6 @@ traefik:
       maxSurge: null
 
   hostNetwork: true
-  dnsPolicy: ClusterFirstWithHostNet
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
