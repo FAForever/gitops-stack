@@ -24,7 +24,7 @@ traefik:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
-      maxSurge: 1
+      maxSurge: null
 
   hostNetwork: true
   affinity:
