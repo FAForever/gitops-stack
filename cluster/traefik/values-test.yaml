@@ -21,10 +21,7 @@ traefik:
   - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
   updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: null
+    type: OnDelete
 
   hostNetwork: true
   affinity:
