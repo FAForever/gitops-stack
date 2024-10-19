@@ -24,8 +24,8 @@ traefik:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
-      maxSurge: null
-      
+      maxSurge: 1
+
   hostNetwork: true
   affinity:
     podAntiAffinity:
