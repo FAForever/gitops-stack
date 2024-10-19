@@ -21,8 +21,11 @@ traefik:
   - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
   updateStrategy:
-    type: Recreate
-
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: null
+      
   hostNetwork: true
   affinity:
     podAntiAffinity:
