@@ -1,0 +1,10 @@
+# This is a temporary workaround to point to the MongoDB instance running in faf-stack
+# (it is exposed to the host though)
+# TODO: Replace as soon as mongodb runs in cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+spec:
+  type: ExternalName
+  externalName: {{.Values.hostName}}

@@ -44,7 +44,7 @@ check_resource_exists_or_fail() {
   EXISTS=$(kubectl -n $NAMESPACE get "$RESOURCE_TYPE" "$RESOURCE_NAME" >/dev/null 2>/dev/null && echo true || echo false)
   if test "$EXISTS" = "false"
   then
-    echo "$RESOURCE_TYPE $RESOURCE_NAME missing. Aborting."
+    echo "Namespace $NAMESPACE: $RESOURCE_TYPE $RESOURCE_NAME missing. Aborting."
     exit 1
   fi
 }

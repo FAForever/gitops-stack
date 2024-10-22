@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nodebb
+  name: nodebb
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nodebb
+  template:
+    metadata:
+      labels:
+        app: nodebb
+    spec:
+      initContainers:
+        - name: permission-init
+          image: alpine:3.16.0
+          command:
+            - sh
+            - -c
+            - chown -R 1000:1000 /data/* && chmod 775 /data/* && ls -lah /data
+          volumeMounts:
+            - mountPath: /data/node_modules
+              name: nodebb
+              subPath: node_modules
+            - mountPath: /data/build
+              name: nodebb
+              subPath: build
+            - mountPath: /data/uploads
+              name: nodebb
+              subPath: uploads
+      containers:
+        - image: nodebb/docker:1.18.5
+          imagePullPolicy: Always
+          name: nodebb
+          volumeMounts:
+            - mountPath: /usr/src/app/config.json
+              name: config
+              subPath: config.json
+            - mountPath: /usr/src/app/node_modules
+              name: nodebb
+              subPath: node_modules
+            - mountPath: /usr/src/app/build
+              name: nodebb
+              subPath: build
+            - mountPath: /usr/src/app/public/uploads
+              name: nodebb
+              subPath: uploads
+      restartPolicy: Always
+      volumes:
+        - name: config
+          secret:
+            secretName: nodebb
+        - name: nodebb
+          persistentVolumeClaim:
+            claimName: nodebb-pvc
+      securityContext:
+        fsGroup: 1000

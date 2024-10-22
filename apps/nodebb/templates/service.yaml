@@ -1,10 +1,12 @@
-# This is a temporary workaround to point to the nodebb instance running in faf-stack for the API to reach it
-# (it is exposed to the host though)
-# TODO: Replace as soon as nodebb runs in cluster
 apiVersion: v1
 kind: Service
 metadata:
   name: nodebb
+  labels:
+    app: nodebb
 spec:
-  type: ExternalName
-  externalName: {{.Values.hostName}}
+  selector:
+    app: nodebb
+  ports:
+    - port: 4567
+      targetPort: 4567

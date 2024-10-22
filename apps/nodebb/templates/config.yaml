@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodebb
+  namespace: faf-apps
+  labels:
+    app: nodebb
+data:
+  MONGODB_USER: "nodebb"
+  MONGODB_DATABASE: "nodebb"
