@@ -49,6 +49,11 @@ managedStorages:
     pvc:
       namespace: faf-infra
   - pv:
+      name: nodebb
+      size: 15Gi
+    pvc:
+      namespace: faf-apps
+  - pv:
       name: wordpress
       size: 10Gi
     pvc:
@@ -81,7 +86,4 @@ managedStorages:
 #  - name: mariadb
 #    namespace: faf-apps
 #    size: 20Gi
-#    size: 10Gi
-#  - name: nodebb
-#    namespace: faf-apps
 #    size: 10Gi
