@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nodebb
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`forum.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: nodebb
+          port: 4567
