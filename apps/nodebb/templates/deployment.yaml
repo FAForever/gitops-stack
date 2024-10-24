@@ -33,7 +33,7 @@ spec:
               name: nodebb
               subPath: uploads
       containers:
-        - image: nodebb/docker:1.18.5
+        - image: nodebb/docker:1.19.12
           imagePullPolicy: Always
           name: nodebb
           volumeMounts:
