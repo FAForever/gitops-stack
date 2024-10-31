@@ -5,6 +5,8 @@ metadata:
   labels:
     app: ergochat
 data:
+  ERGO__DATASTORE__MYSQL__USER: "ergochat"
+  ERGO__DATASTORE__MYSQL__HISTORY_DATABASE: "ergochat"
   "auth.sh": |-
     #!/bin/sh
     read input

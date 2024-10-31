@@ -6,7 +6,9 @@ metadata:
     app: faf-lobby-server
 data:
   CONFIGURATION_FILE: "/config/config.yaml"
-  # Redundant, but required for rabbitmq init script
+  # Redundant, but required for rabbitmq/mariadb init script
   MQ_USER: "faf-lobby-server"
+  DB_LOGIN: "faf-python-server"
+  DB_NAME: "faf_lobby"
   "config.yaml": |-
 {{ tpl ( .Files.Get "config/config.yaml" ) . | indent 4 }}

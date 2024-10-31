@@ -9,3 +9,6 @@ data:
   RUST_LOG: "info"
   "config.yaml": |-
 {{ tpl ( .Files.Get "config/config.yaml") . | indent 4 }}
+  # Just for mariadb init script! keep in sync with config file template
+  RS_DB_USERNAME: "faf-legacy-live-replay-server"
+  RS_DB_DATABASE: "faf_lobby"
