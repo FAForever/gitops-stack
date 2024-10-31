@@ -827,10 +827,8 @@ datastore:
     port: 3306
     # if socket-path is set, it will be used instead of host:port
     #socket-path: "/var/run/mysqld/mysqld.sock"
-    user: "ergochat"
-    # Define ERGO__DATASTORE__MYSQL__PASSWORD in secret
-    # password: "banana"
-    history-database: "ergochat"
+    # Values for `user` and `history-database` are defined in configmap
+    # You have to define ERGO__DATASTORE__MYSQL__PASSWORD in secret
     timeout: 3s
     max-conns: 4
     # this may be necessary to prevent middleware from closing your connections:

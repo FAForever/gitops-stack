@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  labels:
+    app: mariadb
+spec:
+  serviceName: mariadb
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+        - image: mariadb:10.7
+          imagePullPolicy: Always
+          name: mariadb
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: mariadb
+          volumeMounts:
+            - name: mariadb-pvc
+              mountPath: /var/lib/mysql
+            - name: config
+              mountPath: /etc/mysql/mariadb.conf.d/mysqld-custom.cnf
+              subPath: mysqld-custom.cnf
+            - name: config
+              mountPath: /root/.my.cnf
+              subPath: mysql.cnf
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: mariadb
+        - name: mariadb-pvc
+          persistentVolumeClaim:
+            claimName: mariadb-pvc
