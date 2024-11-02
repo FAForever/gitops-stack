@@ -23,23 +23,13 @@ spec:
               name: nodebb
               subPath: uploads
       containers:
-        - image: ghcr.io/nodebb/nodebb:3.10.3
+        - image: ghcr.io/nodebb/nodebb:3.10.0
           imagePullPolicy: Always
           name: nodebb
-          command:
-            - sh
-            - -c
-            - sleep 10000
           volumeMounts:
-            - mountPath: /usr/src/app/config.json
+            - mountPath: /opt/config/config.json
               name: config
               subPath: config.json
-            - mountPath: /usr/src/app/node_modules
-              name: nodebb
-              subPath: node_modules
-            - mountPath: /usr/src/app/build
-              name: nodebb
-              subPath: build
             - mountPath: /usr/src/app/public/uploads
               name: nodebb
               subPath: uploads
