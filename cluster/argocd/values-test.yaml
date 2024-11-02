@@ -22,6 +22,12 @@ argo-cd:
       # -- Timeout to discover if a new manifests version got published to the repository
       timeout.reconciliation: 180s
 
+      # Custom theme
+      ui.cssurl: "./custom/test-theme.css"
+      ui.bannercontent: "Test FAF cluster. If you break it you fix it."
+      ui.bannerpermanent: true
+      ui.bannerposition: "top"
+
       dex.config: |
         connectors:
         - type: github
