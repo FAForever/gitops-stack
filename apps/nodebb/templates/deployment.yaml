@@ -17,11 +17,13 @@ spec:
     spec:
       initContainers:
         - name: permission-init
-          image: alpine:3.16.0
+          image: alpine/git
           command:
             - sh
             - -c
-            - chown -R 1000:1000 /data/* && chmod 775 /data/* && ls -lah /data
+{{/*          FOR SSO PLUGIN DEVELOPMENT ONLY: (afterwards still needs rebuild&restart from admin panel) */}}
+{{/*            - git clone https://github.com/FAForever/nodebb-plugin-sso-oauth-faforever /data/plugins/sso-faforever && chown -R 1001:1001 /data/* && chmod 775 /data/* && ls -lah /data*/}}
+            - chown -R 1001:1001 /data/* && chmod 775 /data/* && ls -lah /data
           volumeMounts:
             - mountPath: /data/node_modules
               name: nodebb
@@ -32,12 +34,14 @@ spec:
             - mountPath: /data/uploads
               name: nodebb
               subPath: uploads
+            - mountPath: /data/plugins
+              name: plugins
       containers:
-        - image: nodebb/docker:1.19.12
+        - image: ghcr.io/nodebb/nodebb:3.10.3
           imagePullPolicy: Always
           name: nodebb
           volumeMounts:
-            - mountPath: /usr/src/app/config.json
+            - mountPath: /opt/config/config.json
               name: config
               subPath: config.json
             - mountPath: /usr/src/app/node_modules
@@ -49,6 +53,13 @@ spec:
             - mountPath: /usr/src/app/public/uploads
               name: nodebb
               subPath: uploads
+{{/*          FOR SSO PLUGIN DEVELOPMENT ONLY: (afterwards still needs rebuild&restart from admin panel) */}}
+{{/*            - mountPath: /usr/src/app/local-plugins*/}}
+{{/*              name: plugins*/}}
+{{/*          lifecycle:*/}}
+{{/*            postStart:*/}}
+{{/*              exec:*/}}
+{{/*                command: [npm i -f --prefix /usr/src/app/local-plugins/sso-faforever && npm i /usr/src/app/local-plugins/sso-faforever]*/}}
       restartPolicy: Always
       volumes:
         - name: config
@@ -57,5 +68,7 @@ spec:
         - name: nodebb
           persistentVolumeClaim:
             claimName: nodebb-pvc
+        - name: plugins
+          emptyDir: {}
       securityContext:
-        fsGroup: 1000
+        fsGroup: 1001
