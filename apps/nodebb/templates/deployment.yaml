@@ -18,24 +18,18 @@ spec:
       initContainers:
         - name: permission-init
           image: alpine:3.16.0
-          command:
-            - sh
-            - -c
-            - chown -R 1000:1000 /data/* && chmod 775 /data/* && ls -lah /data
           volumeMounts:
-            - mountPath: /data/node_modules
-              name: nodebb
-              subPath: node_modules
-            - mountPath: /data/build
-              name: nodebb
-              subPath: build
             - mountPath: /data/uploads
               name: nodebb
               subPath: uploads
       containers:
-        - image: nodebb/docker:1.19.12
+        - image: ghcr.io/nodebb/nodebb:3.10.3
           imagePullPolicy: Always
           name: nodebb
+          command:
+            - sh
+            - -c
+            - sleep 10000
           volumeMounts:
             - mountPath: /usr/src/app/config.json
               name: config
@@ -58,4 +52,4 @@ spec:
           persistentVolumeClaim:
             claimName: nodebb-pvc
       securityContext:
-        fsGroup: 1000
+        fsGroup: 1001
