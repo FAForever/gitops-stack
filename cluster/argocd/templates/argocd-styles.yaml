@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-styles-cm
+data:
+  production-theme.css: |
+    .sidebar {
+      background: linear-gradient(to bottom, #660f0f, #100403);
+    }
+
+    .ui-banner {
+      background: linear-gradient(to right, #660f0f, #100403);
+      color: #fff;
+    }
+
+  test-theme.css: |
+    .sidebar {
+      background: linear-gradient(to bottom, #0f660f, #100403);
+    }
+
+    .ui-banner {
+      background: linear-gradient(to right, #0f660f, #100403);
+      color: #fff;
+    }
