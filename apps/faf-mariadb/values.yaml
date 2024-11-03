@@ -1,0 +1,2 @@
+# placeholder for .Values.mariadb.hostName
+mariadb: {}
