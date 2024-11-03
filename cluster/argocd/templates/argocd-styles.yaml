@@ -23,3 +23,13 @@ data:
       background: linear-gradient(to right, #0f660f, #100403);
       color: #fff;
     }
+
+  another-theme.css: |
+    .sidebar {
+      background: linear-gradient(to bottom, #0f660f, #100403);
+    }
+
+    .ui-banner {
+      background: linear-gradient(to right, #0f660f, #100403);
+      color: #fff;
+    }
