@@ -5,7 +5,7 @@ metadata:
     app: faf-website
   name: faf-website
 spec:
-  replicas: 1
+  replicas: 0
   revisionHistoryLimit: 10
   selector:
     matchLabels:
