@@ -24,8 +24,9 @@ argo-cd:
 
       # Custom theme
       ui.cssurl: "./custom/test-theme.css"
-      # ui.bannercontent: "Production FAF cluster. Be careful."
-      # ui.bannerpermanent: true
+      ui.bannercontent: "Test FAF cluster. Be careful."
+      ui.bannerpermanent: true
+      ui.bannerposition: "top"
 
       dex.config: |
         connectors:
