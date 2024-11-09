@@ -50,5 +50,6 @@ create_user_and_db() {
 }
 
 create_user_and_db faf-apps wikijs DB_USER DB_PASS DB_NAME
+create_user_and_db faf-apps ory-hydra2 DB_USER DB_PASSWORD DB_NAME
 
 echo "All users and databases have been processed."
