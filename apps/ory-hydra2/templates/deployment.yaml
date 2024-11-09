@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ory-hydra2
+  namespace: faf-apps
+  labels:
+    app: ory-hydra2
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: ory-hydra2
+  template:
+    metadata:
+      labels:
+        app: ory-hydra2
+      annotations:
+        prometheus.io/scrape: 'false'
+    spec:
+      containers:
+        - image: oryd/hydra:v2.2.0
+          imagePullPolicy: Always
+          name: ory-hydra2
+          envFrom:
+            - configMapRef:
+                name: ory-hydra2
+            - secretRef:
+                name: ory-hydra2
+          ports:
+            - containerPort: 4444
+            - containerPort: 4445
+      restartPolicy: Always
