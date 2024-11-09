@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ory-hydra2
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`login.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: ory-hydra2
+          port: 4444
