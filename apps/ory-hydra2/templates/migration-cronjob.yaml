@@ -1,0 +1,35 @@
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: ory-hydra2-migration
+  namespace: faf-apps
+  labels:
+    app: ory-hydra-migration
+spec:
+  # Disabled because triggered manually
+  schedule: "0 0 31 2 *"
+  suspend: true
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app: ory-hydra2-migration
+      annotations:
+        prometheus.io/scrape: 'false'
+    spec:
+      template:
+        spec:
+          containers:
+            - image: oryd/hydra:v2.2.0
+              imagePullPolicy: Always
+              name: ory-hydra
+              envFrom:
+                - configMapRef:
+                    name: ory-hydra2
+                - secretRef:
+                    name: ory-hydra2
+              ports:
+                - containerPort: 4444
+                - containerPort: 4445
+              args: [ "migrate", "sql", "--read-from-env", "--yes"]
+          restartPolicy: Never
