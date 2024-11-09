@@ -1,0 +1,7 @@
+apiVersion: v2
+name: telepresence
+version: 1.0.0
+dependencies:
+  - name: telepresence-oss
+    version: 2.21.3
+    repository: oci://ghcr.io/telepresenceio
