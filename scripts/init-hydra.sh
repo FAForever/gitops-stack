@@ -41,15 +41,9 @@ client_create() {
   fi
 }
 
-client_create postman \
-  --secret="banana" \
-  --grant-type="authorization_code,refresh_token" \
-  --response-type="code,id_token" \
-  --scope="openid,email,offline" \
-  --redirect-uri="http://127.0.0.1" \
-  --token-endpoint-auth-method="none"
-
-client_create "FAF Client" \
+client_create \
+  --name "FAF Client" \
+  --id "2e8808cf-5889-469b-b2c3-01f0cc58c4af" \
   --grant-type="authorization_code,refresh_token" \
   --scope="openid,email,offline,public_profile,lobby,upload_map,upload_mod" \
   --redirect-uri="http://127.0.0.1" \
@@ -58,7 +52,9 @@ client_create "FAF Client" \
   --policy-uri="https://faforever.com/privacy" \
   --token-endpoint-auth-method="none"
 
-client_create "FAF Moderator Client" \
+client_create \
+  --name "FAF Moderator Client" \
+  --id "8ff5c14f-60e2-41b9-b594-a641dc5013be" \
   --grant-type="authorization_code" \
   --scope="openid,public_profile,upload_avatar,administrative_actions,read_sensible_userdata,manage_vault" \
   --redirect-uri="http://localhost,http://localhost:8080/,http://127.0.0.1" \
@@ -68,7 +64,9 @@ client_create "FAF Moderator Client" \
   --client-uri="https://github.com/FAForever/faf-moderator-client" \
   --token-endpoint-auth-method="none"
 
-client_create "FAF Classic Client (Python)" \
+client_create \
+  --name "FAF Classic Client" \
+  --id "95ecec08-29c1-4c48-ae0a-b000ff349cb8" \
   --grant-type="authorization_code,refresh_token" \
   --scope="openid,offline,lobby,public_profile" \
   --redirect-uri="http://localhost,http://127.0.0.1" \
@@ -78,7 +76,9 @@ client_create "FAF Classic Client (Python)" \
   --client-uri="https://github.com/FAForever/faf-moderator-client" \
   --token-endpoint-auth-method="none"
 
-client_create "Ethereal FAF client" \
+client_create \
+  --name "Ethereal FAF client" \
+  --id "b05039ed-e2ab-4fb6-8a7f-e6ecdcc2edcd" \
   --grant-type="authorization_code,refresh_token" \
   --scope="openid,offline,public_profile,lobby,upload_map,upload_mod" \
   --redirect-uri="http://localhost,http://localhost:57728,http://localhost:59573,http://localhost:58256,http://localhost:53037,http://localhost:51360" \
@@ -87,7 +87,9 @@ client_create "Ethereal FAF client" \
   --token-endpoint-auth-method="none"
 
 check_resource_exists_or_fail secret faf-website
-client_create "www.faforever.com" \
+client_create \
+  --name "www.faforever.com" \
+  --id "c5613672-0ee5-4956-8b03-c7951ef25640" \
   --secret="$(get_secret_value faf-website OAUTH_CLIENT_SECRET)" \
   --skip-consent \
   --grant-type="authorization_code,refresh_token" \
@@ -99,14 +101,18 @@ client_create "www.faforever.com" \
   --client-uri="https://github.com/FAForever/faf-moderator-client" \
   --token-endpoint-auth-method="client_secret_post"
 
-client_create "faf-website-public" \
+client_create \
+  --name "faf-website-public" \
+  --id "" \
   --secret="$(get_secret_value faf-website OAUTH_M2M_CLIENT_SECRET)" \
   --grant-type="client_credentials" \
   --scope="public_profile" \
   --token-endpoint-auth-method="client_secret_post"
 
 check_resource_exists_or_fail secret faf-voting
-client_create "voting.faforever.com" \
+client_create \
+  --name "voting.faforever.com" \
+  --id "e3dfa9e8-93ad-4593-8b3c-900005439354" \
   --secret="$(get_secret_value faf-voting CLIENT_SECRET)" \
   --skip-consent \
   --grant-type="authorization_code" \
@@ -118,7 +124,9 @@ client_create "voting.faforever.com" \
   --token-endpoint-auth-method="client_secret_post"
 
 check_resource_exists_or_fail secret nodebb
-client_create "forum.faforever.com" \
+client_create \
+  --name "forum.faforever.com" \
+  --id "97853a31-d7fc-424b-a4c2-f8cd053d10d2" \
   --secret="$(get_secret_value nodebb OAUTH_SECRET)" \
   --skip-consent \
   --grant-type="authorization_code,refresh_token" \
@@ -129,14 +137,18 @@ client_create "forum.faforever.com" \
   --policy-uri="https://faforever.com/privacy" \
   --token-endpoint-auth-method="client_secret_post"
 
-client_create "brackman-discord" \
+client_create \
+  --name "brackman-discord" \
+  --id "fbdc5ce5-9888-4ace-8ccc-378fbcb18992" \
   --secret="banana" \
   --grant-type="client_credentials" \
   --scope="public_profile" \
   --token-endpoint-auth-method="client_secret_post" \
   --owner="Paul Wayper"
 
-client_create "faf-qai" \
+client_create \
+  --name "faf-qai" \
+  --id "5eecb64d-0f67-4a72-ac2b-717b8c7efa98" \
   --secret="banana" \
   --grant-type="client_credentials" \
   --scope="public_profile" \
