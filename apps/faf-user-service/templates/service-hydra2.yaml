@@ -1,0 +1,13 @@
+# This is for temporary running Ory Hydra 1.10 and 2.x in parallel.
+apiVersion: v1
+kind: Service
+metadata:
+  name: faf-user-service-hydra2
+  labels:
+    app: faf-user-service-hydra2
+spec:
+  selector:
+    app: faf-user-service-hydra2
+  ports:
+    - port: 8080
+      targetPort: 8080
