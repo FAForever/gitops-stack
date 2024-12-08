@@ -11,7 +11,7 @@ victoria-metrics-k8s-stack:
     operator:
       disable_prometheus_converter: false
       prometheus_converter_add_argocd_ignore_annotations: true
-  
+
   vmagent:
     spec:
       extraArgs:
@@ -23,6 +23,11 @@ victoria-metrics-k8s-stack:
         test: test
 
   grafana:
+    # Disable sidecar installing default dashboards to allow custom dashboards
+    # https://docs.victoriametrics.com/helm/victoriametrics-k8s-stack/#adding-external-dashboards
+    sidecar:
+      dashboards:
+        enabled: false
 
     # Disable lots of useless warnings on old dashboards that pull the "wrong" graphing applet
     # Grafana automatically converts them to the new format, so why complain?
