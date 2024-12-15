@@ -17,7 +17,7 @@ spec:
         app: mongodb
     spec:
       containers:
-        - image: mongo:7.0.15
+        - image: mongo:8.0.4
           imagePullPolicy: Always
           name: mongodb
           ports:
