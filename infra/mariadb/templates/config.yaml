@@ -5,7 +5,7 @@ metadata:
   labels:
     app: mariadb
 data:
-  "mysql.cnf": |-
+  "mysqld-custom.cnf": |-
     [mariadb]
     innodb_buffer_pool_instances = 4
     innodb_buffer_pool_size      = 16G
