@@ -32,6 +32,8 @@ spec:
           ports:
             - name: replay-stream
               containerPort: 15000
+            - name: prometheus
+              containerPort: 8011
           volumeMounts:
             - name: config
               mountPath: /config/config.yaml
