@@ -1,29 +1,29 @@
-# Our modified 
+# Our modified
 
 apiVersion: operator.victoriametrics.com/v1beta1
-kind: VMServiceScrape
+kind: VMPodScrape
 metadata:
   name: annotations-discovery
 spec:
-  discoveryRole: service
-  endpoints:
-    - port: http-metrics
-      relabelConfigs:
+  namespaceSelector:
+    any: true
+  podMetricsEndpoints:
+    - relabelConfigs:
         # Check if scrape is enabled
-        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           action: keep
           regex: "true"
         # Match container port with port from annotation
         - action: keep_if_equal
-          source_labels: [__meta_kubernetes_service_annotation_prometheus_io_port, __meta_kubernetes_service_container_port_number]
+          source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port, __meta_kubernetes_pod_container_port_number]
         # Set scrape path
-        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
           action: replace
           target_label: __metrics_path__
           regex: (.+)
         # Set port to address
         - source_labels:
-            [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+            [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
           action: replace
           regex: ([^:]+)(?::\d+)?;(\d+)
           replacement: $1:$2
@@ -32,6 +32,3 @@ spec:
         - source_labels: [__meta_kubernetes_namespace]
           target_label: namespace
 
-  namespaceSelector:
-    any: true
-  selector: {}
