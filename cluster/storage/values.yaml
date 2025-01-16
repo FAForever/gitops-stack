@@ -88,3 +88,8 @@ managedStorages:
       size: 1Gi
     pvc:
       namespace: faf-apps
+  - pv:
+      name: grafana
+      size: 1Gi
+    pvc:
+      namespace: faf-ops
