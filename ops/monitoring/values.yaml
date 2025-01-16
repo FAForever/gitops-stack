@@ -23,6 +23,16 @@ victoria-metrics-k8s-stack:
         test: test
 
   grafana:
+    # Inject env specific values
+    envFromConfigMaps:
+     - name: grafana
+    # Inject Github OAuth credentials
+    envFromSecret: grafana
+
+    persistence:
+      enabled: true
+      existingClaim: grafana-pvc
+
     # Disable sidecar installing default dashboards to allow custom dashboards
     # https://docs.victoriametrics.com/helm/victoriametrics-k8s-stack/#adding-external-dashboards
     sidecar:
