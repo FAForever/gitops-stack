@@ -17,7 +17,7 @@ spec:
         app: postgres
     spec:
       containers:
-        - image: postgres:16.6-alpine3.20
+        - image: postgres:17.2-alpine3.20
           imagePullPolicy: Always
           name: postgres
           ports:
