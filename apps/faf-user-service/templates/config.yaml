@@ -6,6 +6,7 @@ metadata:
     app: faf-user-service
 data:
   # Only for testing environments
+  SELF_URL: "https://user.{{.Values.baseDomain}}"
   FAF_ENVIRONMENT: {{ eq .Values.environment "prod" | ternary "" .Values.environment }}
   REAL_IP_HEADER: "Cf-Connecting-Ip"
   PASSWORD_RESET_URL: "https://www.{{.Values.baseDomain}}/account/password/reset"
