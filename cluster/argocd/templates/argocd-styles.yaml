@@ -11,10 +11,7 @@ data:
 
     .ui-banner {
       background: linear-gradient(to right, #660f0f, #100403);
-    }
-
-    .ui-banner a {
-        color: white;
+      color: white;
     }
 
   test-theme.css: |
@@ -24,10 +21,7 @@ data:
 
     .ui-banner {
       background: linear-gradient(to right, #0f660f, #100403);
-    }
-
-    .ui-banner a {
-        color: white;
+      color: white;
     }
 
   another-theme.css: |
