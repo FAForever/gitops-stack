@@ -16,8 +16,24 @@ spec:
       labels:
         app: postgres
     spec:
+      initContainers:
+        - image: pgautoupgrade/pgautoupgrade:17-bookworm
+          name: upgrade-postgres
+          env:
+            - name: PGAUTO_ONESHOT
+              value: "yes"
+            # - name: POSTGRES_PASSWORD
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: postgres
+            #       key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: postgres-pvc
+              mountPath: /var/lib/postgresql/data/
+
+      restartPolicy: Always
       containers:
-        - image: postgres:16.4-alpine3.20
+        - image: postgres:17.2-alpine3.20
           imagePullPolicy: Always
           name: postgres
           ports:
@@ -31,7 +47,7 @@ spec:
           volumeMounts:
             - name: postgres-pvc
               mountPath: /var/lib/postgresql/data
-      restartPolicy: Always
+
       volumes:
         - name: config
           configMap:
