@@ -1,5 +1,4 @@
 traefik:
-
   deployment:
     enabled: true
     kind: DaemonSet
@@ -16,9 +15,9 @@ traefik:
   #   mountPath: /var/run/docker.sock
 
   additionalArguments:
-  # - "--providers.docker=true"
-  # - "--providers.docker.exposedByDefault=false"
-  - "--entrypoints.websecure.http.encodequerysemicolons=true"
+    # - "--providers.docker=true"
+    # - "--providers.docker.exposedByDefault=false"
+    - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
   updateStrategy:
     type: OnDelete
@@ -27,13 +26,13 @@ traefik:
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/name
-            operator: In
-            values:
-            - traefik
-        topologyKey: kubernetes.io/hostname
+        - labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - traefik
+          topologyKey: kubernetes.io/hostname
 
   ports:
     metrics:
@@ -42,11 +41,15 @@ traefik:
       port: 9101
     web:
       port: 80
-      redirectTo.port: websecure
-      
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
     websecure:
       port: 443
-      
+
       # New setup behind proxy
       # proxyProtocol:
       #   trustedIPs:

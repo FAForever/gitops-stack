@@ -1,5 +1,4 @@
 traefik:
-
   deployment:
     enabled: true
     kind: DaemonSet
@@ -33,7 +32,11 @@ traefik:
       port: 9101
     web:
       port: 80
-      redirectTo.port: websecure
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
     websecure:
       port: 443
       transport:
