@@ -11,3 +11,5 @@ data:
 {{ tpl (.Files.Get "mail/password-reset.html") . | indent 4 }}
   "welcome-to-faf.html": |-
 {{ tpl (.Files.Get "mail/welcome-to-faf.html") . | indent 4 }}
+  "email-taken.html": |-
+{{ tpl (.Files.Get "mail/email-taken.html") . | indent 4 }}
