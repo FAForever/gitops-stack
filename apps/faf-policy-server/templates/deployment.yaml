@@ -28,7 +28,7 @@ spec:
             - mountPath: /app/verifier
               name: uid-verifier
       containers:
-        - image: faforever/faf-policy-server:v1.22
+        - image: faforever/faf-policy-server:v1.23
           imagePullPolicy: Always
           name: faf-policy-server
           envFrom:
@@ -41,6 +41,14 @@ spec:
           volumeMounts:
             - mountPath: /app/verifier
               name: uid-verifier
+          livenessProbe:
+            httpGet:
+              path: /health/alive
+              port: 8097
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8097
       volumes:
         - name: uid-verifier
           emptyDir: {}
