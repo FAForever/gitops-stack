@@ -189,8 +189,8 @@
                       <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                         <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">
                           <h1>Account exists notice</h1>
-                          <p>Dear {{existingUsername}},</p>
-                          <p>We noticed someone tried to register an account with the username "{{desiredUsername}}" using your email address. However, your email is already associated with an existing account. </p>
+                          <p>Dear {{`{{existingUsername}}`}},</p>
+                          <p>We noticed someone tried to register an account with the username "{{`{{desiredUsername}}`}}" using your email address. However, your email is already associated with an existing account. </p>
                         </div>
                       </td>
                     </tr>
@@ -227,7 +227,7 @@
                           <tbody>
                             <tr>
                               <td align="center" bgcolor="#414141" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:#414141;" valign="middle">
-                                <a href="{{passwordResetUrl}}" style="display:inline-block;background:#414141;color:#ffffff;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank"> Reset Password </a>
+                                <a href="{{`{{passwordResetUrl}}`}}" style="display:inline-block;background:#414141;color:#ffffff;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank"> Reset Password </a>
                               </td>
                             </tr>
                           </tbody>
@@ -338,7 +338,7 @@
                       <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                         <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:gray;">
                           <p>If the button above doesn't work, you can enter the following URL manually in your browser: </p>
-                          <p>{{passwordResetUrl}}</p>
+                          <p>{{`{{passwordResetUrl}}`}}</p>
                         </div>
                       </td>
                     </tr>
