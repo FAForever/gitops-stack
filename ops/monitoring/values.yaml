@@ -129,6 +129,9 @@ loki:
       retention_delete_worker_count: 16
       delete_request_store: filesystem
 
+    limits_config:
+      retention_period: 168h
+
   # We know it's working
   test:
     enabled: false
