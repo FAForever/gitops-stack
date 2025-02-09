@@ -37,7 +37,7 @@ spec:
             - mountPath: /data/plugins
               name: plugins
       containers:
-        - image: ghcr.io/nodebb/nodebb:3.12.3
+        - image: ghcr.io/nodebb/nodebb:3.12.4
           imagePullPolicy: Always
           name: nodebb
           volumeMounts:
