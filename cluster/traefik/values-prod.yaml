@@ -1,6 +1,6 @@
 traefik:
   deployment:
-    enabled: false
+    enabled: true
     kind: DaemonSet
 
   additionalArguments:
