@@ -50,7 +50,7 @@ spec:
   generators:
   - git:
       repoURL: https://github.com/FAForever/gitops-stack.git
-      revision: HEAD
+      revision: main
       directories:
       - path: 'cluster/*'
   template:
