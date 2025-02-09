@@ -30,7 +30,7 @@ spec:
         - ServerSideApply=true
       sources:
       - repoURL: https://github.com/FAForever/gitops-stack.git
-        targetRevision: HEAD
+        targetRevision: main
         path: '{{path}}'
         helm:
           ignoreMissingValueFiles: true
@@ -69,7 +69,7 @@ spec:
         - ServerSideApply=true
       sources:
       - repoURL: https://github.com/FAForever/gitops-stack.git
-        targetRevision: HEAD
+        targetRevision: main
         path: '{{path}}'
         helm:
           ignoreMissingValueFiles: true
