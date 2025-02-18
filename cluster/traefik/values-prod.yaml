@@ -1,7 +1,7 @@
 traefik:
   deployment:
     enabled: true
-    kind: DaemonSet
+    kind: Deployment
 
   additionalArguments:
     - "--entrypoints.websecure.http.encodequerysemicolons=true"
