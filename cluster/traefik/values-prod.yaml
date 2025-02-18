@@ -28,15 +28,12 @@ traefik:
       # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
       port: 9101
     web:
-      port: 8080
       redirections:
         entryPoint:
           to: websecure
           scheme: https
           permanent: true
     websecure:
-      port: 8443
-
       # New setup behind proxy
       proxyProtocol:
         trustedIPs:
