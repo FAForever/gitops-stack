@@ -1,13 +1,12 @@
 traefik:
   deployment:
     enabled: true
-    kind: Deployment
 
   additionalArguments:
     - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
   updateStrategy:
-    type: OnDelete
+    type: Recreate
 
   hostNetwork: true
   dnsPolicy: ClusterFirstWithHostNet
