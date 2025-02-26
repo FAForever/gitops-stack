@@ -1,0 +1,254 @@
+{
+	"info": {
+		"_postman_id": "eb13dca2-9fe4-4768-bd86-d3aad8d7f833",
+		"name": "FAF-Stack Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "website",
+			"item": [
+				{
+					"name": "main website",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9c524ab4-9a1d-427a-88e7-3085f1025c33",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Forged Alliance Forever\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{website-url}}",
+							"host": [
+								"{{website-url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "register (fail - username in use)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5b42d51e-5a51-4785-a3d1-cd5e8a461e2f",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"The entered username is already in use: test\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "test",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "test@test.test",
+									"type": "text"
+								},
+								{
+									"key": "tosagree",
+									"value": "on",
+									"type": "text"
+								},
+								{
+									"key": "privacyagree",
+									"value": "on",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{website-url}}/account/register",
+							"host": [
+								"{{website-url}}"
+							],
+							"path": [
+								"account",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "confirm registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b76596b6-8676-43c3-a807-ff84f9c5420a",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Your account was created successfully\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "password",
+									"value": "new_password",
+									"type": "text"
+								},
+								{
+									"key": "password_confirm",
+									"value": "new_password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{website-url}}/account/activate?username=new_user&token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJsaWZldGltZSI6IjIwNTAtMTItMzFUMTk6MzY6MTguMjIzWiIsImFjdGlvbiI6IlJFR0lTVFJBVElPTiIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImVtYWlsIjoibmV3QHVzZXIuZW1haWwiLCJ1c2VybmFtZSI6Im5ld191c2VyIn0.A0Ue-8XfE6xVwvzi6rgtg1wV7RmScXF-7XBEJ8ofbpgviPs6FvEBPh9pxTBsYB1VHRLgMi443N3UKBBUzz50xLo00-uelWbaVgZuVsF6hQECfI5nLh1DdePmHLNUmwISkymAn6tPq-4TYsCJGOG4Ofg_gAV-AKrKPKTpONU3XlcksYXQgXu24hAislShGdTM_jVmBSW3e2g9Ca1x24j1sYsGqLyOzfd-U3bzYee3QvQIDpyAycJZCC-e2Zj020SZ_cyWK7WvEVXb5KGzIl0x9tor134Tsw_0aTBqeAcjDtKydnxDCLV0EYBpbN_yGWBlXIuxfF3ivutDGWfrwqOH-g",
+							"host": [
+								"{{website-url}}"
+							],
+							"path": [
+								"account",
+								"activate"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "new_user"
+								},
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJsaWZldGltZSI6IjIwNTAtMTItMzFUMTk6MzY6MTguMjIzWiIsImFjdGlvbiI6IlJFR0lTVFJBVElPTiIsInBhc3N3b3JkIjoiOGQ5NjllZWY2ZWNhZDNjMjlhM2E2MjkyODBlNjg2Y2YwYzNmNWQ1YTg2YWZmM2NhMTIwMjBjOTIzYWRjNmM5MiIsImVtYWlsIjoibmV3QHVzZXIuZW1haWwiLCJ1c2VybmFtZSI6Im5ld191c2VyIn0.A0Ue-8XfE6xVwvzi6rgtg1wV7RmScXF-7XBEJ8ofbpgviPs6FvEBPh9pxTBsYB1VHRLgMi443N3UKBBUzz50xLo00-uelWbaVgZuVsF6hQECfI5nLh1DdePmHLNUmwISkymAn6tPq-4TYsCJGOG4Ofg_gAV-AKrKPKTpONU3XlcksYXQgXu24hAislShGdTM_jVmBSW3e2g9Ca1x24j1sYsGqLyOzfd-U3bzYee3QvQIDpyAycJZCC-e2Zj020SZ_cyWK7WvEVXb5KGzIl0x9tor134Tsw_0aTBqeAcjDtKydnxDCLV0EYBpbN_yGWBlXIuxfF3ivutDGWfrwqOH-g"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "api",
+			"item": [
+				{
+					"name": "main api page (swagger)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "90041ffc-4c75-434e-a36c-21b79684fc61",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Swagger UI\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api-url}}",
+							"host": [
+								"{{api-url}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "7c9450d1-de20-4bf0-9bce-2b6672946e9e",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "90e0e0f8-43b6-4b37-a68c-c048d21031c9",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "32a56849-43f4-437e-9671-c7d5658a4034",
+			"key": "website-url",
+			"value": "http://localhost:8020",
+			"type": "string"
+		},
+		{
+			"id": "b05b095e-aadd-4d26-b483-864f1e87d9d9",
+			"key": "api-url",
+			"value": "http://localhost:8010",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
