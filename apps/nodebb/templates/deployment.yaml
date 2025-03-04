@@ -53,13 +53,16 @@ spec:
             - mountPath: /usr/src/app/public/uploads
               name: nodebb
               subPath: uploads
-{{/*          FOR SSO PLUGIN DEVELOPMENT ONLY: (afterwards still needs rebuild&restart from admin panel) */}}
-{{/*            - mountPath: /usr/src/app/local-plugins*/}}
-{{/*              name: plugins*/}}
-{{/*          lifecycle:*/}}
-{{/*            postStart:*/}}
-{{/*              exec:*/}}
-{{/*                command: [npm i -f --prefix /usr/src/app/local-plugins/sso-faforever && npm i /usr/src/app/local-plugins/sso-faforever]*/}}
+          env:
+            - name: FORCE_BUILD_BEFORE_START
+              value: "true"
+          command:
+            - /bin/sh
+          args:
+            - -c
+            - |
+              npm install nodebb-plugin-sso-oauth-faforever && \
+              exec tini -- entrypoint.sh
       restartPolicy: Always
       volumes:
         - name: config
