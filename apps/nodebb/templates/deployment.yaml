@@ -53,14 +53,13 @@ spec:
             - mountPath: /usr/src/app/public/uploads
               name: nodebb
               subPath: uploads
-          command:
-            - /bin/sh
-          args:
-            - -c
-            - |
-              npm install sso-faforever && \
-              chown -R 1001:1001 /usr/src/app && \
-              tini -- exec /entrypoint.sh
+{{/*          FOR SSO PLUGIN DEVELOPMENT ONLY: (afterwards still needs rebuild&restart from admin panel) */}}
+{{/*            - mountPath: /usr/src/app/local-plugins*/}}
+{{/*              name: plugins*/}}
+{{/*          lifecycle:*/}}
+{{/*            postStart:*/}}
+{{/*              exec:*/}}
+{{/*                command: [npm i -f --prefix /usr/src/app/local-plugins/sso-faforever && npm i /usr/src/app/local-plugins/sso-faforever]*/}}
       restartPolicy: Always
       volumes:
         - name: config
