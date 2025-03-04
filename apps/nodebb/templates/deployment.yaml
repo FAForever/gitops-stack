@@ -58,8 +58,7 @@ spec:
           args:
             - -c
             - |
-              npm install sso-faforever && \
-              chown -R 1001:1001 /usr/src/app && \
+              npm install nodebb-plugin-sso-oauth-faforever && \
               tini -- exec /entrypoint.sh
       restartPolicy: Always
       volumes:
