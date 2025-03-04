@@ -53,6 +53,9 @@ spec:
             - mountPath: /usr/src/app/public/uploads
               name: nodebb
               subPath: uploads
+          env:
+            - name: FORCE_BUILD_BEFORE_START
+              value: "true"
           command:
             - /bin/sh
           args:
