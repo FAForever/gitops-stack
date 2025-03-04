@@ -59,7 +59,7 @@ spec:
             - -c
             - |
               npm install nodebb-plugin-sso-oauth-faforever && \
-              exec tini -- exec /entrypoint.sh
+              exec tini -- entrypoint.sh
       restartPolicy: Always
       volumes:
         - name: config
