@@ -32,7 +32,7 @@ spec:
             - name: geolite-db
               mountPath: /usr/share/GeoIP
       containers:
-        - image: faforever/faf-icebreaker:1.0.15
+        - image: faforever/faf-icebreaker:1.1.0
           imagePullPolicy: Always
           name: faf-icebreaker
           envFrom:
