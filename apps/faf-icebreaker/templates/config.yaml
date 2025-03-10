@@ -10,7 +10,7 @@ data:
   SELF_URL: "https://ice.{{.Values.baseDomain}}"
   DB_USERNAME: "faf-icebreaker"
   DB_URL: "jdbc:mariadb://mariadb:3306/faf-icebreaker?ssl=false"
-  CLOUDFLARE_ENABLED: "true"
+  CLOUDFLARE_ENABLED: "false"
   XIRSYS_ENABLED: "true"
   XIRSYS_TURN_ENABLED: "true"
   GEOIPUPDATE_EDITION_IDS: "GeoLite2-City"
