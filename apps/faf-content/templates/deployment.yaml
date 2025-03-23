@@ -30,8 +30,6 @@ spec:
             - name: faf-replays-pvc
               mountPath: /data/replays
               readOnly: true
-            - name: faf-replays-old-pvc
-              mountPath: /data/replays-old
             - name: faf-maps-pvc
               mountPath: /data/maps
               readOnly: true
@@ -68,9 +66,6 @@ spec:
           persistentVolumeClaim:
             claimName: faf-replays-pvc
             readOnly: true
-        - name: faf-replays-old-pvc
-          persistentVolumeClaim:
-            claimName: faf-replays-old-pvc
         - name: faf-maps-pvc
           persistentVolumeClaim:
             claimName: faf-maps-pvc
