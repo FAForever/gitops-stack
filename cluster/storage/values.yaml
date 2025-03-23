@@ -25,6 +25,12 @@ managedStorages:
     pvc:
       namespace: faf-apps
   - pv:
+      name: faf-replays-old
+      folderName: replays-old
+      size: 500Gi
+    pvc:
+      namespace: faf-apps
+  - pv:
       name: faf-maps
       folderName: maps
       size: 200Gi
