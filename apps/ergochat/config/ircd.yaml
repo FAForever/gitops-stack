@@ -611,7 +611,7 @@ accounts:
     command: "/ircd/auth.sh"
     # constant list of args to pass to the command; the actual authentication
     # data is transmitted over stdin/stdout:
-    args: ["https://user.{{ .Values.baseDomain }}/irc/ergochat/login"]
+    args: ["http://faf-user-service:8080/irc/ergochat/login"]
     # should we automatically create users if the plugin returns success?
     autocreate: true
     # timeout for process execution, after which we send a SIGTERM:
