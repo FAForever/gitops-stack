@@ -62,13 +62,13 @@ spec:
             failureThreshold: 2
             periodSeconds: 60
             timeoutSeconds: 5
-          readinessProbe:
-            httpGet:
-              port: management-port
-              path: /actuator/health
-            failureThreshold: 5
-            periodSeconds: 10
-            timeoutSeconds: 5
+          # readinessProbe:
+          #   httpGet:
+          #     port: management-port
+          #     path: /actuator/health
+          #   failureThreshold: 5
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
       restartPolicy: Always
       volumes:
         - name: faf-api-pki
