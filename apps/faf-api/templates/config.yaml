@@ -5,6 +5,9 @@ metadata:
   labels:
     app: faf-api
 data:
+  # MailJet healtcheck fails non-stop
+  MANAGEMENT_HEALTH_MAIL_ENABLED: false
+
   FAF_DOMAIN: "{{.Values.baseDomain}}"
   JAVA_TOOL_OPTIONS: "-Xms1024m -Xmx4096m -XX:+HeapDumpOnOutOfMemoryError"
 
