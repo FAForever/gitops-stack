@@ -16,7 +16,7 @@ spec:
         app: faf-ws-bridge
     spec:
       containers:
-        - image: faforever/ws_bridge_rs:0.1.4
+        - image: faforever/ws_bridge_rs:0.1.5
           args:
             - "ws_to_tcp"
             - "-vvv"
