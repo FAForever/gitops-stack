@@ -20,7 +20,7 @@ spec:
         prometheus.io/scrape: 'false'
     spec:
       containers:
-        - image: faforever/faf-league-service:1.6.1
+        - image: faforever/faf-league-service:1.6.2
           imagePullPolicy: Always
           name: faf-league-service
           envFrom:
