@@ -63,10 +63,11 @@ traefik:
 
     replay-stream:
       port: 15000
-    irc-plain:
-      port: 6667
-    irc-tls:
-      port: 6697
+      proxyProtocol:
+        trustedIPs:
+          - "10.0.0.0/8"
+          - "167.235.217.62/32"
+
 
   # HostNetwork
   service:
@@ -79,4 +80,4 @@ traefik:
       # format: json
       # By default, the level is set to ERROR.
       # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-      level: ERROR
+      level: WARN
