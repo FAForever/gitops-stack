@@ -10,3 +10,17 @@ spec:
       services:
         - name: faf-replay-server
           port: 15000
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-replay-server
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`replay-ws.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-replay-server
+          port: 15001
