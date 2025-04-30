@@ -1,6 +1,7 @@
 # See faf-rust-replayserver repository, docs/usage.rst for documentation.
 server:
   port: 15000
+  websocket_port: 15001
   prometheus_port: 8011
   worker_threads: 4
   connection_accept_timeout_s: 21600
