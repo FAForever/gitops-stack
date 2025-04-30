@@ -11,3 +11,6 @@ spec:
     - name: replay-stream
       port: 15000
       targetPort: 15000
+    - name: ws-replay-stream
+      port: 15001
+      targetPort: 15001
