@@ -15,7 +15,7 @@ spec:
           serversTransport: argocd-server-transport
 
     - kind: Rule
-      match: Host(`argocd.{{.Values.baseDomain}}`) && Headers(`Content-Type`, `application/grpc`)
+      match: Host(`argocd.{{.Values.baseDomain}}`) && Header(`Content-Type`, `application/grpc`)
       priority: 11
       services:
         - name: argocd-server
