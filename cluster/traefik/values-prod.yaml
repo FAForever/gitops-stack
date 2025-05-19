@@ -63,12 +63,12 @@ traefik:
           - "172.64.0.0/13"
           - "131.0.72.0/22"
 
-    # replay-stream:
-    #   port: 15000
-    #   proxyProtocol:
-    #     trustedIPs:
-    #       - "10.0.0.0/8"
-    #       - "167.235.217.62/32"
+    replay-stream:
+      port: 15000
+      proxyProtocol:
+        trustedIPs:
+          - "10.0.0.0/8"
+          - "167.235.217.62/32"
 
 
   # HostNetwork
