@@ -26,12 +26,14 @@ traefik:
       # When using hostNetwork, use another port to avoid conflict with node exporter:
       # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
       port: 9101
+
     web:
       redirections:
         entryPoint:
           to: websecure
           scheme: https
           permanent: true
+          
     websecure:
       # New setup behind proxy
       proxyProtocol:
@@ -40,7 +42,7 @@ traefik:
 
       transport:
         respondingTimeouts:
-          readTimeout: 0
+          readTimeout: 60
 
       # Trust the Cloudflare IPs found at https://www.cloudflare.com/en-in/ips/
       forwardedHeaders:
@@ -61,12 +63,12 @@ traefik:
           - "172.64.0.0/13"
           - "131.0.72.0/22"
 
-    replay-stream:
-      port: 15000
-      proxyProtocol:
-        trustedIPs:
-          - "10.0.0.0/8"
-          - "167.235.217.62/32"
+    # replay-stream:
+    #   port: 15000
+    #   proxyProtocol:
+    #     trustedIPs:
+    #       - "10.0.0.0/8"
+    #       - "167.235.217.62/32"
 
 
   # HostNetwork
@@ -80,4 +82,4 @@ traefik:
       # format: json
       # By default, the level is set to ERROR.
       # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-      level: WARN
+      level: INFO
