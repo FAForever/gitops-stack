@@ -6,7 +6,7 @@ dependencies:
   version: 0.48.1
   repository: https://victoriametrics.github.io/helm-charts/
 - name: promtail
-  version: 6.16.6
+  version: 6.17.0
   repository: https://grafana.github.io/helm-charts
 - name: loki
   version: 6.30.1
