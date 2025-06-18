@@ -12,6 +12,7 @@ data:
   JAVA_TOOL_OPTIONS: "-Xms1024m -Xmx4096m -XX:+HeapDumpOnOutOfMemoryError"
 
   # App options
+  API_PROFILE: prod
   DATABASE_ADDRESS: "mariadb"
   DATABASE_NAME: "faf_lobby"
   DATABASE_USERNAME: "faf-java-api"
