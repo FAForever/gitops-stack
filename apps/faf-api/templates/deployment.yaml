@@ -48,6 +48,10 @@ spec:
             - name: faf-content-pvc
               subPath: avatars
               mountPath: /content/avatars
+          resources:
+            limits:
+              memory: 10Gi
+              cpu: 3000m
           startupProbe:
             httpGet:
               port: management-port
