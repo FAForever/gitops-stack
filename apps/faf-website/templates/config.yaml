@@ -7,9 +7,8 @@ metadata:
 data:
   NODE_ENV: "production"
   HOST: "https://www.{{.Values.baseDomain}}"
-  API_URL: "https://api.{{.Values.baseDomain}}"
-  OAUTH_URL: "https://hydra.{{.Values.baseDomain}}"
-  WP_URL: "https://direct.{{.Values.baseDomain}}"
+  BASE_DOMAIN: "{{.Values.baseDomain}}"
+  WP_URL: "http://wordpress.faf-apps.svc.cluster.local"
 
   WP_NEWSHUB_CATEGORYID: "283"
   WP_NEWSHUBARCHIVE_CATEGORYID: "284"
