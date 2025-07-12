@@ -7,6 +7,7 @@ metadata:
 data:
   NODE_ENV: "production"
   HOST: "https://www.{{.Values.baseDomain}}"
+  API_URL: "https://api.{{.Values.baseDomain}}"
   BASE_DOMAIN: "{{.Values.baseDomain}}"
   WP_URL: "http://wordpress.faf-apps.svc.cluster.local"
 
