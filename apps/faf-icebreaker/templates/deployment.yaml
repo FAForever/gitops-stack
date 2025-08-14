@@ -22,7 +22,7 @@ spec:
     spec:
       initContainers:
         - name: geolite-db-dl
-          image: ghcr.io/maxmind/geoipupdate:v7.1.0
+          image: ghcr.io/maxmind/geoipupdate:v7.1.1
           envFrom:
             - configMapRef:
                 name: faf-icebreaker
