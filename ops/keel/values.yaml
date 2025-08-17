@@ -1,0 +1,5 @@
+keel:
+  polling:
+    # We don't want to use it by default, but enforce manual annotations per deployment
+    enabled: 0
+    defaultSchedule: "@every 10m"
