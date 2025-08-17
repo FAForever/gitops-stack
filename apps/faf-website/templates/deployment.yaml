@@ -4,6 +4,11 @@ metadata:
   labels:
     app: faf-website
   name: faf-website
+  annotations:
+    reloader.stakater.com/auto: "true"
+    keel.sh/trigger: poll
+    keel.sh/policy: force
+    keel.sh/pollSchedule: "@hourly"
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -16,7 +21,7 @@ spec:
         app: faf-website
     spec:
       containers:
-        - image: faforever/faf-website:v2.3.3
+        - image: "faforever/faf-website:{{ .Values.image.tag }}"
           imagePullPolicy: Always
           name: website
           envFrom:
