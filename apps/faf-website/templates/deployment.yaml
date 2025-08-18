@@ -6,9 +6,8 @@ metadata:
   name: faf-website
   annotations:
     reloader.stakater.com/auto: "true"
-    keel.sh/trigger: poll
+    # faf-website has webhook in dockerhub
     keel.sh/policy: force
-    keel.sh/pollSchedule: "@hourly"
 spec:
   replicas: 1
   revisionHistoryLimit: 10

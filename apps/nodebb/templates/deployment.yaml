@@ -4,6 +4,11 @@ metadata:
   labels:
     app: nodebb
   name: nodebb
+  annotations:
+    reloader.stakater.com/auto: "true"
+    keel.sh/trigger: poll
+    keel.sh/policy: force
+    keel.sh/pollSchedule: "@hourly"
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -37,7 +42,7 @@ spec:
             - mountPath: /data/plugins
               name: plugins
       containers:
-        - image: ghcr.io/nodebb/nodebb:4.4.3
+        - image: ghcr.io/nodebb/nodebb:4.4
           imagePullPolicy: Always
           name: nodebb
           volumeMounts:
