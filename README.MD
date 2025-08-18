@@ -12,6 +12,18 @@ Until things are settled the current workflow is:
 * Cherry pick working stuff on to main
 * Rebase and force push develop afterwards
 
+# Maintenance / Release management
+
+This repository and the cluster are setup to do the following:
+
+* [Keel](https://keel.sh) is used to update _mutable_ auto-update images (e.g. `nodebb:4.4` updating to 4.4.x releases)
+* [Renovate](https://www.mend.io/renovate/) is used to create PRs when image tags are outdated (for pinned versions as well as mutable versions)
+
+Especially for 3rd party apps we try to use release-line tags. For our own apps we use pinned versions for apps that require combined deployments, for other apps we might use a release branch like `main`.
+In some cases only the test cluster points to rolling-release tags, while prod uses pinned release.
+
+**Attention:** Renovate does not detect version changes if prod/dev use helm value based release tags.
+
 # Bootstrapping
 
 First, we need to make the cluster gitops-ready by installing ArgoCD:
