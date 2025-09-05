@@ -18,5 +18,5 @@ data:
   XIRSYS_TURN_ENABLED: "true"
   GEOIPUPDATE_EDITION_IDS: "GeoLite2-City"
   LOKI_BASE_URL: "http://monitoring-loki-gateway.faf-ops.svc"
-  FORCE_RELAY: "false"
+  FORCE_RELAY: "true"
   QUARKUS_LOG_CATEGORY__COM_FAFOREVER__LEVEL: "DEBUG"
