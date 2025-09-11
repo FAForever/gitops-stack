@@ -23,4 +23,4 @@ data:
   DB_USERNAME: "faf-user-service"
   DB_DATABASE: "faf_lobby" # for mariadb init script
   LOBBY_URL: "wss://ws.{{.Values.baseDomain}}"
-  IRC_TOKEN_TTL: "300"
+  IRC_TOKEN_TTL: "86400"
