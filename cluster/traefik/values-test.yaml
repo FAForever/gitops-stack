@@ -1,28 +1,15 @@
 traefik:
   deployment:
     enabled: true
-    kind: DaemonSet
-    dnsPolicy: ClusterFirstWithHostNet
-
-    # additionalVolumes:
-    # - name: dockersocket
-    #   hostPath:
-    #     path: /var/run/docker.sock
-    #     type: Socket
-
-  # additionalVolumeMounts:
-  # - name: dockersocket
-  #   mountPath: /var/run/docker.sock
 
   additionalArguments:
-    # - "--providers.docker=true"
-    # - "--providers.docker.exposedByDefault=false"
     - "--entrypoints.websecure.http.encodequerysemicolons=true"
 
   updateStrategy:
-    type: OnDelete
+    type: Recreate
 
   hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -39,22 +26,23 @@ traefik:
       # When using hostNetwork, use another port to avoid conflict with node exporter:
       # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
       port: 9101
+
     web:
       redirections:
         entryPoint:
           to: websecure
           scheme: https
           permanent: true
-
+          
     websecure:
       # New setup behind proxy
-      # proxyProtocol:
-      #   trustedIPs:
-      #     - 10.0.0.0/16
+      proxyProtocol:
+        trustedIPs:
+          - 10.0.0.0/8
 
       transport:
         respondingTimeouts:
-          readTimeout: 0
+          readTimeout: 60
 
       # Trust the Cloudflare IPs found at https://www.cloudflare.com/en-in/ips/
       forwardedHeaders:
@@ -74,12 +62,14 @@ traefik:
           - "104.24.0.0/14"
           - "172.64.0.0/13"
           - "131.0.72.0/22"
+
     replay-stream:
       port: 15000
-    irc-plain:
-      port: 6667
-    irc-tls:
-      port: 6697
+      proxyProtocol:
+        trustedIPs:
+          - "10.0.0.0/8"
+          - "167.235.217.62/32"
+
 
   # HostNetwork
   service:
@@ -92,12 +82,4 @@ traefik:
       # format: json
       # By default, the level is set to ERROR.
       # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
-      level: DEBUG
-
-  # This is bugged on 3.0 helmchart, use the CRD in another file
-  # tlsStore:
-  #   default:
-  #     defaultCertificate:
-  #       secretName: cloudflare-faf-xyz
-
-
+      level: INFO
