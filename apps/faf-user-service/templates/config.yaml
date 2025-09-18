@@ -24,3 +24,4 @@ data:
   DB_DATABASE: "faf_lobby" # for mariadb init script
   LOBBY_URL: "wss://ws.{{.Values.baseDomain}}"
   IRC_TOKEN_TTL: "86400"
+  REPLAY_URL: "wss://replay-ws.{{.Values.baseDomain}}"
