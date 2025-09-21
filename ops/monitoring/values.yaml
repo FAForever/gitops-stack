@@ -94,8 +94,6 @@ victoria-metrics-k8s-stack:
 loki:
 
   deploymentMode: SingleBinary
-  singleBinary:
-    replicas: 1
 
   # Disable Simple Scalable
   read:
@@ -144,6 +142,7 @@ loki:
 
   # Disable anti-affinity
   singleBinary:
+    replicas: 1
     affinity: null
 
   gateway:
