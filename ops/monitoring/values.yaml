@@ -142,6 +142,10 @@ loki:
   chunksCache:
     enabled: false
 
+  # Disable anti-affinity
+  singleBinary:
+    affinity: null
+
   gateway:
     affinity: null
 
