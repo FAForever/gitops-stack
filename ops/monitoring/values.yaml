@@ -145,7 +145,22 @@ loki:
   chunksCache:
     enabled: false
 
-promtail:
-  config:
-    clients:
-      - url: http://monitoring-loki-gateway/loki/api/v1/push
+
+k8s-monitoring:
+  # Where Alloy pushes data to
+  # We can add our own Loki, Thanos...
+  destinations:
+    - name: local-loki
+      type: loki
+      url: http://monitoring-loki-gateway/loki/api/v1/push
+
+  # We are using 1% of this chart, just logs for now, as it implements lots of things that vm-stack provides
+  # We could switch to this + vmsingle
+
+  # Collectors
+  alloy-logs:
+    enabled: true
+
+  # Features
+  podLogs:
+    enabled: true
