@@ -142,6 +142,9 @@ loki:
   chunksCache:
     enabled: false
 
+  gateway:
+    affinity: null
+
 
 k8s-monitoring:
   # Where Alloy pushes data to
