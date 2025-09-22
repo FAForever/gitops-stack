@@ -17,7 +17,7 @@ spec:
         app: ergochat
     spec:
       containers:
-        - image: ghcr.io/ergochat/ergo:v2.16.0
+        - image: faforever/ergochat:v2.16.0-1
           command: ["sh", "-c", "apk add tini && tini -- /ircd-bin/run.sh"]
           imagePullPolicy: Always
           name: ergochat
