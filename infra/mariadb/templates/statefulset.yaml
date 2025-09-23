@@ -17,7 +17,7 @@ spec:
         app: mariadb
     spec:
       containers:
-        - image: mariadb:11.7
+        - image: mariadb:11.8
           imagePullPolicy: Always
           name: mariadb
           ports:
