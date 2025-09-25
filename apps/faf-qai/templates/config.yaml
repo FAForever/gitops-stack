@@ -8,4 +8,4 @@ data:
   IRC_SERVER: irc.{{ .Values.baseDomain }}
   IRC_USER: qai
   CONFIG__HOST: {{ .Values.baseDomain }}
-  FAFAPI_CLIENT_ID: faf-qai
+  FAFAPI_CLIENT_ID: 5eecb64d-0f67-4a72-ac2b-717b8c7efa98
