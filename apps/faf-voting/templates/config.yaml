@@ -5,7 +5,7 @@ metadata:
   labels:
     app: faf-voting
 data:
-  CLIENT_ID: faf-voting
+  CLIENT_ID: e3dfa9e8-93ad-4593-8b3c-900005439354
   NODE_ENV: production
   CALLBACK_URL: https://voting.{{.Values.baseDomain}}/auth
   API_URL: https://api.{{.Values.baseDomain}}
