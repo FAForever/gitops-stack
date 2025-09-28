@@ -20,7 +20,7 @@ spec:
       template:
         spec:
           containers:
-            - image: faforever/faf-db-migrations:v138
+            - image: faforever/faf-db-migrations:v140
               imagePullPolicy: Always
               name: faf-db-migrations
               env:
