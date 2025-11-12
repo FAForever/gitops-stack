@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-deploy-coop-maps
+  labels:
+    app: faf-deploy-coop-maps
+data:
+  PATCH_VERSION: "65"
+  DATABASE_HOST: "mariadb"
+  DATABASE_NAME: "faf_lobby"
+  "deploy-coop.py": |-
+{{ tpl ( .Files.Get "scripts/deploy-coop-maps.py" ) . | indent 4 }}
+
+---
+
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: faf-deploy-coop-maps
+  namespace: faf-apps
+  labels:
+    app: faf-deploy-coop-maps
+spec:
+  # Disabled because triggered manually
+  schedule: "0 0 31 2 *"
+  suspend: true
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app: faf-deploy-coop-maps
+      annotations:
+        prometheus.io/scrape: 'false'
+    spec:
+      template:
+        spec:
+          containers:
+            - image: python:3.13
+              imagePullPolicy: Always
+              name: faf-coop-deployment
+              envFrom:
+                - configMapRef:
+                    name: faf-deploy-coop-maps
+                - secretRef:
+                    name: faf-legacy-deployment
+              command: [ "sh" ]
+              args: [ "-c", "pip install mysql-connector-python && python3 /tmp/deploy-coop.py" ]
+              volumeMounts:
+                - mountPath: /tmp/deploy-coop.py
+                  name: faf-deploy-coop-maps
+                  subPath: "deploy-coop.py"
+          restartPolicy: Never
+          volumes:
+            - name: faf-deploy-coop-maps
+              configMap:
+                name: "faf-deploy-coop-maps"
