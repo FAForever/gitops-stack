@@ -1,0 +1,79 @@
+{{- $wave := 1 }}
+{{- range .Values.clients }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ory-hydra-create-client-{{ $wave }}
+  namespace: faf-apps
+  labels:
+    app: ory-hydra-create-clients
+    argocd.argoproj.io/instance: hydra-clients
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    #argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: '{{ $wave }}'
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      containers:
+        - name: ory-hydra-create-client
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: ory-hydra2
+            - secretRef:
+                name: ory-hydra2
+          env:
+            - name: BASE_DOMAIN
+              value: {{ $.Values.baseDomain }}
+            - name: ORY_SDK_URL
+              value: http://ory-hydra2:4445
+          {{- if .secret }}
+            - name: OAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secret.name }}
+                  key:  {{ .secret.key }}
+          {{- end}}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              if ! hydra get oauth2-client "{{ .id }}" >/dev/null 2>&1; then
+                hydra create oauth2-client \
+                  --name "{{ .name }}" \
+                  --id "{{ .id }}" \
+                  --grant-type "{{ .grantType }}" \
+                  --scope "{{ .scope }}" \
+                  {{- if .secret }}
+                  --secret "$OAUTH_SECRET" \
+                  {{- end}}
+                  {{- if .skipConsent }}
+                  --skip-consent \
+                  {{- end }}
+                  {{- if .redirectUri }}
+                  --redirect-uri "{{ .redirectUri }}" \
+                  {{- end }}
+                  {{- if .logoUri }}
+                  --logo-uri "{{ .logoUri }}" \
+                  {{- end }}
+                  {{- if .tosUri }}
+                  --tos-uri "{{ .tosUri }}" \
+                  {{- end }}
+                  {{- if .policyUri }}
+                  --policy-uri "{{ .policyUri }}" \
+                  {{- end }}
+                  {{- if .tokenEndpointAuthMethod }}
+                  --token-endpoint-auth-method "{{ .tokenEndpointAuthMethod }}"
+                  {{- end }}
+                  {{- if .owner }}
+                  --owner "{{ .owner }}"
+                  {{- end }}
+              else
+                echo "Client {{ .id }} already exists, skipping."
+              fi
+      restartPolicy: Never
+{{- $wave = add $wave 1 }}
+{{- end }}
