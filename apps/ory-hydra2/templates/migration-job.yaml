@@ -1,29 +1,22 @@
-apiVersion: apps/v1
-kind: Deployment
+kind: Job
+apiVersion: batch/v1
 metadata:
-  name: ory-hydra2
+  name: ory-hydra2-migration
   namespace: faf-apps
   labels:
-    app: ory-hydra2
+    app: ory-hydra-migration
   annotations:
-    reloader.stakater.com/auto: "true"
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: '-1'
 spec:
-  replicas: 1
-  revisionHistoryLimit: 10
-  selector:
-    matchLabels:
-      app: ory-hydra2
+  backoffLimit: 1
   template:
-    metadata:
-      labels:
-        app: ory-hydra2
-      annotations:
-        prometheus.io/scrape: 'false'
     spec:
       containers:
         - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: Always
-          name: ory-hydra2
+          name: ory-hydra-migration
           envFrom:
             - configMapRef:
                 name: ory-hydra2
@@ -32,4 +25,5 @@ spec:
           ports:
             - containerPort: 4444
             - containerPort: 4445
-      restartPolicy: Always
+          args: [ "migrate", "sql", "--read-from-env", "--yes"]
+      restartPolicy: Never
