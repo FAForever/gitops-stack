@@ -1,7 +1,7 @@
 kind: Job
 apiVersion: batch/v1
 metadata:
-  name: ory-hydra2-migration
+  name: ory-hydra-migration
   namespace: faf-apps
   labels:
     app: ory-hydra-migration
@@ -19,9 +19,9 @@ spec:
           name: ory-hydra-migration
           envFrom:
             - configMapRef:
-                name: ory-hydra2
+                name: ory-hydra
             - secretRef:
-                name: ory-hydra2
+                name: ory-hydra
           ports:
             - containerPort: 4444
             - containerPort: 4445

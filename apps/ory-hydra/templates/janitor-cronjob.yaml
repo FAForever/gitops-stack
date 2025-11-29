@@ -20,7 +20,7 @@ spec:
       template:
         spec:
           containers:
-            - image: oryd/hydra:v1.11.10
+            - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
               imagePullPolicy: Always
               name: ory-hydra
               envFrom:

@@ -21,7 +21,7 @@ spec:
         prometheus.io/scrape: 'false'
     spec:
       containers:
-        - image: oryd/hydra:v1.11.10
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: Always
           name: ory-hydra
           envFrom:
@@ -32,5 +32,4 @@ spec:
           ports:
             - containerPort: 4444
             - containerPort: 4445
-          args: [ "serve", "all", "--dangerous-force-http"]
       restartPolicy: Always

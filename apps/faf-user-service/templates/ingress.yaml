@@ -11,9 +11,3 @@ spec:
       services:
         - name: faf-user-service
           port: 8080
-    # This is for temporary running Ory Hydra 1.10 and 2.x in parallel.
-    - match: Host(`user-nx.{{.Values.baseDomain}}`)
-      kind: Rule
-      services:
-        - name: faf-user-service-hydra2
-          port: 8080

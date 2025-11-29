@@ -13,4 +13,4 @@ data:
   OAUTH2_CLIENT_CREDENTIALS_DEFAULT_GRANT_ALLOWED_SCOPE: "true"
   # These are only used for mariadb init script, it is redundant in the DSN secret! Don't forget to also create a secret for DB_PASSWORD
   DB_USER: "hydra"
-  DB_NAME: "hydra"
+  DB_NAME: "ory-hydra"

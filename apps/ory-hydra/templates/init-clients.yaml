@@ -23,14 +23,14 @@ spec:
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
-                name: ory-hydra2
+                name: ory-hydra
             - secretRef:
-                name: ory-hydra2
+                name: ory-hydra
           env:
             - name: BASE_DOMAIN
               value: {{ $.Values.baseDomain }}
             - name: ORY_SDK_URL
-              value: http://ory-hydra2:4445
+              value: http://ory-hydra:4445
           {{- if .secret }}
             - name: OAUTH_SECRET
               valueFrom:
