@@ -17,7 +17,7 @@ spec:
         app: postgres
     spec:
       initContainers:
-        - image: pgautoupgrade/pgautoupgrade:18.1-debian
+        - image: pgautoupgrade/pgautoupgrade:18.1-bookworm
           name: upgrade-postgres
           env:
             - name: PGAUTO_ONESHOT
