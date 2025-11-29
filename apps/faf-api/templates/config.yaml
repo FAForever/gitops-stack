@@ -34,3 +34,5 @@ data:
   MOD_PREVIEW_URL_FORMAT: https://content.{{.Values.baseDomain}}/mods/thumbs/%s
   MINIMUM_DAYS_BETWEEN_USERNAME_CHANGE: "90"
   USERNAME_RESERVATION_TIME_IN_MONTHS: "3"
+  # Temporary fix because Hydra v2 dropped the trailing slash
+  JWT_FAF_HYDRA_ISSUER: https://hydra.{{.Values.baseDomain}}
