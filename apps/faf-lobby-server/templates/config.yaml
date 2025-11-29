@@ -10,5 +10,6 @@ data:
   MQ_USER: "faf-lobby-server"
   DB_LOGIN: "faf-python-server"
   DB_NAME: "faf_lobby"
+  HYDRA_JWKS_URI: "https://hydra.{{ .Values.baseDomain }}/.well-known/jwks.json"
   "config.yaml": |-
 {{ tpl ( .Files.Get "config/config.yaml" ) . | indent 4 }}
