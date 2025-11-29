@@ -88,7 +88,7 @@ clients:
   - name: "brackman-discord"
     id: "fbdc5ce5-9888-4ace-8ccc-378fbcb18992"
     secret:
-      name: ory-hydra2
+      name: ory-hydra
       key: BRACKMAN_DISCORD_SECRET
     grantType: "client_credentials"
     scope: "public_profile"
@@ -98,7 +98,7 @@ clients:
   - name: "faf-qai"
     id: "5eecb64d-0f67-4a72-ac2b-717b8c7efa98"
     secret:
-      name: ory-hydra2
+      name: ory-hydra
       key: FAF_QAI_SECRET
     grantType: "client_credentials"
     scope: "public_profile"
