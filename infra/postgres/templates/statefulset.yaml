@@ -33,7 +33,7 @@ spec:
 
       restartPolicy: Always
       containers:
-        - image: postgres:17.6-bookworm
+        - image: postgres:18.1-bookworm
           imagePullPolicy: Always
           name: postgres
           ports:
