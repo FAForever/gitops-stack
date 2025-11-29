@@ -29,7 +29,7 @@ spec:
             #       key: POSTGRES_PASSWORD
           volumeMounts:
             - name: postgres-pvc
-              mountPath: /var/lib/postgresql/data/
+              mountPath: /var/lib/postgresql
 
       restartPolicy: Always
       containers:
@@ -46,7 +46,7 @@ spec:
                 name: postgres
           volumeMounts:
             - name: postgres-pvc
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql
 
       volumes:
         - name: config
