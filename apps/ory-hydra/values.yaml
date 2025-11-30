@@ -57,6 +57,15 @@ clients:
     clientUri: "https://github.com/FAForever/faf-moderator-client"
     tokenEndpointAuthMethod: "client_secret_post"
 
+  - name: "FAF Website (public)"
+    id: "b9f62a18-faae-43cc-a9b7-e15613e00273"
+    secret:
+      name: faf-website
+      key: OAUTH_M2M_CLIENT_SECRET
+    grantType: "client_credentials"
+    scope: "public_profile"
+    tokenEndpointAuthMethod: "client_secret_post"
+
   - name: "voting.$BASE_DOMAIN"
     id: "e3dfa9e8-93ad-4593-8b3c-900005439354"
     secret:
