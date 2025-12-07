@@ -1,16 +1,9 @@
 hostName: "fafprod3"
 environment: "prod"
-infisical:
+infisical-secret:
+  enabled: true
   projectSlug: "k3s-cluster-zj-th"
   envSlug: "prod"
 baseDomain: "faforever.com"
 traefik:
   tlsStoreSecret: "cloudflare-faf-com"
-zfs:
-  nodeId: "fafprod3"
-  poolName: "tank/faf"
-  datasetPrefix: "k8s-"
-# On NixOS, we need to declare the ZFS binary path explicitly
-zfs-localpv:
-  zfs:
-    bin: "/run/current-system/sw/bin/zfs"

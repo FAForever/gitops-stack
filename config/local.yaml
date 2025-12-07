@@ -1,0 +1,7 @@
+hostName: "localhost"
+environment: "local"
+baseDomain: "localhost"
+infisical-secret:
+  enabled: false
+traefik:
+  tlsStoreSecret: "cloudflare-faf-com"

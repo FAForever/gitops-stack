@@ -1,16 +1,9 @@
 hostName: "faftest2"
 environment: "test"
-infisical:
+infisical-secret:
+  enabled: true
   projectSlug: "k3s-cluster-zj-th"
   envSlug: "test"
 baseDomain: "faforever.xyz"
 traefik:
   tlsStoreSecret: "cloudflare-faf-xyz"
-zfs:
-  nodeId: "faftest2"
-  poolName: "tank/faf"
-  datasetPrefix: ""
-# On NixOS, we need to declare the ZFS binary path explicitly
-zfs-localpv:
-  zfs:
-    bin: "/run/current-system/sw/bin/zfs"

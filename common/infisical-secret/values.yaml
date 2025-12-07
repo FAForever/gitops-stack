@@ -1,0 +1,4 @@
+name: null # Define your own!
+overrideSecretPath: null # Optional, if name != secretPath
+targetNamespace: faf-apps
+secretNamespace: faf-ops
