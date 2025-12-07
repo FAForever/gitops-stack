@@ -55,11 +55,11 @@ get_newest_pod_by_app_name() {
 }
 
 get_config_value() {
-  kubectl -n $NAMESPACE get cm "$1" -o json | jq -r ".data.${2}"
+  kubectl -n $NAMESPACE get cm "$1" -o json | jq -j ".data.${2}"
 }
 
 get_secret_value() {
-  kubectl -n $NAMESPACE get secret "$1" -o json | jq -r ".data.${2}" | base64 -d
+  kubectl -n $NAMESPACE get secret "$1" -o json | jq -j ".data.${2}" | base64 -d
 }
 
 # has_annotation(resourceType [e.g. pod], resourceName [e.g. mongodb], annotationName, annotationValue)
@@ -72,7 +72,7 @@ has_annotation_with_value() {
   ANNOTATION_NAME=$3
   REQUIRED_VALUE=$4
 
-  ACTUAL_VALUE=$(kubectl -n $NAMESPACE get "$RESOURCE_TYPE" "$RESOURCE_NAME" -o json | jq -r ".metadata.annotations.$ANNOTATION_NAME")
+  ACTUAL_VALUE=$(kubectl -n $NAMESPACE get "$RESOURCE_TYPE" "$RESOURCE_NAME" -o json | jq -j ".metadata.annotations.$ANNOTATION_NAME")
 
   if test "$REQUIRED_VALUE" = "$ACTUAL_VALUE"
   then
