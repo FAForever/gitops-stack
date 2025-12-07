@@ -30,7 +30,7 @@ spec:
             - containerPort: 15692
               name: prometheus
               protocol: TCP
-          readinessProbe:
+          startupProbe:
             exec:
               command: ["rabbitmq-diagnostics", "-q", "ping"]
             initialDelaySeconds: 10

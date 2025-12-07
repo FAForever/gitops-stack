@@ -28,7 +28,7 @@ spec:
                 name: mongodb
             - secretRef:
                 name: mongodb
-          readinessProbe:
+          startupProbe:
             exec:
               command: ["mongo", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 10
