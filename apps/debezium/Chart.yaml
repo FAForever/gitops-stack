@@ -1,6 +1,7 @@
 apiVersion: v2
 name: debezium
 version: 1.0.0
+
 dependencies:
   - name: infisical-secret
     version: 1.0.0
