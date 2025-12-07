@@ -28,6 +28,12 @@ spec:
                 name: mongodb
             - secretRef:
                 name: mongodb
+          readinessProbe:
+            exec:
+              command: ["mongo", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 10
+            timeoutSeconds: 15
+            periodSeconds: 5
           volumeMounts:
             - name: mongodb-pvc
               mountPath: /data/db

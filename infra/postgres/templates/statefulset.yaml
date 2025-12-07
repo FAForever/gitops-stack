@@ -44,6 +44,10 @@ spec:
                 name: postgres
             - secretRef:
                 name: postgres
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-Uroot", "-h127.0.0.1"]
+            periodSeconds: 5
           volumeMounts:
             - name: postgres-pvc
               mountPath: /var/lib/postgresql/data

@@ -30,6 +30,12 @@ spec:
             - containerPort: 15692
               name: prometheus
               protocol: TCP
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "is_running"]
+            initialDelaySeconds: 10
+            timeoutSeconds: 15
+            periodSeconds: 5
           volumeMounts:
             - name: rabbitmq-pvc
               mountPath: /var/lib/rabbitmq
