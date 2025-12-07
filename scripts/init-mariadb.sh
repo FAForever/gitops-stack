@@ -42,7 +42,6 @@ create_user_and_db faf-apps faf-league-service DB_LOGIN DB_PASSWORD DB_NAME
 
 # others
 create_user_and_db faf-apps wordpress WORDPRESS_DB_USER WORDPRESS_DB_PASSWORD WORDPRESS_DB_NAME
-create_user_and_db faf-apps ory-hydra DB_USER DB_PASSWORD DB_NAME "CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci"
 create_user_and_db faf-apps ergochat ERGO__DATASTORE__MYSQL__USER ERGO__DATASTORE__MYSQL__PASSWORD ERGO__DATASTORE__MYSQL__HISTORY_DATABASE
 
 echo "All users and databases have been processed."
