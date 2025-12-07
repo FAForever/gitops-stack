@@ -21,7 +21,7 @@ create_user_and_db() {
     DB_NAME=$(NAMESPACE=$SERVICE_NAMESPACE get_config_value "$SERVICE_NAME" "$5")
     DB_OPTIONS=${6:-}
 
-    kubectl -n $NAMESPACE exec -i mariadb-0 -- mysql --user=root --password=${MYSQL_ROOT_PASSWORD} <<SQL_SCRIPT
+    kubectl -n $NAMESPACE exec -i mariadb-0 -- mariadb --user=root --password=${MYSQL_ROOT_PASSWORD} <<SQL_SCRIPT
       CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` ${DB_OPTIONS};
       CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
       GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';
