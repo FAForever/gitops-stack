@@ -32,7 +32,7 @@ spec:
               protocol: TCP
           readinessProbe:
             exec:
-              command: ["rabbitmq-diagnostics", "is_running"]
+              command: ["rabbitmq-diagnostics", "-q", "ping"]
             initialDelaySeconds: 10
             timeoutSeconds: 15
             periodSeconds: 5
