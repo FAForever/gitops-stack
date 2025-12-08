@@ -1,0 +1,107 @@
+# =======================================
+# Jesus, what the fuck is happening here?
+# =======================================
+#
+# 1. Create a service account
+# 2. Permit it to read configmaps and secrets in the faf-apps namespace
+# 3. Iterate over the databasesAndUsers list and create a job for each database
+#    a) initContainer: Load the configmap and secret into environment variables. This must happen via k8s api, as we can't directly reference cm/secrets cross-namespace.
+#    b) actual container: Load the env from file and create the database and user
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: init-apps
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: allow-init-apps-read-app-config
+  namespace: faf-apps
+subjects:
+  - kind: ServiceAccount
+    name: init-apps
+    namespace: faf-infra
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: read-cm-secrets
+
+---
+
+{{- $wave := 1 }}
+{{- range .Values.databasesAndUsers }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mariadb-sync-db-user-{{ $wave }}
+  labels:
+    app: mariadb-sync-db-user
+    argocd.argoproj.io/instance: mariadb
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: '{{ $wave }}'
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: init-apps
+      volumes:
+        - name: config # We will store the apps config for database, username and password here
+          emptyDir: {}
+      initContainers:
+        - name: load-config
+          image: alpine/kubectl
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /config
+
+              echo -n "SYNC_DATABASE=" > /config/env
+              kubectl get cm {{ .configMapRef }} \
+                -n faf-apps \
+                -o jsonpath='{.data.{{ .databaseKey }}}' >> /config/env
+              echo >> /config/env
+
+              echo -n "SYNC_USERNAME=" >> /config/env
+              kubectl get cm {{ .configMapRef }} \
+                -n faf-apps \
+                -o jsonpath='{.data.{{ .usernameKey }}}' >> /config/env
+              echo >> /config/env
+
+              echo -n "SYNC_PASSWORD=" >> /config/env
+              kubectl get secret {{ .secretRef }} \
+                -n faf-apps \
+                -o jsonpath='{.data.{{ .passwordKey }}}' \
+                | base64 -d >> /config/env
+              echo >> /config/env
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      containers:
+        - name: mariadb-sync-db-user
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: mariadb
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -a
+              . /config/env
+              set +a
+
+              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS \`${SYNC_DATABASE}\`;" 2>&1
+              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE USER IF NOT EXISTS '${SYNC_USERNAME}'@'%' IDENTIFIED BY '${SYNC_PASSWORD}';" 2>&1
+              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`${SYNC_DATABASE}\`.* TO '${SYNC_USERNAME}'@'%';" 2>&1
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      restartPolicy: Never
+{{- $wave = add $wave 1 }}
+{{- end }}
