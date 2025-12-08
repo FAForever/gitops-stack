@@ -1,2 +1,64 @@
+image:
+  repository: "mariadb"
+  tag: "12.1"
+
 infisical-secret:
   name: mariadb
+
+databasesAndUsers:
+  # Main FAF database
+  - configMapRef: faf-api
+    secretRef: faf-api
+    databaseKey: DATABASE_NAME
+    usernameKey: DATABASE_USERNAME
+    passwordKey: DATABASE_PASSWORD
+
+  - configMapRef: faf-user-service
+    secretRef: faf-user-service
+    databaseKey: DB_DATABASE
+    usernameKey: DB_USERNAME
+    passwordKey: DB_PASSWORD
+
+  - configMapRef: faf-lobby-server
+    secretRef: faf-lobby-server
+    databaseKey: DB_NAME
+    usernameKey: DB_LOGIN
+    passwordKey: DB_PASSWORD
+
+  - configMapRef: faf-replay-server
+    secretRef: faf-replay-server
+    databaseKey: RS_DB_DATABASE
+    usernameKey: RS_DB_USERNAME
+    passwordKey: RS_DB_PASSWORD
+
+  - configMapRef: faf-policy-server
+    secretRef: faf-policy-server
+    databaseKey: DATABASE_NAME
+    usernameKey: DATABASE_USER
+    passwordKey: DATABASE_PASSWORD
+
+  # League service database
+  - configMapRef: faf-api
+    secretRef: faf-api
+    databaseKey: LEAGUE_DATABASE_NAME
+    usernameKey: LEAGUE_DATABASE_USERNAME
+    passwordKey: LEAGUE_DATABASE_PASSWORD
+
+  - configMapRef: faf-league-service
+    secretRef: faf-league-service
+    databaseKey: DB_NAME
+    usernameKey: DB_LOGIN
+    passwordKey: DB_PASSWORD
+
+ # Others
+  - configMapRef: wordpress
+    secretRef: wordpress
+    databaseKey: WORDPRESS_DB_NAME
+    usernameKey: WORDPRESS_DB_USER
+    passwordKey: WORDPRESS_DB_PASSWORD
+
+  - configMapRef: ergochat
+    secretRef: ergochat
+    databaseKey: ERGO__DATASTORE__MYSQL__HISTORY_DATABASE
+    usernameKey: ERGO__DATASTORE__MYSQL__USER
+    passwordKey: ERGO__DATASTORE__MYSQL__PASSWORD

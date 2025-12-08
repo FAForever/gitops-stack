@@ -1,0 +1,5 @@
+apiVersion: v2
+name: clusterroles
+version: 1.0.0
+
+description: "Special cluster roles"

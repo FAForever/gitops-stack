@@ -17,7 +17,7 @@ spec:
         app: mariadb
     spec:
       containers:
-        - image: mariadb:12.1
+        - image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
           imagePullPolicy: Always
           name: mariadb
           ports:
