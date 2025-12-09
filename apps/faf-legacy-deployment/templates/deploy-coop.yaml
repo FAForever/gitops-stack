@@ -8,8 +8,10 @@ data:
   PATCH_VERSION: "66"
   DATABASE_HOST: "mariadb"
   DATABASE_NAME: "faf_lobby"
-  "deploy-coop.py": |-
-{{ tpl ( .Files.Get "scripts/deploy-coop.py" ) . | indent 4 }}
+  "build.gradle.kts": |-
+{{ tpl ( .Files.Get "scripts/build.gradle.kts" ) . | indent 4 }}
+  "CoopDeployer.kt": |-
+{{ tpl ( .Files.Get "scripts/CoopDeployer.kt" ) . | indent 4 }}
 
 ---
 
@@ -35,27 +37,31 @@ spec:
       template:
         spec:
           containers:
-            - image: python:3.13
+            - image: gradle:9.2-jdk21
               imagePullPolicy: Always
-              name: faf-coop-deployment
+              name: faf-deploy-coop
+              workingDir: /workspace
               envFrom:
                 - configMapRef:
                     name: faf-deploy-coop
                 - secretRef:
                     name: faf-legacy-deployment
-              command: [ "sh" ]
-              args: [ "-c", "pip install mysql-connector-python && python3 /tmp/deploy-coop.py" ]
+              command: [ "gradle", "run" ]
+              # We need to mount single files via subpath because Gradle breaks otherwise (symbolic link to read-only directory)
               volumeMounts:
-                - mountPath: /tmp/deploy-coop.py
-                  name: faf-deploy-coop
-                  subPath: "deploy-coop.py"
-                - mountPath: /tmp/legacy-featured-mod-files
+                - mountPath: /workspace/build.gradle.kts
+                  name: faf-deploy-scripts
+                  subPath: "build.gradle.kts"
+                - mountPath: /workspace/CoopDeployer.kt
+                  name: faf-deploy-scripts
+                  subPath: "CoopDeployer.kt"
+                - mountPath: /workspace/legacy-featured-mod-files
                   name: faf-featured-mods
           restartPolicy: Never
           volumes:
-            - name: faf-deploy-coop
+            - name: faf-deploy-scripts
               configMap:
-                name: "faf-deploy-coop"
+                name: "faf-deploy-scripts"
             - name: faf-featured-mods
               hostPath:
                 path: /opt/faf/data/legacy-featured-mod-files

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-deploy-scripts
+  labels:
+    app: faf-deploy-coop
+data:
+  # Loop through all files in the 'scripts' directory
+  {{- range $path, $bytes := .Files.Glob "scripts/*" }}
+  {{- $file := base $path }}
+  {{ $file }}: |-
+{{ tpl ($bytes | toString) $ | indent 4 }}
+  {{- end }}

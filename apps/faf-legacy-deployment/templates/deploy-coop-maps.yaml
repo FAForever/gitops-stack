@@ -8,7 +8,7 @@ data:
   PATCH_VERSION: "65"
   DATABASE_HOST: "mariadb"
   DATABASE_NAME: "faf_lobby"
-  "deploy-coop.py": |-
+  "deploy-coop-maps.py": |-
 {{ tpl ( .Files.Get "scripts/deploy-coop-maps.py" ) . | indent 4 }}
 
 ---
@@ -44,11 +44,11 @@ spec:
                 - secretRef:
                     name: faf-legacy-deployment
               command: [ "sh" ]
-              args: [ "-c", "pip install mysql-connector-python && python3 /tmp/deploy-coop.py" ]
+              args: [ "-c", "pip install mysql-connector-python && python3 /tmp/deploy-coop-maps.py" ]
               volumeMounts:
-                - mountPath: /tmp/deploy-coop.py
+                - mountPath: /tmp/deploy-coop-maps.py
                   name: faf-deploy-coop-maps
-                  subPath: "deploy-coop.py"
+                  subPath: "deploy-coop-maps.py"
           restartPolicy: Never
           volumes:
             - name: faf-deploy-coop-maps
