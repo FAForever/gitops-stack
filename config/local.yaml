@@ -3,5 +3,3 @@ environment: "local"
 baseDomain: "localhost"
 infisical-secret:
   enabled: false
-traefik:
-  tlsStoreSecret: null
