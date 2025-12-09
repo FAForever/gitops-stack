@@ -113,29 +113,40 @@ def calc_md5(fname):
     return hash_md5.hexdigest()
 
 def zipdir(path, ziph):
+    """
+    Adds a path (folder or file) to the zip file handle `ziph`.
+    Preserves the directory name in the archive.
+    """
     if not os.path.exists(path):
         print(f"Warning: {path} does not exist, skipping")
         return
 
-    if os.path.isdir(path):
-        for root, dirs, files in os.walk(path):
+    # Remove trailing slash if present, otherwise dirname might return the path itself
+    clean_path = path.rstrip(os.sep)
+
+    # Calculate the base directory (parent of the target path)
+    # This ensures that if we zip '/repo/lua', the archive entry starts with 'lua/...'
+    base_dir = os.path.dirname(clean_path)
+
+    if os.path.isdir(clean_path):
+        for root, dirs, files in os.walk(clean_path):
             files.sort()  # deterministic order
             dirs.sort()   # deterministic order
             for file in files:
                 full_path = os.path.join(root, file)
-                arcname = os.path.relpath(full_path, start=path)  # preserve folder structure
+                # Relpath relative to base_dir (parent) ensures folder structure is kept
+                arcname = os.path.relpath(full_path, start=base_dir)
                 info = zipfile.ZipInfo(arcname, FIXED_ZIP_TIMESTAMP)
                 with open(full_path, "rb") as f:
                     data = f.read()
                 ziph.writestr(info, data, compress_type=zipfile.ZIP_DEFLATED)
     else:
         # single file outside a directory
-        arcname = os.path.basename(path)
+        arcname = os.path.relpath(clean_path, start=base_dir)
         info = zipfile.ZipInfo(arcname, FIXED_ZIP_TIMESTAMP)
-        with open(path, "rb") as f:
+        with open(clean_path, "rb") as f:
             data = f.read()
         ziph.writestr(info, data, compress_type=zipfile.ZIP_DEFLATED)
-
 
 
 def create_file(conn, mod, fileId, version, name, source, target_dir, old_md5, dryrun):
@@ -238,8 +249,12 @@ def download_vo_assets(version, target_dir):
 
     # 1. Get latest release JSON from GitHub
     api_url = f"https://api.github.com/repos/FAForever/fa-coop/releases/tags/v{version}"
-    with urllib.request.urlopen(api_url) as response:
-        release_info = json.load(response)
+    try:
+        with urllib.request.urlopen(api_url) as response:
+            release_info = json.load(response)
+    except urllib.error.HTTPError as e:
+        print(f"Failed to fetch release info: {e}")
+        return
 
     # 2. Filter assets ending with .nx2
     nx2_urls = [
