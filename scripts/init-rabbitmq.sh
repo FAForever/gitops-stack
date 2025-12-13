@@ -52,7 +52,7 @@ make_user_admin() {
   kubectl -n $NAMESPACE exec -i rabbitmq-0 -- rabbitmqctl set_user_tags "${USERNAME}" administrator
 }
 
-VHOST_FAF_CORE="/faf-core"
+VHOST_FAF_CORE="//faf-core"
 
 create_vhost $VHOST_FAF_CORE
 create_user_for_vhost rabbitmq ADMIN_USER ADMIN_PASSWORD $VHOST_FAF_CORE
