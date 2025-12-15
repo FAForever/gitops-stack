@@ -17,7 +17,7 @@ spec:
         app: postgres
     spec:
       initContainers:
-        - image: pgautoupgrade/pgautoupgrade:17-bookworm
+        - image: {{ index .Values "upgrade-image" "repository" }}:{{ index .Values "upgrade-image" "tag" }}
           name: upgrade-postgres
           env:
             - name: PGAUTO_ONESHOT
@@ -33,7 +33,7 @@ spec:
 
       restartPolicy: Always
       containers:
-        - image: postgres:17.6-bookworm
+        - image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
           imagePullPolicy: Always
           name: postgres
           ports:

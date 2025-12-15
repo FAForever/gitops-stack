@@ -14,10 +14,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: mariadb-sync-db-user-{{ $wave }}
+  name: postgres-sync-db-user-{{ $wave }}
   labels:
-    app: mariadb-sync-db-user
-    argocd.argoproj.io/instance: mariadb
+    app: postgres-sync-db-user
+    argocd.argoproj.io/instance: postgres
   annotations:
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
@@ -62,12 +62,12 @@ spec:
             - name: config
               mountPath: /config
       containers:
-        - name: mariadb-sync-db-user
+        - name: postgres-sync-db-user
           image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
           imagePullPolicy: Always
           envFrom:
             - secretRef:
-                name: mariadb
+                name: postgres
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -75,9 +75,24 @@ spec:
               . /config/env
               set +a
 
-              mariadb -v --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS \`${SYNC_DATABASE}\`;"
-              mariadb -v --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE USER IF NOT EXISTS '${SYNC_USERNAME}'@'%' IDENTIFIED BY '${SYNC_PASSWORD}';"
-              mariadb -v --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`${SYNC_DATABASE}\`.* TO '${SYNC_USERNAME}'@'%';"
+              export PGPASSWORD=${POSTGRES_PASSWORD}
+
+              if psql --username=postgres --host=postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='${SYNC_USERNAME}'" | grep -q 1; then
+                echo "User ${SYNC_USERNAME} already exists. Skipping user creation."
+              else
+                psql --username=postgres --host=postgres -c "CREATE USER \"${SYNC_USERNAME}\" WITH PASSWORD '${SYNC_PASSWORD}';"
+                echo "User ${SYNC_USERNAME} created."
+              fi
+
+              if psql --username=postgres --host=postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${SYNC_DATABASE}'" | grep -q 1; then
+                echo "Database ${SYNC_DATABASE} already exists. Skipping database creation."
+              else
+                psql --username=postgres --host=postgres -c "CREATE DATABASE \"${SYNC_DATABASE}\" OWNER \"${SYNC_USERNAME}\";"
+                echo "Database ${SYNC_DATABASE} created."
+              fi
+
+              psql --username=postgres --host=postgres  -c "GRANT ALL PRIVILEGES ON DATABASE \"${SYNC_DATABASE}\" TO \"${SYNC_USERNAME}\";"
+              echo "Granted all privileges on database ${SYNC_DATABASE} to user ${SYNC_USERNAME}."
           volumeMounts:
             - name: config
               mountPath: /config
