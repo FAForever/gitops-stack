@@ -59,6 +59,8 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
+              set -e
+
               mkdir -p /config
 
               echo -n "SYNC_DATABASE=" > /config/env
@@ -96,9 +98,9 @@ spec:
               . /config/env
               set +a
 
-              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS \`${SYNC_DATABASE}\`;" 2>&1
-              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE USER IF NOT EXISTS '${SYNC_USERNAME}'@'%' IDENTIFIED BY '${SYNC_PASSWORD}';" 2>&1
-              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`${SYNC_DATABASE}\`.* TO '${SYNC_USERNAME}'@'%';" 2>&1
+              mariadb -v --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS \`${SYNC_DATABASE}\`;" 2>&1
+              mariadb -v --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE USER IF NOT EXISTS '${SYNC_USERNAME}'@'%' IDENTIFIED BY '${SYNC_PASSWORD}';" 2>&1
+              mariadb -v --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`${SYNC_DATABASE}\`.* TO '${SYNC_USERNAME}'@'%';" 2>&1
           volumeMounts:
             - name: config
               mountPath: /config
