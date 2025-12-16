@@ -7,3 +7,6 @@ metadata:
 data:
   ADMIN_USER: "faf-admin"
   "enabled_plugins": "[rabbitmq_management,rabbitmq_prometheus]."
+  "rabbitmq_conf": |-
+    default_user = $(ADMIN_USER)
+    default_pass = $(ADMIN_PASSWORD)

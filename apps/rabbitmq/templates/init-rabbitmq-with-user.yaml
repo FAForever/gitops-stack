@@ -9,15 +9,15 @@
 #    b) actual container: Load the env from file and create the database and user
 
 {{- $wave := 1 }}
-{{- range .Values.databasesAndUsers }}
+{{- range .Values.users }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: mariadb-sync-db-user-{{ $wave }}
+  name: rabbitmq-sync-user-{{ $wave }}
   labels:
-    app: mariadb-sync-db-user
-    argocd.argoproj.io/instance: mariadb
+    app: rabbitmq-sync-user
+    argocd.argoproj.io/instance: rabbitmq
   annotations:
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
@@ -40,12 +40,6 @@ spec:
 
               mkdir -p /config
 
-              echo -n "SYNC_DATABASE=" > /config/env
-              kubectl get cm {{ .configMapRef }} \
-                -n faf-apps \
-                -o jsonpath='{.data.{{ .databaseKey }}}' >> /config/env
-              echo >> /config/env
-
               echo -n "SYNC_USERNAME=" >> /config/env
               kubectl get cm {{ .configMapRef }} \
                 -n faf-apps \
@@ -58,16 +52,19 @@ spec:
                 -o jsonpath='{.data.{{ .passwordKey }}}' \
                 | base64 -d >> /config/env
               echo >> /config/env
+              echo "Config loaded"
           volumeMounts:
             - name: config
               mountPath: /config
       containers:
-        - name: mariadb-sync-db-user
+        - name: rabbitmq-sync-db-user
           image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
           imagePullPolicy: Always
           envFrom:
             - secretRef:
-                name: mariadb
+                name: rabbitmq
+            - configMapRef:
+                name: rabbitmq
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -75,9 +72,22 @@ spec:
               . /config/env
               set +a
 
-              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS \`${SYNC_DATABASE}\`;"
-              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "CREATE USER IF NOT EXISTS '${SYNC_USERNAME}'@'%' IDENTIFIED BY '${SYNC_PASSWORD}';"
-              mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`${SYNC_DATABASE}\`.* TO '${SYNC_USERNAME}'@'%';"
+              vhost="/faf-core"
+
+              if rabbitmqadmin --format=bash --host=rabbitmq-0.rabbitmq.faf-apps.svc.cluster.local --username=$ADMIN_USER --password=$ADMIN_PASSWORD list vhosts | grep -q "$vhost"; then
+                echo "$vhost vhost alerady exists"
+              else
+                rabbitmqadmin --format=bash --host=rabbitmq-0.rabbitmq.faf-apps.svc.cluster.local --username=$ADMIN_USER --password=$ADMIN_PASSWORD declare vhost name="$vhost" 
+              fi
+
+              if rabbitmqadmin --format=bash --host=rabbitmq-0.rabbitmq.faf-apps.svc.cluster.local --username=$ADMIN_USER --password=$ADMIN_PASSWORD list users | grep -q "$SYNC_USERNAME"; then
+                echo "$SYNC_USERNAME user alerady exists"
+              else
+                rabbitmqadmin --format=bash --host=rabbitmq-0.rabbitmq.faf-apps.svc.cluster.local --username=$ADMIN_USER --password=$ADMIN_PASSWORD declare user name="$SYNC_USERNAME" password="$SYNC_PASSWORD" tags=""
+              fi
+
+              rabbitmqadmin --format=bash --host=rabbitmq-0.rabbitmq.faf-apps.svc.cluster.local --username=$ADMIN_USER --password=$ADMIN_PASSWORD declare permission vhost="$vhost" user="$SYNC_USERNAME" configure=".*" read=".*" write=".*"
+
           volumeMounts:
             - name: config
               mountPath: /config

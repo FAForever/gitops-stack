@@ -1,2 +1,28 @@
+image:
+  repository: rabbitmq
+  tag: 3.13.7-management-alpine
+
 infisical-secret:
   name: rabbitmq
+
+users:
+  - configMapRef: faf-lobby-server
+    secretRef: faf-lobby-server
+    usernameKey: MQ_USER
+    passwordKey: MQ_PASSWORD
+  - configMapRef: faf-api
+    secretRef: faf-api
+    usernameKey: RABBIT_USERNAME
+    passwordKey: RABBIT_PASSWORD
+  - configMapRef: faf-league-service
+    secretRef: faf-league-service
+    usernameKey: MQ_USER
+    passwordKey: MQ_PASSWORD
+  - configMapRef: debezium
+    secretRef: debezium
+    usernameKey: RABBITMQ_USER
+    passwordKey: RABBITMQ_PASSWORD
+  - configMapRef: faf-icebreaker
+    secretRef: faf-icebreaker
+    usernameKey: RABBITMQ_USER
+    passwordKey: RABBITMQ_PASSWORD

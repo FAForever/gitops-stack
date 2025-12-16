@@ -36,12 +36,20 @@ spec:
             initialDelaySeconds: 15
             timeoutSeconds: 15
             periodSeconds: 5
+          envFrom:
+            - secretRef:
+                name: rabbitmq
+            - configMapRef:
+                name: rabbitmq
           volumeMounts:
             - name: rabbitmq-pvc
               mountPath: /var/lib/rabbitmq
             - name: config
               mountPath: /etc/rabbitmq/enabled_plugins
               subPath: enabled_plugins
+            - name: config
+              mountPath: /etc/rabbitmq/rabbitmq.conf
+              subPath: rabbitmq_conf
       restartPolicy: Always
       volumes:
         - name: config
