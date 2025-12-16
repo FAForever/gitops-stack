@@ -75,7 +75,7 @@ spec:
               vhost="/faf-core"
 
               if rabbitmqadmin --format=bash --host=rabbitmq-0.rabbitmq.faf-apps.svc.cluster.local --username=$ADMIN_USER --password=$ADMIN_PASSWORD list vhosts | grep -q "$vhost"; then
-                echo "$vhost vhost alerady exists"
+                echo "$vhost vhost already exists"
               else
                 rabbitmqadmin --format=bash --host=rabbitmq-0.rabbitmq.faf-apps.svc.cluster.local --username=$ADMIN_USER --password=$ADMIN_PASSWORD declare vhost name="$vhost" 
               fi
