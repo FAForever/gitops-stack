@@ -1,2 +1,14 @@
+image:
+  repository: "mongo"
+  tag: "8.2.2"
+
 infisical-secret:
   name: mongodb
+
+databasesAndUsers:
+  # Other
+  - configMapRef: nodebb
+    secretRef: nodebb
+    databaseKey: MONGODB_DATABASE
+    usernameKey: MONGODB_USER
+    passwordKey: MONGO_NODEBB_PASSWORD

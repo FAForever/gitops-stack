@@ -9,15 +9,15 @@
 #    b) actual container: Load the env from file and create the database and user
 
 {{- $wave := 1 }}
-{{- range .Values.users }}
+{{- range .Values.databasesAndUsers }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: rabbitmq-sync-user-{{ $wave }}
+  name: mongodb-sync-db-user-{{ $wave }}
   labels:
-    app: rabbitmq-sync-user
-    argocd.argoproj.io/instance: rabbitmq
+    app: mongodb-sync-db-user
+    argocd.argoproj.io/instance: mongodb
   annotations:
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
@@ -40,6 +40,12 @@ spec:
 
               mkdir -p /config
 
+              echo -n "SYNC_DATABASE=" > /config/env
+              kubectl get cm {{ .configMapRef }} \
+                -n faf-apps \
+                -o jsonpath='{.data.{{ .databaseKey }}}' >> /config/env
+              echo >> /config/env
+
               echo -n "SYNC_USERNAME=" >> /config/env
               kubectl get cm {{ .configMapRef }} \
                 -n faf-apps \
@@ -56,40 +62,36 @@ spec:
             - name: config
               mountPath: /config
       containers:
-        - name: rabbitmq-sync-db-user
+        - name: mongodb-sync-db-user
           image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
           imagePullPolicy: Always
           envFrom:
             - secretRef:
-                name: rabbitmq
+                name: mongodb
             - configMapRef:
-                name: rabbitmq
+                name: mongodb
           command: ["/bin/sh", "-c"]
-          args: 
+          args:
             - |
               set -a
               . /config/env
               set +a
 
-              vhost="/faf-core"
+              ADMIN_USER=$MONGO_INITDB_ROOT_USERNAME
+              ADMIN_PASSWORD=$MONGO_INITDB_ROOT_PASSWORD
 
-              rabbitmq_admin_exec() {
-                rabbitmqadmin --format=bash --host=rabbitmq-0.rabbitmq.faf-apps.svc.cluster.local --username=$ADMIN_USER --password=$ADMIN_PASSWORD "$@"
+              mongo_exec() {
+                mongosh --quiet --host mongodb.faf-infra.svc --username "$ADMIN_USER" --password "$ADMIN_PASSWORD" --authenticationDatabase admin --eval "$@"
               }
 
-              if rabbitmq_admin_exec list vhosts | grep -q "$vhost"; then
-                echo "$vhost vhost already exists"
+              result=$(mongo_exec "db.getSiblingDB(\"$SYNC_DATABASE\").getUser(\"$SYNC_USERNAME\");")
+              if [ "$result" != "null" ]; then
+                  echo "User $SYNC_USERNAME exists"
               else
-                rabbitmq_admin_exec declare vhost name="$vhost" 
+                  mongo_exec "db.getSiblingDB(\"${SYNC_DATABASE}\").createUser( { user: \"${SYNC_USERNAME}\", pwd: \"${SYNC_PASSWORD}\", roles: [ \"readWrite\" ] } );"
+                  mongo_exec "db.getSiblingDB(\"${SYNC_DATABASE}\").grantRolesToUser(\"${SYNC_USERNAME}\",[{ role: \"clusterMonitor\", db: \"admin\" }]);"
+                  echo "Created User $SYNC_USERNAME"
               fi
-
-              if rabbitmq_admin_exec list users | grep -q "$SYNC_USERNAME"; then
-                echo "$SYNC_USERNAME user alerady exists"
-              else
-                rabbitmq_admin_exec declare user name="$SYNC_USERNAME" password="$SYNC_PASSWORD" tags=""
-              fi
-
-              rabbitmq_admin_exec declare permission vhost="$vhost" user="$SYNC_USERNAME" configure=".*" read=".*" write=".*"
 
           volumeMounts:
             - name: config
