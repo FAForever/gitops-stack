@@ -31,8 +31,8 @@ spec:
           startupProbe:
             exec:
               command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 10
-            timeoutSeconds: 15
+            initialDelaySeconds: 15
+            timeoutSeconds: 60
             periodSeconds: 5
           volumeMounts:
             - name: mongodb-pvc

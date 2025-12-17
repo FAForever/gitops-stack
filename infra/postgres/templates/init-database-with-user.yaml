@@ -81,21 +81,21 @@ spec:
                 psql --username=postgres --host=postgres "$@"
               }
 
-              if psql_exec -tAc "SELECT 1 FROM pg_roles WHERE rolname='${SYNC_USERNAME}'" | grep -q 1; then
+              if echo "SELECT 1 FROM pg_roles WHERE rolname=:'user'" | psql_exec -v user=${SYNC_USERNAME} -tA  | grep -q 1; then
                 echo "User ${SYNC_USERNAME} already exists. Skipping user creation."
               else
-                psql_exec -c "CREATE USER \"${SYNC_USERNAME}\" WITH PASSWORD '${SYNC_PASSWORD}';"
+                echo "CREATE USER :\"user\" WITH PASSWORD :'password';" | psql_exec -v user=${SYNC_USERNAME} -v password=${SYNC_PASSWORD} 
                 echo "User ${SYNC_USERNAME} created."
               fi
 
-              if psql_exec -tAc "SELECT 1 FROM pg_database WHERE datname='${SYNC_DATABASE}'" | grep -q 1; then
+              if echo "SELECT 1 FROM pg_database WHERE datname=:'database'" | psql_exec -v database=${SYNC_DATABASE} -tA  | grep -q 1; then
                 echo "Database ${SYNC_DATABASE} already exists. Skipping database creation."
               else
-                psql_exec -c "CREATE DATABASE \"${SYNC_DATABASE}\" OWNER \"${SYNC_USERNAME}\";"
+                echo "CREATE DATABASE :\"database\" OWNER :\"user\";" | psql_exec -v database=${SYNC_DATABASE} -v user=${SYNC_USERNAME} 
                 echo "Database ${SYNC_DATABASE} created."
               fi
 
-              psql_exec -c "GRANT ALL PRIVILEGES ON DATABASE \"${SYNC_DATABASE}\" TO \"${SYNC_USERNAME}\";"
+              echo "GRANT ALL PRIVILEGES ON DATABASE :\"database\" TO :\"user\";" | psql_exec -v database=${SYNC_DATABASE} -v user=${SYNC_USERNAME} 
               echo "Granted all privileges on database ${SYNC_DATABASE} to user ${SYNC_USERNAME}."
           volumeMounts:
             - name: config
