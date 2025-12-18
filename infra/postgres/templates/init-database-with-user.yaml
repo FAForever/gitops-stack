@@ -71,6 +71,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
+              set -e
               set -a
               . /config/env
               set +a

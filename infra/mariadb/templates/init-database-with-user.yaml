@@ -71,6 +71,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
+              set -e
               set -a
               . /config/env
               set +a
@@ -80,8 +81,8 @@ spec:
               }
 
               mariadb_exec -e "CREATE DATABASE IF NOT EXISTS \`${SYNC_DATABASE}\`;"
-              mariadb_exec -e "CREATE USER IF NOT EXISTS '${SYNC_USERNAME}'@'%' IDENTIFIED BY '${SYNC_PASSWORD}';"
-              mariadb_exec -e "GRANT ALL PRIVILEGES ON \`${SYNC_DATABASE}\`.* TO '${SYNC_USERNAME}'@'%';"
+              mariadb_exec -e "CREATE USER IF NOT EXISTS \`${SYNC_USERNAME}\`@'%' IDENTIFIED BY '${SYNC_PASSWORD}';"
+              mariadb_exec -e "GRANT ALL PRIVILEGES ON \`${SYNC_DATABASE}\`.* TO \`${SYNC_USERNAME}\`@'%';"
           volumeMounts:
             - name: config
               mountPath: /config

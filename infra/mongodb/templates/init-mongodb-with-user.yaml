@@ -73,6 +73,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
+              set -e
               set -a
               . /config/env
               set +a
@@ -88,10 +89,12 @@ spec:
               if [ "$result" != "null" ]; then
                   echo "User $SYNC_USERNAME exists"
               else
-                  mongo_exec "db.getSiblingDB(\"${SYNC_DATABASE}\").createUser( { user: \"${SYNC_USERNAME}\", pwd: \"${SYNC_PASSWORD}\", roles: [ \"readWrite\" ] } );"
-                  mongo_exec "db.getSiblingDB(\"${SYNC_DATABASE}\").grantRolesToUser(\"${SYNC_USERNAME}\",[{ role: \"clusterMonitor\", db: \"admin\" }]);"
+                  ESCAPED_PASSWORD=$(echo "$SYNC_PASSWORD" | sed 's/\\/\\\\/g; s/"/\\"/g')  
+                  mongo_exec "db.getSiblingDB(\"${SYNC_DATABASE}\").createUser( { user: \"${SYNC_USERNAME}\", pwd: \"${ESCAPED_PASSWORD}\", roles: [ \"readWrite\" ] } );"
                   echo "Created User $SYNC_USERNAME"
               fi
+              mongo_exec "db.getSiblingDB(\"${SYNC_DATABASE}\").grantRolesToUser(\"${SYNC_USERNAME}\",[{ role: \"clusterMonitor\", db: \"admin\" }]);"
+              echo "Granted permissions to $SYNC_USERNAME on $SYNC_DATABASE"
 
           volumeMounts:
             - name: config
