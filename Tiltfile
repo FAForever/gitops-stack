@@ -244,7 +244,7 @@ k8s_resource(new_name="faf-league-service-config", objects=["faf-league-service:
 k8s_resource(workload="faf-league-service", resource_deps=["faf-league-service-config"] + mariadb_setup_resources + rabbitmq_setup_resources, labels=["leagues"])
 
 lobby_server_yaml = helm_with_build_cache("apps/faf-lobby-server", namespace="faf-apps", values=["config/local.yaml"])
-lobby_server_yaml = patch_config(lobby_server_yaml, "faf-lobby-server", {"HYDRA_JWKS_URI": "http://ory-hydra:4444//.well-known/jwks.json"})
+lobby_server_yaml = patch_config(lobby_server_yaml, "faf-lobby-server", {"HYDRA_JWKS_URI": "http://ory-hydra:4444/.well-known/jwks.json"})
 lobby_server_yaml = no_policy_server(lobby_server_yaml)
 k8s_yaml(lobby_server_yaml)
 k8s_resource(new_name="faf-lobby-server-config", objects=["faf-lobby-server:configmap", "faf-lobby-server:secret"], labels=["lobby"])
