@@ -39,7 +39,7 @@ spec:
               port: 3000
               path: /healthz
             failureThreshold: 10
-            periodSeconds: 3
+            periodSeconds: 5
           livenessProbe:
             httpGet:
               port: 3000

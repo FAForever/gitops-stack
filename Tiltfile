@@ -232,7 +232,7 @@ k8s_resource(workload="faf-website", objects=["faf-website:ingressroute"], resou
 
 k8s_yaml(helm_with_build_cache("apps/ergochat", namespace="faf-apps", values=["config/local.yaml"], set=["baseDomain=chat.localhost"]))
 k8s_resource(new_name="ergochat-config", objects=["ergochat:configmap", "ergochat:secret"], labels=["chat"])
-k8s_resource(workload="ergochat", objects=["ergochat-webirc:ingressroute"], resource_deps=["traefik"], port_forwards=["8097:8097"], labels=["chat"])
+k8s_resource(workload="ergochat", objects=["ergochat-webirc:ingressroute"], resource_deps=["traefik"] + mariadb_setup_resources, port_forwards=["8097:8097"], labels=["chat"])
 
 api_yaml = helm_with_build_cache("apps/faf-api", namespace="faf-apps", values=["config/local.yaml", "apps/faf-api/values-test.yaml"])
 api_yaml = patch_config(api_yaml, "faf-api", {"JWT_FAF_HYDRA_ISSUER": "http://ory-hydra:4444"})

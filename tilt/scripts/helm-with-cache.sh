@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 cache_dir=$1
 shift
