@@ -1,0 +1,45 @@
+traefik:
+  deployment:
+    enabled: true
+
+  additionalArguments:
+    - "--entrypoints.websecure.http.encodequerysemicolons=true"
+
+  updateStrategy:
+    type: Recreate
+
+  hostNetwork: true
+
+  ports:
+    metrics:
+      # When using hostNetwork, use another port to avoid conflict with node exporter:
+      # https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+      port: 9101
+
+    web:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+          
+    websecure:
+      transport:
+        respondingTimeouts:
+          readTimeout: 60
+
+    replay-stream:
+      port: 15000
+
+  # HostNetwork
+  service:
+    enabled: false
+
+  logs:
+    general:
+      # -- By default, the logs use a text format (common), but you can
+      # also ask for the json format in the format option
+      # format: json
+      # By default, the level is set to ERROR.
+      # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
+      level: INFO

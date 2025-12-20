@@ -17,7 +17,7 @@ spec:
         app: mongodb
     spec:
       containers:
-        - image: mongo:8.2.2
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: Always
           name: mongodb
           ports:
@@ -28,6 +28,12 @@ spec:
                 name: mongodb
             - secretRef:
                 name: mongodb
+          startupProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 15
+            timeoutSeconds: 60
+            periodSeconds: 5
           volumeMounts:
             - name: mongodb-pvc
               mountPath: /data/db

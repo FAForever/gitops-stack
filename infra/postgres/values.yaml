@@ -1,2 +1,24 @@
+image:
+  repository: "postgres"
+  tag: "17.6-bookworm"
+
+upgrade-image:
+  repository: "pgautoupgrade/pgautoupgrade"
+  tag: "17-bookworm"
+
 infisical-secret:
   name: postgres
+
+databasesAndUsers:
+  # Others
+  - configMapRef: wikijs
+    secretRef: wikijs
+    databaseKey: DB_NAME
+    usernameKey: DB_USER
+    passwordKey: DB_PASS
+
+  - configMapRef: ory-hydra
+    secretRef: ory-hydra
+    databaseKey: DB_NAME
+    usernameKey: DB_USER
+    passwordKey: DB_PASSWORD

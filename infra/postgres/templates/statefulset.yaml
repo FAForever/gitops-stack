@@ -17,23 +17,23 @@ spec:
         app: postgres
     spec:
       initContainers:
-        - image: pgautoupgrade/pgautoupgrade:17-bookworm
+        - image: {{ index .Values "upgrade-image" "repository" }}:{{ index .Values "upgrade-image" "tag" }}
           name: upgrade-postgres
           env:
             - name: PGAUTO_ONESHOT
               value: "yes"
-            # - name: POSTGRES_PASSWORD
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: postgres
-            #       key: POSTGRES_PASSWORD
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: POSTGRES_PASSWORD
           volumeMounts:
             - name: postgres-pvc
               mountPath: /var/lib/postgresql/data/
 
       restartPolicy: Always
       containers:
-        - image: postgres:17.6-bookworm
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: Always
           name: postgres
           ports:
@@ -44,6 +44,12 @@ spec:
                 name: postgres
             - secretRef:
                 name: postgres
+          startupProbe:
+            exec:
+              command: ["pg_isready", "-Upostgres", "-h127.0.0.1"]
+            periodSeconds: 5
+            failureThreshold: 30
+            timeoutSeconds: 2
           volumeMounts:
             - name: postgres-pvc
               mountPath: /var/lib/postgresql/data

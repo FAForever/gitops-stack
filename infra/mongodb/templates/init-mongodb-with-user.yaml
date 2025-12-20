@@ -14,10 +14,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: mariadb-sync-db-user-{{ $wave }}
+  name: mongodb-sync-db-user-{{ $wave }}
   labels:
-    app: mariadb-sync-db-user
-    argocd.argoproj.io/instance: mariadb
+    app: mongodb-sync-db-user
+    argocd.argoproj.io/instance: mongodb
   annotations:
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
@@ -62,12 +62,14 @@ spec:
             - name: config
               mountPath: /config
       containers:
-        - name: mariadb-sync-db-user
+        - name: mongodb-sync-db-user
           image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
           imagePullPolicy: Always
           envFrom:
             - secretRef:
-                name: mariadb
+                name: mongodb
+            - configMapRef:
+                name: mongodb
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -76,13 +78,24 @@ spec:
               . /config/env
               set +a
 
-              mariadb_exec() {
-                mariadb --host=mariadb --user=root --password="${MARIADB_ROOT_PASSWORD}" "$@"
+              ADMIN_USER=$MONGO_INITDB_ROOT_USERNAME
+              ADMIN_PASSWORD=$MONGO_INITDB_ROOT_PASSWORD
+
+              mongo_exec() {
+                mongosh --quiet --host mongodb.faf-infra.svc --username "$ADMIN_USER" --password "$ADMIN_PASSWORD" --authenticationDatabase admin --eval "$@"
               }
 
-              mariadb_exec -e "CREATE DATABASE IF NOT EXISTS \`${SYNC_DATABASE}\`;"
-              mariadb_exec -e "CREATE USER IF NOT EXISTS \`${SYNC_USERNAME}\`@'%' IDENTIFIED BY '${SYNC_PASSWORD}';"
-              mariadb_exec -e "GRANT ALL PRIVILEGES ON \`${SYNC_DATABASE}\`.* TO \`${SYNC_USERNAME}\`@'%';"
+              result=$(mongo_exec "db.getSiblingDB(\"$SYNC_DATABASE\").getUser(\"$SYNC_USERNAME\");")
+              if [ "$result" != "null" ]; then
+                  echo "User $SYNC_USERNAME exists"
+              else
+                  ESCAPED_PASSWORD=$(echo "$SYNC_PASSWORD" | sed 's/\\/\\\\/g; s/"/\\"/g')  
+                  mongo_exec "db.getSiblingDB(\"${SYNC_DATABASE}\").createUser( { user: \"${SYNC_USERNAME}\", pwd: \"${ESCAPED_PASSWORD}\", roles: [ \"readWrite\" ] } );"
+                  echo "Created User $SYNC_USERNAME"
+              fi
+              mongo_exec "db.getSiblingDB(\"${SYNC_DATABASE}\").grantRolesToUser(\"${SYNC_USERNAME}\",[{ role: \"clusterMonitor\", db: \"admin\" }]);"
+              echo "Granted permissions to $SYNC_USERNAME on $SYNC_DATABASE"
+
           volumeMounts:
             - name: config
               mountPath: /config

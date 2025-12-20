@@ -26,6 +26,12 @@ spec:
           envFrom:
             - secretRef:
                 name: mariadb
+          startupProbe:
+            exec:
+              command: ["mariadb-admin", "ping", "-uroot", "-h127.0.0.1"]
+            periodSeconds: 10
+            timeoutSeconds: 15
+            initialDelaySeconds: 5
           volumeMounts:
             - name: mariadb-pvc
               mountPath: /var/lib/mysql
