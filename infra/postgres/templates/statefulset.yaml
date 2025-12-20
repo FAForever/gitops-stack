@@ -46,8 +46,10 @@ spec:
                 name: postgres
           startupProbe:
             exec:
-              command: ["pg_isready", "-Uroot", "-h127.0.0.1"]
+              command: ["pg_isready", "-Upostgres", "-h127.0.0.1"]
             periodSeconds: 5
+            failureThreshold: 30
+            timeoutSeconds: 2
           volumeMounts:
             - name: postgres-pvc
               mountPath: /var/lib/postgresql/data
