@@ -7,7 +7,7 @@ config.define_string_list("to-run", args=True)
 cfg = config.parse()
 windows_bash_path = cfg.get("windows-bash-path", "C:\\Program Files\\Git\\bin\\bash.exe")
 
-data_relative_path = "local-data"
+data_relative_path = ".local-data"
 if os.name == "nt":
     if not os.path.exists(windows_bash_path):
         fail("Windows users need to supply a valid path to a bash executable")

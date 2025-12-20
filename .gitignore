@@ -10,5 +10,5 @@ spicy-secrets/**
 **/charts/*.tgz
 
 tilt_config.json
-local-data/
+.local-data/
 .helm-cache/
