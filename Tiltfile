@@ -15,7 +15,6 @@ if os.name == "nt":
     if k8s_context() == "docker-desktop":
         drive, path_without_drive = os.getcwd().split(":")
         data_absolute_path = os.path.join("//run/desktop/mnt/host/", drive, path_without_drive, data_relative_path).replace("\\","/").lower()
-        data_absolute_path = os.path.join("//run/desktop/mnt/host/", drive, path_without_drive, data_relative_path).replace("\\","/").lower()
         use_named_volumes = ["mariadb"]
     elif k8s_context() == "minikube":
         data_absolute_path = "//data/" + data_relative_path
