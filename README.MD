@@ -61,3 +61,23 @@ kubectl create secret generic "infisical-service-token" \
     --from-literal=infisicalToken=<your-token-here>
 done
 ```
+
+# Local Development Using Tilt
+
+This repository aims to provide a ready-to-go [Tilt](https://docs.tilt.dev/) setup for ephemeral FAF infrastructure local development on kubernetes.
+
+## Prerequisites
+* [Tilt](https://docs.tilt.dev/install.html)
+* Kuberenetes ([Docker Desktop](https://docs.docker.com/desktop/kubernetes/) or [Minikube](https://minikube.sigs.k8s.io/docs/) are recommended for those new to kubernetes) [Tilt cluster setup](https://docs.tilt.dev/choosing_clusters)
+* For windows users a bash program. By default git bash is used with an assumed installation directory of C:/Program Files/Git
+* [helm](https://helm.sh/docs/intro/install/) must be installed to generate the k8s from the helm charts in the gitops repo
+
+## Startup Services
+In the root directoy of the repository run `tilt up`. This will start all the faf services in the correct order. The status of each service can be viewed in the tilt UI by visiting http://localhost:10350. This is the control server for tilt where you can restart services or disable them for substitution by services you would like to run from source code as you actively develop them.
+
+## Development
+To develop against the FAF infrastructure you should disable the service in tilt that you are actively developing. Once disabled you can start up your developed version. Some tweaks may need to be made to the default configuration parameters in the source code. The proper values can be found in the configMaps in each of the services kubernetes deploy yaml files.
+
+## Test Data
+The default test data that is loaded can be found in /sql/test-data.sql. This can be overridden by providing a new path with the tilt configuration key test-data-path when running tilt up or in the tilt_config.json file in the repository root directory.
+

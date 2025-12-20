@@ -7,3 +7,5 @@ infisical-secret:
 baseDomain: "faforever.com"
 traefik:
   tlsStoreSecret: "cloudflare-faf-com"
+zfs:
+  nodeId: "fafprod3"

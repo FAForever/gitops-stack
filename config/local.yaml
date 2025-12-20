@@ -4,3 +4,5 @@ baseDomain: "localhost"
 infisical-secret:
   enabled: false
 traefik: {}
+zfs:
+  nodeId: ""
