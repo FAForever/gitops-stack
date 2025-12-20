@@ -20,4 +20,5 @@ data:
   GEOIPUPDATE_EDITION_IDS: "GeoLite2-City"
   LOKI_BASE_URL: "http://monitoring-loki-gateway.faf-ops.svc"
   FORCE_RELAY: "true"
+  REAL_IP_HEADER: "Cf-Connecting-Ip"
   QUARKUS_LOG_CATEGORY__COM_FAFOREVER__LEVEL: "TRACE"
