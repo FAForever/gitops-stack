@@ -68,8 +68,8 @@ def cronjob_to_job(yaml):
             spec = object["spec"]
             spec.pop("suspend")
             spec.pop("schedule")
-            jobTemplate = spec.pop("jobTemplate")
-            spec["template"] = jobTemplate["spec"]["template"]
+            job_template = spec.pop("jobTemplate")
+            spec["template"] = job_template["spec"]["template"]
 
     return encode_yaml_stream(objects)
 
@@ -113,12 +113,12 @@ def to_hostpath_storage(yaml, use_named_volumes):
     for object in objects:
         if object["kind"] == "PersistentVolume":
             object["spec"].pop("nodeAffinity")
-            localpath = object["spec"].pop("local")
-            if os.path.basename(localpath["path"]) in use_named_volumes:
-                volume_name = os.path.basename(localpath["path"])
-                localpath["path"] = volume_name
+            localpath_spec = object["spec"].pop("local")
+            if os.path.basename(localpath_spec["path"]) in use_named_volumes:
+                volume_name = os.path.basename(localpath_spec["path"])
+                localpath_spec["path"] = volume_name
             
-            object["spec"]["hostPath"] = localpath
+            object["spec"]["hostPath"] = localpath_spec
             object["spec"]["hostPath"]["type"] = "DirectoryOrCreate"
             object["spec"]["accessModes"] = ["ReadWriteMany"]
         if object["kind"] == "PersistentVolumeClaim":
