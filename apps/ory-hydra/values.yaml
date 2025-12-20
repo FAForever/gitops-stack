@@ -114,3 +114,16 @@ clients:
     grantType: "client_credentials"
     scope: "public_profile"
     tokenEndpointAuthMethod: "client_secret_post"
+
+  - name: "FAF Wiki"
+    id: "b44e0022-f6a7-41ec-b6c1-3932b00c88aa"
+    secret:
+      name: ory-hydra
+      key: WIKIJS_SECRET
+    grantType: "authorization_code,refresh_token"
+    scope: "openid,public_profile"
+    redirectUri: "https://wiki.$BASE_DOMAIN/login/hydra/callback"
+    tosUri: "https://$BASE_DOMAIN/tos"
+    policyUri: "https://$BASE_DOMAIN/privacy"
+    logoUri: "https://$BASE_DOMAIN/images/faf-logo.png"
+    tokenEndpointAuthMethod: "client_secret_post"
