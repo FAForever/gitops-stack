@@ -33,7 +33,7 @@ spec:
 
       restartPolicy: Always
       containers:
-        - image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: Always
           name: postgres
           ports:
