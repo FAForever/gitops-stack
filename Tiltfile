@@ -109,9 +109,16 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[]):
         containers = spec.get("containers", []) 
         for container in containers:
             container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
-        initContainers = spec.get("initContainers", []) 
-        for initContainer in initContainers:
-            initContainer["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
+        init_containers = spec.get("initContainers", []) 
+        for init_container in init_containers:
+            init_container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
+        job_template_spec = object.get("spec", {}).get("jobTemplate", {}).get("spec", {}).get("template", {}).get("spec", {})
+        job_template_containers = spec.get("containers", []) 
+        for container in job_template_containers:
+            container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
+        job_template_init_containers = spec.get("initContainers", []) 
+        for init_container in job_template_init_containers:
+            init_container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
 
     return encode_yaml_stream(objects)
 
