@@ -56,7 +56,7 @@ def remove_init_container(yaml):
             if "template" in spec:
                 template = spec["template"]
                 if "spec" in template and "initContainers" in template["spec"]:
-                    template["spec"].pop("initContainers")
+                    template["spec"].pop("initContainers", None)
 
     return encode_yaml_stream(objects)
 
@@ -66,9 +66,9 @@ def cronjob_to_job(yaml):
         if object["kind"] == "CronJob":
             object["kind"] = "Job"
             spec = object["spec"]
-            spec.pop("suspend")
-            spec.pop("schedule")
-            job_template = spec.pop("jobTemplate")
+            spec.pop("suspend", None)
+            spec.pop("schedule", None)
+            job_template = spec.pop("jobTemplate", {"spec": {"template": {}}})
             spec["template"] = job_template["spec"]["template"]
 
     return encode_yaml_stream(objects)
@@ -112,8 +112,8 @@ def to_hostpath_storage(yaml, use_named_volumes):
     objects = decode_yaml_stream(yaml)
     for object in objects:
         if object["kind"] == "PersistentVolume":
-            object["spec"].pop("nodeAffinity")
-            localpath_spec = object["spec"].pop("local")
+            object["spec"].pop("nodeAffinity", None)
+            localpath_spec = object["spec"].pop("local", "")
             if os.path.basename(localpath_spec["path"]) in use_named_volumes:
                 volume_name = os.path.basename(localpath_spec["path"])
                 localpath_spec["path"] = volume_name
@@ -138,7 +138,7 @@ def no_policy_server(yaml):
             
     return encode_yaml_stream(objects)
 
-k8s_yaml("tilt/config/namespaces.yaml")
+k8s_yaml("cluster/namespaces.yaml")
 k8s_yaml(helm_with_build_cache("infra/clusterroles", namespace="faf-infra", values=["config/local.yaml"]))
 k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace"], labels=["core"])
 k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], labels=["core"])
@@ -215,8 +215,8 @@ for object in decode_yaml_stream(rabbitmq_init_user_yaml):
 k8s_yaml(cronjob_to_job(helm_with_build_cache("apps/faf-db-migrations", namespace="faf-apps", values=["config/local.yaml"])))
 k8s_resource(workload="faf-db-migrations", objects=["faf-db-migrations:secret"], resource_deps=mariadb_setup_resources, labels=["database"])
 
-populate_db_command = ["tilt/scripts/populate-db.sh", cfg.get("test-data-path", "tilt/sql/test-data.sql")]
-agnostic_local_resource(name = "populate-db", allow_parallel = True, cmd = populate_db_command, resource_deps=["faf-db-migrations"], labels=["database"], auto_init=False)
+k8s_yaml("tilt/yaml/populate-db.yaml")
+k8s_resource(workload="populate-db", resource_deps=["faf-db-migrations"], labels=["database"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
 
 k8s_yaml(keep_objects_of_kind(helm_with_build_cache("apps/faf-voting", namespace="faf-apps", values=["config/local.yaml"]), kinds=["ConfigMap", "Secret"]))
 k8s_resource(new_name="faf-voting-config", objects=["faf-voting:configmap", "faf-voting:secret"], labels=["voting"])

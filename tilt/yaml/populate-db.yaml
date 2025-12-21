@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: populate-db
+  namespace: faf-infra
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      containers:
+        - name: populate-db
+          image: mariadb:12.1
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: mariadb
+          command: ["/bin/sh", "-c"]
+          args:
+            - apt-get update && apt-get install -y curl && curl -s https://raw.githubusercontent.com/FAForever/db/refs/heads/develop/test-data.sql | mariadb -h mariadb -uroot -p"${MARIADB_ROOT_PASSWORD}" -D faf_lobby
+      restartPolicy: Never
