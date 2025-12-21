@@ -1,9 +1,7 @@
 # This file is used for local development with tilt from https://tilt.dev/ in order to stand up the faf k8s stack from scratch
 
 config.define_string("windows-bash-path", args=False, usage="Path to bash.exe for windows")
-config.define_string("test-data-path", args=False, usage="Path to test data sql file")
-config.define_string("lobby-server-path", args=False, usage="Path to lobby server repository")
-config.define_string_list("to-run", args=True)
+config.define_string("default_pull_policy", args=False, usage="Pull policy to use for containers")
 cfg = config.parse()
 windows_bash_path = cfg.get("windows-bash-path", "C:\\Program Files\\Git\\bin\\bash.exe")
 
@@ -73,7 +71,7 @@ def cronjob_to_job(yaml):
 
     return encode_yaml_stream(objects)
 
-def helm_with_build_cache(chart, namespace="", values=[], set=[]):
+def helm_with_build_cache(chart, namespace="", values=[], set=[], pull_policy="IfNotPresent"):
     cache_dir = ".helm-cache"
     
     chart_resource = chart.replace("/", "-")
@@ -105,6 +103,15 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[]):
         for object in objects:
             if "namespace" not in object["metadata"]:
                 object["metadata"]["namespace"] = namespace 
+    
+    for object in objects:
+        spec = object.get("spec", {}).get("template", {}).get("spec", {})
+        containers = spec.get("containers", []) 
+        for container in containers:
+            container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
+        initContainers = spec.get("initContainers", []) 
+        for initContainer in initContainers:
+            initContainer["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
 
     return encode_yaml_stream(objects)
 
@@ -113,7 +120,7 @@ def to_hostpath_storage(yaml, use_named_volumes):
     for object in objects:
         if object["kind"] == "PersistentVolume":
             object["spec"].pop("nodeAffinity", None)
-            localpath_spec = object["spec"].pop("local", "")
+            localpath_spec = object["spec"].pop("local", {"path": ""})
             if os.path.basename(localpath_spec["path"]) in use_named_volumes:
                 volume_name = os.path.basename(localpath_spec["path"])
                 localpath_spec["path"] = volume_name
