@@ -71,7 +71,7 @@ def cronjob_to_job(yaml):
 
     return encode_yaml_stream(objects)
 
-def helm_with_build_cache(chart, namespace="", values=[], set=[], pull_policy="IfNotPresent"):
+def helm_with_build_cache(chart, namespace="", values=[], set=[]):
     cache_dir = ".helm-cache"
     
     chart_resource = chart.replace("/", "-")
