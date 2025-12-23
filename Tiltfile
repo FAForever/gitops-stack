@@ -237,9 +237,11 @@ k8s_resource(workload="populate-db", resource_deps=["faf-db-migrations"], labels
 k8s_yaml(keep_objects_of_kind(helm_with_build_cache("apps/faf-voting", namespace="faf-apps", values=["config/local.yaml"]), kinds=["ConfigMap", "Secret"]))
 k8s_resource(new_name="faf-voting-config", objects=["faf-voting:configmap", "faf-voting:secret"], labels=["voting"])
 
-k8s_yaml(helm_with_build_cache("apps/faf-website", namespace="faf-apps", values=["config/local.yaml", "apps/faf-website/values-prod.yaml"]))
+website_yaml = helm_with_build_cache("apps/faf-website", namespace="faf-apps", values=["config/local.yaml", "apps/faf-website/values-prod.yaml"])
+website_yaml = patch_config(website_yaml, "faf-website", {"OAUTH_URL": "http://ory-hydra:4444", "OAUTH_PUBLIC_URL": "http://localhost:4444", "API_URL": "http://faf-api:8010", "WP_URL": "http://wordpress:80"})
+k8s_yaml(website_yaml)
 k8s_resource(new_name="faf-website-config", objects=["faf-website:configmap", "faf-website:secret"], labels=["website"])
-k8s_resource(workload="faf-website", objects=["faf-website:ingressroute"], resource_deps=["traefik"], labels=["website"], links=[link("https://www.localhost", "FAForever Website")])
+k8s_resource(workload="faf-website", objects=["faf-website:ingressroute"], resource_deps=["traefik", "wordpress"], labels=["website"], links=[link("https://www.localhost", "FAForever Website")])
 
 # k8s_yaml(helm_with_build_cache("apps/faf-content", namespace="faf-apps", values=["config/local.yaml"]))
 # k8s_resource(new_name="faf-content-config", objects=["faf-content:configmap"], labels=["content"])
