@@ -20,8 +20,8 @@ jobs:
         run: ctlptl create cluster kind --registry=ctlptl-registry
 
       - name: Install Helm
-        run: snap install helm --classic
-
+        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4 | bash
+        
       - name: Test Using Local Config
         run: tilt ci
 
