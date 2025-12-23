@@ -9,6 +9,7 @@ data:
   HYDRA_URL: "https://hydra.{{.Values.baseDomain}}"
   SELF_URL: "https://ice.{{.Values.baseDomain}}"
   DB_USERNAME: "faf-icebreaker"
+  DB_NAME: "faf-icebreaker"
   DB_URL: "jdbc:mariadb://mariadb:3306/faf-icebreaker?ssl=false"
   RABBITMQ_HOST: "rabbitmq"
   RABBITMQ_USER: "faf-icebreaker"
