@@ -19,6 +19,9 @@ jobs:
       - name: Create k8s Kind Cluster
         run: ctlptl create cluster kind --registry=ctlptl-registry
 
+      - name: Install Helm
+        run: snap install helm --classic
+
       - name: Test Using Local Config
         run: tilt ci
 
