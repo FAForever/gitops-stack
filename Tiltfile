@@ -156,7 +156,7 @@ def no_policy_server(yaml):
 
 k8s_yaml("cluster/namespaces.yaml")
 k8s_yaml(helm_with_build_cache("infra/clusterroles", namespace="faf-infra", values=["config/local.yaml"]))
-k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace"], labels=["core"])
+k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace", "traefik:namespace"], labels=["core"])
 k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], labels=["core"])
 k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra", "init-apps:serviceaccount:faf-apps", "allow-init-apps-read-app-config-infra:rolebinding", "allow-init-apps-read-app-config-apps:rolebinding"], resource_deps=["clusterroles"], labels=["core"])
 
@@ -182,7 +182,7 @@ for object in decode_yaml_stream(traefik_yaml):
     if kind != "deployment" and kind != "service":
         traefik_identifiers.append(name + ":" + kind)
 
-k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, labels=["traefik"])
+k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces"], labels=["traefik"])
 k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443"], resource_deps=["traefik-setup"], labels=["traefik"])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
