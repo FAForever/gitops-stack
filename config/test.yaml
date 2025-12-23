@@ -10,3 +10,5 @@ infisical-secret:
 baseDomain: "faforever.xyz"
 traefik:
   tlsStoreSecret: "cloudflare-faf-xyz"
+zfs:
+  nodeId: "faftest2"

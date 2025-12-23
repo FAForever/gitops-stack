@@ -2,3 +2,13 @@ certs
 spicy-secrets/**
 **/charts
 .idea
+
+# Ignore Chart.lock files
+**/Chart.lock
+
+# Ignore Helm chart tarballs in any charts/ directory at any depth
+**/charts/*.tgz
+
+tilt_config.json
+.local-data/
+.helm-cache/
