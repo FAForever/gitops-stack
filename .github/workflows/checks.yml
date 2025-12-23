@@ -21,8 +21,8 @@ jobs:
 
       - name: Install Helm
         run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4 | bash
-        
+
       - name: Test Using Local Config
-        run: tilt ci
+        run: tilt ci --timeout "5m"
 
       
