@@ -17,6 +17,8 @@ if os.name == "nt":
     elif k8s_context() == "minikube":
         data_absolute_path = "//data/" + data_relative_path
         use_named_volumes = []
+    else:
+        fail("Cannot determine how to mount for windows host")
 
 else:
     data_absolute_path = os.path.join(os.getcwd(), data_relative_path)
@@ -113,10 +115,10 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[]):
         for init_container in init_containers:
             init_container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
         job_template_spec = object.get("spec", {}).get("jobTemplate", {}).get("spec", {}).get("template", {}).get("spec", {})
-        job_template_containers = spec.get("containers", []) 
+        job_template_containers = job_template_spec.get("containers", []) 
         for container in job_template_containers:
             container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
-        job_template_init_containers = spec.get("initContainers", []) 
+        job_template_init_containers = job_template_spec.get("initContainers", []) 
         for init_container in job_template_init_containers:
             init_container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
 
