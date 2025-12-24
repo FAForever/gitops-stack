@@ -9,8 +9,9 @@ data:
     key: faf-hydra
     title: FAF Ory Hydra Login
     author: Sheikah
-    useForm: false
+    logo: https://{{ $.Values.baseDomain }}/images/faf-logo.png
     isAvailable: true
+    useForm: false
     scopes:
       - openid
       - public_profile
@@ -25,17 +26,20 @@ data:
         title: Client Secret
         hint: Application Client Secret
         order: 2
-      oauthBaseUrl:
+      authorizationURL:
         type: String
-        title: OAuth Base URL
+        title: Authorization Endpoint URL
+        hint: Application Authorization Endpoint URL
         order: 3
-      callbackUrl:
+      tokenURL:
         type: String
-        title: Callback URL
+        title: Token Endpoint URL
+        hint: Application Token Endpoint URL
         order: 4
-      apiUrl:
+      issuer:
         type: String
-        title: FAF Api Url
+        title: Issuer
+        hint: Issuer URL
         order: 5
       logoutURL:
         type: String
@@ -43,48 +47,35 @@ data:
         hint: (optional) Logout URL on the OAuth2 provider where the user will be redirected to complete the logout process.
         order: 6
   "authentication.js": |-
-    const OidcStrategy = require('passport-openidconnect')
-    const request = require('request')
+    const OpenIDConnectStrategy = require('passport-openidconnect')
 
     module.exports = {
-        init(passport, conf) {
+        init (passport, conf) {
             passport.use(conf.key,
-                new OidcStrategy({
-                        issuer: conf.oauthBaseUrl + '/',
-                        tokenURL: conf.oauthBaseUrl + '/oauth2/token',
-                        authorizationURL: conf.oauthBaseUrl + '/oauth2/auth',
-                        userInfoURL: conf.oauthBaseUrl + '/userinfo?schema=openid',
-                        clientID: conf.clientId,
-                        clientSecret: conf.clientSecret,
-                        callbackURL: conf.callbackURL,
-                        scope: ['openid', 'public_profile'],
-                        passReqToCallback: true
-                    },
-                    function (req, iss, sub, profile, jwtClaims, accessToken, refreshToken, params, cb) {
-                        const providerKey = req.params.strategy
-                        request.get(
-                            {
-                                url: conf.apiUrl + '/me',
-                                headers: {'Authorization': 'Bearer ' + accessToken}
-                            },
-                            function (e, r, body) {
-                                if (r.statusCode !== 200) {
-                                    console.log('Auth failure: ' + r.statusCode)
-
-                                    return cb(null)
-                                }
-                                let user = JSON.parse(body)
-                                let accountPromise = WIKI.models.users.processProfile({providerKey: providerKey,
-                                    profile: {id: user.data.attributes.userId,
-                                        email: user.data.attributes.userName + "@faforever.com",
-                                        displayName: user.data.attributes.userName}})
-                                accountPromise.then(account => {
-                                    cb(null, account)
-                                })
-                            }
-                        )
-                    }
-                )
+            new OpenIDConnectStrategy({
+              authorizationURL: conf.authorizationURL,
+              tokenURL: conf.tokenURL,
+              clientID: conf.clientId,
+              clientSecret: conf.clientSecret,
+              issuer: conf.issuer,
+              callbackURL: conf.callbackURL,
+              passReqToCallback: true,
+              skipUserProfile: true
+            }, async (req, iss, profile, cb) => {
+              try {
+                const user = await WIKI.models.users.processProfile({
+                  providerKey: req.params.strategy,
+                  profile: {
+                    id: profile.id,
+                    username: profile.username,
+                    email: profile.username + '@faforever.com',
+                  }
+                })
+                cb(null, user)
+              } catch (err) {
+                cb(err, null)
+              }
+            })
             )
         },
         logout(conf) {
