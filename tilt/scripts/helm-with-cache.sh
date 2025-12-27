@@ -1,10 +1,9 @@
 #!/bin/bash
 
-cache_dir=$1
+chart_cache_dir=$1
 shift
 
 chart=$1
-chart_cache_dir="$cache_dir/$chart"
 
 mkdir -p "$chart_cache_dir"
 
