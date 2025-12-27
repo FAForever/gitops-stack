@@ -107,11 +107,12 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[]):
                 object["metadata"]["namespace"] = namespace 
     
     for object in objects:
-        spec = object.get("spec", {}).get("template", {}).get("spec", {})
-        containers = spec.get("containers", []) 
+        spec = object.get("spec", {})
+        template_spec = spec.get("template", {}).get("spec", {})
+        containers = template_spec.get("containers", []) 
         for container in containers:
             container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
-        init_containers = spec.get("initContainers", []) 
+        init_containers = template_spec.get("initContainers", []) 
         for init_container in init_containers:
             init_container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
         job_template_spec = object.get("spec", {}).get("jobTemplate", {}).get("spec", {}).get("template", {}).get("spec", {})
@@ -121,6 +122,10 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[]):
         job_template_init_containers = job_template_spec.get("initContainers", []) 
         for init_container in job_template_init_containers:
             init_container["imagePullPolicy"] = cfg.get("default_pull_policy", "IfNotPresent")
+        if "entryPoints" in spec:
+            entryPoints = spec["entryPoints"]
+            if "websecure" in entryPoints:
+                entryPoints.append("web")
 
     return encode_yaml_stream(objects)
 
@@ -153,12 +158,17 @@ def no_policy_server(yaml):
             object["data"]["config.yaml"] = str(config_yaml)
             
     return encode_yaml_stream(objects)
+    
+agnostic_local_resource("create-hosts-file-content", cmd=["./tilt/scripts/print-hosts.sh"], labels=["core"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL, allow_parallel=True)
 
 k8s_yaml("cluster/namespaces.yaml")
 k8s_yaml(helm_with_build_cache("infra/clusterroles", namespace="faf-infra", values=["config/local.yaml"]))
 k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace", "traefik:namespace"], labels=["core"])
 k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], labels=["core"])
 k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra", "init-apps:serviceaccount:faf-apps", "allow-init-apps-read-app-config-infra:rolebinding", "allow-init-apps-read-app-config-apps:rolebinding"], resource_deps=["clusterroles"], labels=["core"])
+
+k8s_yaml(helm_with_build_cache("disabled/reloader", namespace="faf-ops", values=["config/local.yaml"]))
+k8s_resource(workload="release-name-reloader", new_name="reloader", objects=["release-name-reloader:serviceaccount", "release-name-reloader-metadata-role:role", "release-name-reloader-role:clusterrole", "release-name-reloader-metadata-role-binding:rolebinding", "release-name-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
 
 storage_yaml = helm_with_build_cache("cluster/storage", values=["config/local.yaml"], set=["dataPath="+data_absolute_path])
 storage_yaml = to_hostpath_storage(storage_yaml, use_named_volumes=use_named_volumes)
@@ -172,7 +182,7 @@ for object in decode_yaml_stream(storage_yaml):
 
 k8s_resource(new_name="volumes", objects=volume_identifiers, labels=["core"], trigger_mode=TRIGGER_MODE_MANUAL)
 
-traefik_yaml = helm_with_build_cache("cluster/traefik", values=["config/local.yaml"], namespace="traefik")
+traefik_yaml = helm_with_build_cache("cluster/traefik", values=["config/local.yaml", "cluster/traefik/values-local.yaml"], namespace="traefik")
 k8s_yaml(traefik_yaml)
 
 traefik_identifiers = []
@@ -183,7 +193,7 @@ for object in decode_yaml_stream(traefik_yaml):
         traefik_identifiers.append(name + ":" + kind)
 
 k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces"], labels=["traefik"])
-k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443"], resource_deps=["traefik-setup"], labels=["traefik"])
+k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
 postgres_init_user_yaml, postgres_resource_yaml = filter_yaml(postgres_yaml, {"app": "postgres-sync-db-user"})
@@ -241,13 +251,13 @@ website_yaml = helm_with_build_cache("apps/faf-website", namespace="faf-apps", v
 website_yaml = patch_config(website_yaml, "faf-website", {"OAUTH_URL": "http://ory-hydra:4444", "OAUTH_PUBLIC_URL": "http://localhost:4444", "API_URL": "http://faf-api:8010", "WP_URL": "http://wordpress:80"})
 k8s_yaml(website_yaml)
 k8s_resource(new_name="faf-website-config", objects=["faf-website:configmap", "faf-website:secret"], labels=["website"])
-k8s_resource(workload="faf-website", objects=["faf-website:ingressroute"], resource_deps=["traefik", "wordpress"], labels=["website"], links=[link("https://www.localhost", "FAForever Website")])
+k8s_resource(workload="faf-website", objects=["faf-website:ingressroute"], resource_deps=["traefik", "wordpress"], labels=["website"], links=[link("http://www.localhost", "FAForever Website")])
 
 # k8s_yaml(helm_with_build_cache("apps/faf-content", namespace="faf-apps", values=["config/local.yaml"]))
 # k8s_resource(new_name="faf-content-config", objects=["faf-content:configmap"], labels=["content"])
-# k8s_resource(workload="faf-content", objects=["faf-content:ingressroute", "cors:middleware", "redirect-replay-subdomain:middleware"], resource_deps=["traefik"], labels=["content"], links=[link("https://content.localhost", "FAForever Content")])
+# k8s_resource(workload="faf-content", objects=["faf-content:ingressroute", "cors:middleware", "redirect-replay-subdomain:middleware"], resource_deps=["traefik"], labels=["content"], links=[link("http://content.localhost", "FAForever Content")])
 
-k8s_yaml(helm_with_build_cache("apps/ergochat", namespace="faf-apps", values=["config/local.yaml"], set=["baseDomain=chat.localhost"]))
+k8s_yaml(helm_with_build_cache("apps/ergochat", namespace="faf-apps", values=["config/local.yaml"]))
 k8s_resource(new_name="ergochat-config", objects=["ergochat:configmap", "ergochat:secret"], labels=["chat"])
 k8s_resource(workload="ergochat", objects=["ergochat-webirc:ingressroute"], resource_deps=["traefik"] + mariadb_setup_resources, port_forwards=["8097:8097"], labels=["chat"])
 
@@ -255,7 +265,7 @@ api_yaml = helm_with_build_cache("apps/faf-api", namespace="faf-apps", values=["
 api_yaml = patch_config(api_yaml, "faf-api", {"JWT_FAF_HYDRA_ISSUER": "http://ory-hydra:4444"})
 k8s_yaml(api_yaml)
 k8s_resource(new_name="faf-api-config", objects=["faf-api:configmap", "faf-api:secret", "faf-api-mail:configmap"], labels=["api"])
-k8s_resource(workload="faf-api", objects=["faf-api:ingressroute"], port_forwards=["8010"], resource_deps=["faf-api-config", "faf-db-migrations", "traefik", "ory-hydra"] + rabbitmq_setup_resources, labels=["api"], links=[link("https://api.localhost", "FAF API")])
+k8s_resource(workload="faf-api", objects=["faf-api:ingressroute"], port_forwards=["8010"], resource_deps=["faf-api-config", "faf-db-migrations", "traefik", "ory-hydra"] + rabbitmq_setup_resources, labels=["api"], links=[link("http://api.localhost", "FAF API")])
 
 k8s_yaml(helm_with_build_cache("apps/faf-league-service", namespace="faf-apps", values=["config/local.yaml"]))
 k8s_resource(new_name="faf-league-service-config", objects=["faf-league-service:configmap", "faf-league-service:secret"], labels=["leagues"])
@@ -279,23 +289,23 @@ user_service_yaml = helm_with_build_cache("apps/faf-user-service", namespace="fa
 user_service_yaml = patch_config(user_service_yaml, "faf-user-service", {"HYDRA_TOKEN_ISSUER": "http://ory-hydra:4444", "HYDRA_JWKS_URL": "http://ory-hydra:4444/.well-known/jwks.json", "LOBBY_URL":"ws://localhost:8003", "REPLAY_URL":"ws://localhost:15001"})
 k8s_yaml(user_service_yaml)
 k8s_resource(new_name="faf-user-service-config", objects=["faf-user-service:configmap", "faf-user-service:secret", "faf-user-service-mail-templates:configmap"], labels=["user"])
-k8s_resource(workload="faf-user-service", objects=["faf-user-service:ingressroute"], resource_deps=["faf-db-migrations", "traefik", "ory-hydra"], port_forwards=["8080"], labels=["user"], links=[link("https://user.localhost/register", "User Service Registration")])
+k8s_resource(workload="faf-user-service", objects=["faf-user-service:ingressroute"], resource_deps=["faf-db-migrations", "traefik", "ory-hydra"], port_forwards=["8080"], labels=["user"], links=[link("http://user.localhost/register", "User Service Registration")])
 
 k8s_yaml(helm_with_build_cache("apps/wordpress", namespace="faf-apps", values=["config/local.yaml"]))
 k8s_resource(new_name="wordpress-config", objects=["wordpress:configmap", "wordpress:secret"], labels=["website"])
-k8s_resource(workload="wordpress", objects=["wordpress:ingressroute"], resource_deps=["traefik"], labels=["website"], links=[link("https://direct.localhost", "FAF Wordpress")])
+k8s_resource(workload="wordpress", objects=["wordpress:ingressroute"], resource_deps=["traefik"], labels=["website"], links=[link("http://direct.localhost", "FAF Wordpress")])
 
 k8s_yaml(helm_with_build_cache("apps/wikijs", namespace="faf-apps", values=["config/local.yaml"]))
 k8s_resource(new_name="wikijs-config", objects=["wikijs:configmap", "wikijs:secret", "wikijs-sso:configmap"], labels=["wiki"])
-k8s_resource(workload="wikijs", objects=["wikijs:ingressroute"], resource_deps=["traefik"], labels=["wiki"], links=[link("https://wiki.localhost", "FAF Wiki")])
+k8s_resource(workload="wikijs", objects=["wikijs:ingressroute"], resource_deps=["traefik"] + postgres_setup_resources, labels=["wiki"], links=[link("http://wiki.localhost", "FAF Wiki")])
 
 k8s_yaml(helm_with_build_cache("apps/nodebb", namespace="faf-apps", values=["config/local.yaml"]))
 k8s_resource(new_name="nodebb-config", objects=["nodebb:configmap", "nodebb:secret"], labels=["forum"])
-k8s_resource(workload="nodebb", objects=["nodebb:ingressroute"], port_forwards=["4567:4567"], resource_deps=["traefik"] + mongodb_setup_resources, labels=["forum"], links=[link("https://forum.localhost", "FAF Forum")])
+k8s_resource(workload="nodebb", objects=["nodebb:ingressroute"], port_forwards=["4567:4567"], resource_deps=["traefik"] + mongodb_setup_resources, labels=["forum"], links=[link("http://forum.localhost", "FAF Forum")])
 
 k8s_yaml(helm_with_build_cache("apps/faf-unitdb", namespace="faf-apps", values=["config/local.yaml"]))
 k8s_resource(new_name="faf-unitdb-config", objects=["faf-unitdb:configmap", "faf-unitdb:secret"], labels=["unitdb"])
-k8s_resource(workload="faf-unitdb", objects=["faf-unitdb:ingressroute"], resource_deps=["traefik"], labels=["unitdb"], links=[link("https://unitdb.localhost", "Rackover UnitDB")])
+k8s_resource(workload="faf-unitdb", objects=["faf-unitdb:ingressroute"], resource_deps=["traefik"], labels=["unitdb"], links=[link("http://unitdb.localhost", "Rackover UnitDB")])
 
 k8s_yaml(keep_objects_of_kind(helm_with_build_cache("apps/debezium", namespace="faf-apps", values=["config/local.yaml"]), kinds=["ConfigMap", "Secret"]))
 k8s_resource(new_name="debezium-config", objects=["debezium:configmap", "debezium:secret"], labels=["database"])
@@ -305,7 +315,7 @@ k8s_resource(workload="faf-ws-bridge", objects=["faf-ws-bridge:ingressroute"], p
 
 icebreaker_yaml = helm_with_build_cache("apps/faf-icebreaker", namespace="faf-apps", values=["config/local.yaml"])
 icebreaker_yaml = remove_init_container(icebreaker_yaml)
-icebreaker_yaml = patch_config(icebreaker_yaml, "faf-icebreaker", {"HYDRA_URL": "http://ory-hydra:4444"})
+icebreaker_yaml = patch_config(icebreaker_yaml, "faf-icebreaker", {"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false"})
 k8s_yaml(icebreaker_yaml)
 k8s_resource(new_name="faf-icebreaker-config", objects=["faf-icebreaker:configmap", "faf-icebreaker:secret"], labels=["api"])
 k8s_resource(workload="faf-icebreaker", objects=["faf-icebreaker:ingressroute", "faf-icebreaker-stripprefix:middleware"], resource_deps=["faf-db-migrations", "traefik", "ory-hydra"] + rabbitmq_setup_resources, labels=["api"])
@@ -313,7 +323,7 @@ k8s_resource(workload="faf-icebreaker", objects=["faf-icebreaker:ingressroute", 
 hydra_yaml = helm_with_build_cache("apps/ory-hydra", namespace="faf-apps", values=["config/local.yaml"])
 hydra_client_create_yaml, hydra_resources_yaml = filter_yaml(hydra_yaml, {"app": "ory-hydra-create-clients"})
 _, hydra_resources_yaml = filter_yaml(hydra_resources_yaml, {"app": "ory-hydra-janitor"})
-hydra_resources_yaml = patch_config(hydra_resources_yaml, "ory-hydra", {"URLS_SELF_ISSUER": "http://ory-hydra:4444", "URLS_SELF_PUBLIC": "http://localhost:4444", "URLS_LOGIN": "http://localhost:8080/oauth2/login", "URLS_CONSENT": "http://localhost:8080/oauth2/consent", "DEV": "true"})
+hydra_resources_yaml = patch_config(hydra_resources_yaml, "ory-hydra", {"URLS_SELF_ISSUER": "http://ory-hydra:4444", "URLS_SELF_PUBLIC": "http://hydra.localhost", "URLS_LOGIN": "http://user.localhost/oauth2/login", "URLS_CONSENT": "http://user.localhost/oauth2/consent", "DEV": "true"})
 k8s_yaml(hydra_resources_yaml)
 k8s_yaml(hydra_client_create_yaml)
 k8s_resource(new_name="ory-hydra-config", objects=["ory-hydra:configmap", "ory-hydra:secret"], labels=["hydra"])
