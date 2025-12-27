@@ -79,5 +79,5 @@ In the root directory of the repository run `tilt up`. This will start all the f
 To develop against the FAF infrastructure you should disable the service in tilt that you are actively developing. Once disabled you can start up your developed version. Some tweaks may need to be made to the default configuration parameters in the source code. The proper values can be found in the configMaps in each of the services kubernetes deploy yaml files.
 
 ## Test Data
-The default test data that is loaded can be found in /sql/test-data.sql. This can be overridden by providing a new path with the tilt configuration key test-data-path when running tilt up or in the tilt_config.json file in the repository root directory.
+The default test data that is loaded can be found in [faf-db](https://github.com/FAForever/db/blob/develop/test-data.sql)
 

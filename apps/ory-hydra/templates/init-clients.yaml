@@ -66,11 +66,12 @@ spec:
                   --policy-uri "{{ .policyUri }}" \
                   {{- end }}
                   {{- if .tokenEndpointAuthMethod }}
-                  --token-endpoint-auth-method "{{ .tokenEndpointAuthMethod }}"
+                  --token-endpoint-auth-method "{{ .tokenEndpointAuthMethod }}" \
                   {{- end }}
                   {{- if .owner }}
-                  --owner "{{ .owner }}"
+                  --owner "{{ .owner }}" \
                   {{- end }}
+                  ;
               else
                 echo "Client {{ .id }} already exists, skipping."
               fi
