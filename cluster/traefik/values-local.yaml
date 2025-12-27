@@ -2,8 +2,15 @@ traefik:
   deployment:
     enabled: true
 
+  ingressRoute:
+    dashboard:
+      enabled: true
+      matchRule: Host(`traefik.localhost`)
+      entryPoints: ["websecure", "web"]
+
   additionalArguments:
     - "--entrypoints.websecure.http.encodequerysemicolons=true"
+    - "--entrypoints.web.http.encodequerysemicolons=true"
 
   updateStrategy:
     type: Recreate
@@ -17,11 +24,9 @@ traefik:
       port: 9101
 
     web:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
-          permanent: true
+      transport:
+        respondingTimeouts:
+          readTimeout: 60
           
     websecure:
       transport:
@@ -43,3 +48,5 @@ traefik:
       # By default, the level is set to ERROR.
       # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
       level: INFO
+    access:
+      enabled: true

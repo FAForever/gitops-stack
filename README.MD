@@ -79,5 +79,10 @@ In the root directory of the repository run `tilt up`. This will start all the f
 To develop against the FAF infrastructure you should disable the service in tilt that you are actively developing. Once disabled you can start up your developed version. Some tweaks may need to be made to the default configuration parameters in the source code. The proper values can be found in the configMaps in each of the services kubernetes deploy yaml files.
 
 ## Test Data
-The default test data that is loaded can be found in [faf-db](https://github.com/FAForever/db/blob/develop/test-data.sql)
+The default test data that is loaded can be found in [faf-db](https://github.com/FAForever/db/blob/develop/test-data.sql).
+You can load the data at anytime by manually triggering the popualte-db resource under the Database label. This needs to be done the first time for data to exist.
+
+## Endpoints
+Locally traefik uses the same ingress routes as we do in production just with a default base domain of localhost. So accessible domains will be api.localhost, hydra.localhost etc. By default these should resolve to 127.0.0.1. If they do not you can manually modify your hosts file to add the local dns records. For convenience the resource create-hosts-file-content
+will output the necessary lines for the hosts file when run after every service has started.
 
