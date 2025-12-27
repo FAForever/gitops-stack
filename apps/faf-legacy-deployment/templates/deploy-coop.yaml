@@ -8,10 +8,6 @@ data:
   PATCH_VERSION: "66"
   DATABASE_HOST: "mariadb"
   DATABASE_NAME: "faf_lobby"
-  "build.gradle.kts": |-
-{{ tpl ( .Files.Get "scripts/build.gradle.kts" ) . | indent 4 }}
-  "CoopDeployer.kt": |-
-{{ tpl ( .Files.Get "scripts/CoopDeployer.kt" ) . | indent 4 }}
 
 ---
 
