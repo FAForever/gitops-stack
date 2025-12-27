@@ -1,0 +1,1 @@
+kubectl get IngressRoute -A -o yaml | grep -Po 'Host\(`(.*?)`\)' | sed 's/^.\{6\}\(.*\).\{2\}$/127.0.0.1 \1/' | uniq

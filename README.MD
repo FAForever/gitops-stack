@@ -69,15 +69,21 @@ This repository aims to provide a ready-to-go [Tilt](https://docs.tilt.dev/) set
 ## Prerequisites
 * [Tilt](https://docs.tilt.dev/install.html)
 * Kubernetes ([Docker Desktop](https://docs.docker.com/desktop/kubernetes/) or [Minikube](https://minikube.sigs.k8s.io/docs/) are recommended for those new to kubernetes) [Tilt cluster setup](https://docs.tilt.dev/choosing_clusters)
-* For Windows users a bash program. By default git bash is used with an assumed installation directory of C:/Program Files/Git
 * [helm](https://helm.sh/docs/intro/install/) must be installed to generate the k8s from the helm charts in the gitops repo
+* For Windows users:
+    * A bash program. By default git bash is used with an assumed installation directory of C:/Program Files/Git
 
 ## Startup Services
 In the root directory of the repository run `tilt up`. This will start all the faf services in the correct order. The status of each service can be viewed in the tilt UI by visiting <http://localhost:10350>. This is the control server for tilt where you can restart services or disable them for substitution by services you would like to run from source code as you actively develop them.
 
 ## Development
-To develop against the FAF infrastructure you should disable the service in tilt that you are actively developing. Once disabled you can start up your developed version. Some tweaks may need to be made to the default configuration parameters in the source code. The proper values can be found in the configMaps in each of the services kubernetes deploy yaml files.
+To develop against the FAF infrastructure you can insert the service in tilt that you are actively developing by adding it to the local-services list in your tilt_config.json file or as --local-services when you run tilt up. This will proxy the connections in the cluster to that service to your locally running instance. Some tweaks may need to be made to the default configuration parameters in the source code. The proper values can be found in the configMaps in each of the services kubernetes deploy yaml files. You may need to specify your host-ip in the config or arguments in order to get the proxied connections to work
 
 ## Test Data
-The default test data that is loaded can be found in [faf-db](https://github.com/FAForever/db/blob/develop/test-data.sql)
+The default test data that is loaded can be found in [faf-db](https://github.com/FAForever/db/blob/develop/test-data.sql).
+You can load the data at anytime by manually triggering the popualte-db resource under the Database label. This needs to be done the first time for data to exist.
+
+## Endpoints
+Locally traefik uses the same ingress routes as we do in production just with a default base domain of faforever.localhost. So accessible domains will be api.faforever.localhost, hydra.faforever.localhost etc. By default these should resolve to 127.0.0.1. If they do not you can manually modify your hosts file to add the local dns records. For convenience the resource create-hosts-file-content
+will output the necessary lines for the hosts file when run after every service has started.
 
