@@ -40,6 +40,9 @@ spec:
             limits:
               memory: 10Gi
               cpu: 3000m
+            requests:
+              memory: 2Gi
+              cpu: 1000m
           startupProbe:
             httpGet:
               port: 8080
