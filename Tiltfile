@@ -156,7 +156,7 @@ def no_policy_server(yaml):
 
 k8s_yaml("cluster/namespaces.yaml")
 k8s_yaml(helm_with_build_cache("infra/clusterroles", namespace="faf-infra", values=["config/local.yaml"]))
-k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace"], labels=["core"])
+k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace", "traefik:namespace"], labels=["core"])
 k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], labels=["core"])
 k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra", "init-apps:serviceaccount:faf-apps", "allow-init-apps-read-app-config-infra:rolebinding", "allow-init-apps-read-app-config-apps:rolebinding"], resource_deps=["clusterroles"], labels=["core"])
 
@@ -182,7 +182,7 @@ for object in decode_yaml_stream(traefik_yaml):
     if kind != "deployment" and kind != "service":
         traefik_identifiers.append(name + ":" + kind)
 
-k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, labels=["traefik"])
+k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces"], labels=["traefik"])
 k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443"], resource_deps=["traefik-setup"], labels=["traefik"])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
@@ -237,9 +237,11 @@ k8s_resource(workload="populate-db", resource_deps=["faf-db-migrations"], labels
 k8s_yaml(keep_objects_of_kind(helm_with_build_cache("apps/faf-voting", namespace="faf-apps", values=["config/local.yaml"]), kinds=["ConfigMap", "Secret"]))
 k8s_resource(new_name="faf-voting-config", objects=["faf-voting:configmap", "faf-voting:secret"], labels=["voting"])
 
-k8s_yaml(helm_with_build_cache("apps/faf-website", namespace="faf-apps", values=["config/local.yaml", "apps/faf-website/values-prod.yaml"]))
+website_yaml = helm_with_build_cache("apps/faf-website", namespace="faf-apps", values=["config/local.yaml", "apps/faf-website/values-prod.yaml"])
+website_yaml = patch_config(website_yaml, "faf-website", {"OAUTH_URL": "http://ory-hydra:4444", "OAUTH_PUBLIC_URL": "http://localhost:4444", "API_URL": "http://faf-api:8010", "WP_URL": "http://wordpress:80"})
+k8s_yaml(website_yaml)
 k8s_resource(new_name="faf-website-config", objects=["faf-website:configmap", "faf-website:secret"], labels=["website"])
-k8s_resource(workload="faf-website", objects=["faf-website:ingressroute"], resource_deps=["traefik"], labels=["website"], links=[link("https://www.localhost", "FAForever Website")])
+k8s_resource(workload="faf-website", objects=["faf-website:ingressroute"], resource_deps=["traefik", "wordpress"], labels=["website"], links=[link("https://www.localhost", "FAForever Website")])
 
 # k8s_yaml(helm_with_build_cache("apps/faf-content", namespace="faf-apps", values=["config/local.yaml"]))
 # k8s_resource(new_name="faf-content-config", objects=["faf-content:configmap"], labels=["content"])
