@@ -1,7 +1,16 @@
-import org.apache.commons.compress.archivers.zip.Zip64Mode
+@file:Suppress("PackageDirectoryMismatch")
+
+package com.faforever.coopdeployer
+
+import com.faforever.CHECKSUMS_FILENAME
+import com.faforever.FafDatabase
+import com.faforever.GitRepo
+import com.faforever.Log
+import com.faforever.extractChecksumsFromZip
+import com.faforever.generateChecksums
+import com.faforever.md5
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
-import org.eclipse.jgit.api.Git
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URI
@@ -12,16 +21,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import java.nio.file.attribute.FileTime
 import java.nio.file.attribute.PosixFilePermission
-import java.security.MessageDigest
-import java.sql.Connection
-import java.sql.DriverManager
 import java.time.Duration
-import java.util.zip.CRC32
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
-import kotlin.io.path.inputStream
 
 private val log = LoggerFactory.getLogger("CoopDeployer")
 
@@ -34,33 +35,6 @@ fun Path.setPerm664() {
     Files.setPosixFilePermissions(this, perms)
 }
 
-data class FeatureModGitRepo(
-    val workDir: Path,
-    val repoUrl: String,
-    val gitRef: String,
-) {
-    fun checkout(): Path {
-        if (Files.exists(workDir.resolve(".git"))) {
-            log.info("Repo exists — fetching and checking out $gitRef...")
-            Git.open(workDir.toFile()).use { git ->
-                git.fetch().call()
-                git.checkout().setName(gitRef).call()
-            }
-        } else {
-            log.info("Cloning repository $repoUrl")
-            Git.cloneRepository()
-                .setURI(repoUrl)
-                .setDirectory(workDir.toFile())
-                .call()
-            log.info("Checking out $gitRef")
-            Git.open(workDir.toFile()).use { git ->
-                git.checkout().setName(gitRef).call()
-            }
-        }
-
-        return workDir
-    }
-}
 
 data class GithubReleaseAssetDownloader(
     val repoOwner: String = "FAForever",
@@ -160,24 +134,13 @@ data class GithubReleaseAssetDownloader(
 
 }
 
-data class FafDatabase(
-    val host: String,
-    val database: String,
-    val username: String,
-    val password: String,
+data class CoopDatabase(
     val dryRun: Boolean
-) : AutoCloseable {
+) : FafDatabase() {
     /**
      * Definition of an existing file in the database
      */
     data class PatchFile(val mod: String, val fileId: Int, val name: String, val md5: String, val version: Int)
-
-    private val connection: Connection =
-        DriverManager.getConnection(
-            "jdbc:mariadb://$host/$database?useSSL=false&serverTimezone=UTC",
-            username,
-            password
-        )
 
     fun getCurrentPatchFile(mod: String, fileId: Int): PatchFile? {
         val sql = """
@@ -191,7 +154,7 @@ data class FafDatabase(
         WHERE uf.fileId = ?
     """.trimIndent()
 
-        connection.prepareStatement(sql).use { stmt ->
+        prepareStatement(sql).use { stmt ->
             stmt.setInt(1, fileId)
             val rs = stmt.executeQuery()
             while (rs.next()) {
@@ -213,12 +176,12 @@ data class FafDatabase(
         }
         val del = "DELETE FROM updates_${mod}_files WHERE fileId=? AND version=?"
         val ins = "INSERT INTO updates_${mod}_files (fileId, version, name, md5, obselete) VALUES (?, ?, ?, ?, 0)"
-        connection.prepareStatement(del).use {
+        prepareStatement(del).use {
             it.setInt(1, fileId)
             it.setInt(2, version)
             it.executeUpdate()
         }
-        connection.prepareStatement(ins).use {
+        prepareStatement(ins).use {
             it.setInt(1, fileId)
             it.setInt(2, version)
             it.setString(3, name)
@@ -226,19 +189,12 @@ data class FafDatabase(
             it.executeUpdate()
         }
     }
-
-    override fun close() {
-        connection.close()
-    }
 }
-
-private const val MINIMUM_ZIP_DATE = 315532800000L // 1980-01-01
-private val MINIMUM_ZIP_FILE_TIME = FileTime.fromMillis(MINIMUM_ZIP_DATE)
 
 class Patcher(
     val patchVersion: Int,
     val targetDir: Path,
-    val db: FafDatabase,
+    val db: CoopDatabase,
     val dryRun: Boolean,
 ) {
     /**
@@ -315,15 +271,21 @@ class Patcher(
 
         val tmp = Files.createTempFile("coop", ".zip")
         log.info("Zipping sources with base={} -> {}", base, tmp)
-        zipPreserveStructure(existing, tmp, base)
+        val newChecksums = zipPreserveStructure(existing, tmp, base)
 
-        val newMd5 = tmp.md5()
+        // Compare checksums.md5 content with existing ZIP (if any)
         val oldFile = db.getCurrentPatchFile(mod, fileId)
+        val existingZip = oldFile?.let { outDir.resolve(it.name) }
+        val oldChecksums = existingZip?.let { extractChecksumsFromZip(it) }
 
-        if (newMd5 == oldFile?.md5) {
+        if (newChecksums == oldChecksums) {
             log.info("{} unchanged from version {}, skipping", name, oldFile.version)
+            Files.deleteIfExists(tmp)
             return
         }
+
+        // ZIP content changed - compute MD5 for database record
+        val newMd5 = tmp.md5()
 
         if (!dryRun) {
             log.info("Moving zip to {}", target)
@@ -334,19 +296,8 @@ class Patcher(
             db.insertOrReplace(mod, fileId, patchVersion, name, newMd5)
         } else {
             log.info("[DRYRUN] Would move {} -> {}", tmp, target)
+            Files.deleteIfExists(tmp)
         }
-    }
-
-    private fun Path.md5(): String {
-        val md = MessageDigest.getInstance("MD5")
-        this.inputStream().use { input ->
-            val buf = ByteArray(4096)
-            var r: Int
-            while (input.read(buf).also { r = it } != -1) {
-                md.update(buf, 0, r)
-            }
-        }
-        return md.digest().joinToString("") { "%02x".format(it) }
     }
 
     private fun Path.commonPath(other: Path): Path {
@@ -361,30 +312,55 @@ class Patcher(
         else a.root.resolve(a.subpath(0, commonCount))
     }
 
-    private fun zipPreserveStructure(sources: List<Path>, outputFile: Path, base: Path) {
+    /**
+     * Create a ZIP archive with checksums.md5 embedded for content-based change detection.
+     * Returns the checksums.md5 content for comparison purposes.
+     */
+    private fun zipPreserveStructure(sources: List<Path>, outputFile: Path, base: Path): String {
         Files.createDirectories(outputFile.parent)
+
+        // First, collect all files to include
+        val allFiles = mutableListOf<Path>()
+        for (src in sources) {
+            if (!Files.exists(src)) {
+                log.warn("Could not find path {}", src)
+                continue
+            }
+            if (Files.isDirectory(src)) {
+                Files.walk(src).use { stream ->
+                    stream.filter { Files.isRegularFile(it) }.forEach { allFiles.add(it) }
+                }
+            } else {
+                allFiles.add(src)
+            }
+        }
+
+        // Sort files for deterministic ordering
+        allFiles.sortBy { base.relativize(it).toString() }
+
+        // Generate checksums.md5 content
+        val checksums = generateChecksums(allFiles, base)
 
         // Never pass a stream here; this will cause extended local headers to be used, making it incompatible to FA!
         ZipArchiveOutputStream(outputFile.toFile()).use { zos ->
             zos.setMethod(ZipArchiveEntry.DEFLATED)
 
-            for (src in sources) {
-                if (!Files.exists(src)) {
-                    // skip
-                    log.warn("Could not find path {}", src)
-                    continue
-                }
-                if (Files.isDirectory(src)) {
-                    Files.walk(src).use { stream ->
-                        stream
-                            .filter { Files.isRegularFile(it) }
-                            .forEach { zos.pushNormalizedFile(base, it) }
-                    }
-                } else {
-                    zos.pushNormalizedFile(base, src)
-                }
+            // Write checksums.md5 as first entry
+            val checksumBytes = checksums.toByteArray()
+            val checksumEntry = ZipArchiveEntry(CHECKSUMS_FILENAME).apply {
+                size = checksumBytes.size.toLong()
+            }
+            zos.putArchiveEntry(checksumEntry)
+            zos.write(checksumBytes)
+            zos.closeArchiveEntry()
+
+            // Write all files
+            for (path in allFiles) {
+                zos.pushNormalizedFile(base, path)
             }
         }
+
+        return checksums
     }
 
     private fun ZipArchiveOutputStream.pushNormalizedFile(base: Path, path: Path) {
@@ -393,13 +369,7 @@ class Patcher(
         val archiveName = base.relativize(path).toString().replace("\\", "/")
 
         // Use the same constructor as the FAF API:
-        val entry = ZipArchiveEntry(path.toFile(), archiveName).apply {
-            // Ensure deterministic times
-            setTime(MINIMUM_ZIP_FILE_TIME)
-            setCreationTime(MINIMUM_ZIP_FILE_TIME)
-            setLastModifiedTime(MINIMUM_ZIP_FILE_TIME)
-            setLastAccessTime(MINIMUM_ZIP_FILE_TIME)
-        }
+        val entry = ZipArchiveEntry(path.toFile(), archiveName)
 
         this.putArchiveEntry(entry)
         Files.newInputStream(path).use { inp -> inp.copyTo(this) }
@@ -409,22 +379,18 @@ class Patcher(
 }
 
 fun main() {
+    Log.init()
+
     val PATCH_VERSION = System.getenv("PATCH_VERSION") ?: error("PATCH_VERSION required")
     val REPO_URL = System.getenv("GIT_REPO_URL") ?: "https://github.com/FAForever/fa-coop.git"
     val GIT_REF = System.getenv("GIT_REF") ?: "v$PATCH_VERSION"
-    val WORKDIR = System.getenv("GIT_WORKDIR") ?: "/tmp/fa-coop-kt"
+    val WORKDIR = System.getenv("GIT_WORKDIR") ?: "/tmp/fa-coop"
     val DRYRUN = (System.getenv("DRY_RUN") ?: "false").lowercase() in listOf("1", "true", "yes")
-
-    val DB_HOST = System.getenv("DATABASE_HOST") ?: "localhost"
-    val DB_NAME = System.getenv("DATABASE_NAME") ?: "faf"
-    val DB_USER = System.getenv("DATABASE_USERNAME") ?: "root"
-    val DB_PASS = System.getenv("DATABASE_PASSWORD") ?: "banana"
-
     val TARGET_DIR = Paths.get("./legacy-featured-mod-files")
 
     log.info("=== Kotlin Coop Deployer v{} ===", PATCH_VERSION)
 
-    val repo = FeatureModGitRepo(
+    val repo = GitRepo(
         workDir = Paths.get(WORKDIR),
         repoUrl = REPO_URL,
         gitRef = GIT_REF
@@ -476,13 +442,7 @@ fun main() {
         Patcher.PatchFile(25, "FAF_Coop_Operation_Tight_Spot_VO.v%d.nx2", null),
     )
 
-    FafDatabase(
-        host = DB_HOST,
-        database = DB_NAME,
-        username = DB_USER,
-        password = DB_PASS,
-        dryRun = DRYRUN
-    ).use { db ->
+    CoopDatabase(dryRun = DRYRUN).use { db ->
         val patcher = Patcher(
             patchVersion = PATCH_VERSION.toInt(),
             targetDir = TARGET_DIR,
