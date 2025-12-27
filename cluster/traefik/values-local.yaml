@@ -15,7 +15,7 @@ traefik:
   updateStrategy:
     type: Recreate
 
-  hostNetwork: true
+  hostNetwork: false
 
   ports:
     metrics:
@@ -38,7 +38,7 @@ traefik:
 
   # HostNetwork
   service:
-    enabled: false
+    enabled: true
 
   logs:
     general:
@@ -50,3 +50,7 @@ traefik:
       level: INFO
     access:
       enabled: true
+  
+  providers:
+    kubernetesCRD:
+      allowExternalNameServices: true

@@ -1,0 +1,11 @@
+{{- if .Values.hostIP }}
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{.Values.name}}
+subsets:
+  - addresses:
+      - ip: {{.Values.hostIP}}
+    ports:
+      - port: {{.Values.port}}
+{{- end }}
