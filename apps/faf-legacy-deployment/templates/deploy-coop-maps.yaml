@@ -42,13 +42,15 @@ spec:
                 - secretRef:
                     name: faf-legacy-deployment
               command: [ "sh" ]
-              args: [ "-c", "pip install mysql-connector-python && python3 /tmp/deploy-coop-maps.py $PATCH_VERSION --git-directory /tmp/maps" ]
+              args: [ "-c", "pip install mysql-connector-python && python3 /tmp/deploy-coop-maps.py $PATCH_VERSION" ]
               volumeMounts:
                 - mountPath: /tmp/deploy-coop-maps.py
                   name: faf-deploy-scripts
                   subPath: "deploy-coop-maps.py"
                 - mountPath: /opt/faf/data/maps
                   name: faf-maps
+                - mountPath: /opt/featured-mods/faf-coop-maps
+                  name: faf-coop-maps
           restartPolicy: Never
           volumes:
             - name: faf-deploy-scripts
@@ -60,4 +62,8 @@ spec:
             - name: faf-maps
               hostPath:
                 path: /opt/faf/data/maps
+                type: Directory
+            - name: faf-coop-maps
+              hostPath:
+                path: /opt/faf/data/faf-coop-maps
                 type: Directory
