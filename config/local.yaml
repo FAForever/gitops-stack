@@ -1,6 +1,6 @@
 hostName: "localhost"
 environment: "local"
-baseDomain: "localhost"
+baseDomain: "faforever.localhost"
 infisical-secret:
   enabled: false
 traefik: {}
