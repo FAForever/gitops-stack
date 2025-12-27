@@ -50,6 +50,13 @@ databasesAndUsers:
     usernameKey: DB_LOGIN
     passwordKey: DB_PASSWORD
 
+  # Icebreaker database
+  - configMapRef: faf-icebreaker
+    secretRef: faf-icebreaker
+    databaseKey: DB_NAME
+    usernameKey: DB_USERNAME
+    passwordKey: DB_PASSWORD
+
  # Others
   - configMapRef: wordpress
     secretRef: wordpress
