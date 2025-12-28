@@ -4,7 +4,7 @@ config.define_string("windows-bash-path", args=False, usage="Path to bash.exe fo
 config.define_string("default-pull-policy", args=False, usage="Pull policy to use for containers")
 config.define_string("host-ip", args=False, usage="IP Address of the host to enable redirection to local services")
 config.define_string("hostname", args=False, usage="Accessible name of the host to enable redirection to local services")
-config.define_string("faf-data-dir", args=False, usage="Directory where the FAF Data lives normally C:/ProgramData/FAForever on Windows")
+config.define_string("faf-data-dir", args=False, usage="Directory where the FAF Data lives normally C:/ProgramData/FAForever on Windows or ~/.faforever on Linux")
 config.define_string_list("local-services", args=False, usage="Names of services that you intend to run locally")
 cfg = config.parse()
 windows_bash_path = cfg.get("windows-bash-path", "C:\\Program Files\\Git\\bin\\bash.exe")
@@ -30,7 +30,7 @@ if os.name == "nt":
         fail("Cannot determine how to mount for windows host")
 
 else:
-    faf_data_dir = cfg.get("faf-data-dir", "")
+    faf_data_dir = cfg.get("faf-data-dir", "~/.faforever")
     hostname = cfg.get("hostname", "")
     data_absolute_path = os.path.join(os.getcwd(), data_relative_path)
     use_named_volumes = []
