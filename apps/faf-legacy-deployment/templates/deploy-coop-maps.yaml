@@ -33,7 +33,7 @@ spec:
       template:
         spec:
           containers:
-            - image: python:3.13
+            - image: python:3.14
               imagePullPolicy: Always
               name: faf-coop-deployment
               envFrom:
