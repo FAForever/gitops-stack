@@ -4,6 +4,7 @@ config.define_string("windows-bash-path", args=False, usage="Path to bash.exe fo
 config.define_string("default-pull-policy", args=False, usage="Pull policy to use for containers")
 config.define_string("host-ip", args=False, usage="IP Address of the host to enable redirection to local services")
 config.define_string("hostname", args=False, usage="Accessible name of the host to enable redirection to local services")
+config.define_string("faf-data-dir", args=False, usage="Directory where the FAF Data lives normally C:/ProgramData/FAForever on Windows")
 config.define_string_list("local-services", args=False, usage="Names of services that you intend to run locally")
 cfg = config.parse()
 windows_bash_path = cfg.get("windows-bash-path", "C:\\Program Files\\Git\\bin\\bash.exe")
@@ -12,6 +13,7 @@ local_services = cfg.get("local-services", [])
 
 data_relative_path = ".local-data"
 if os.name == "nt":
+    faf_data_dir = cfg.get("faf-data-dir", "C:/ProgramData/FAForever")
     if not os.path.exists(windows_bash_path):
         fail("Windows users need to supply a valid path to a bash executable")
 
@@ -28,6 +30,7 @@ if os.name == "nt":
         fail("Cannot determine how to mount for windows host")
 
 else:
+    faf_data_dir = cfg.get("faf-data-dir", "")
     hostname = cfg.get("hostname", "")
     data_absolute_path = os.path.join(os.getcwd(), data_relative_path)
     use_named_volumes = []
@@ -180,6 +183,8 @@ def proxy_local_service_if_set(service_name, service_chart, service_namespace, a
     service_config_yaml, service_yaml = filter_yaml(service_yaml, kind="ConfigMap|Secret")
     service_config_yaml = patch_config(yaml=service_config_yaml, config_name=service_name, config=config_patch)
     if (service_config_yaml):
+        if service_name == "faf-lobby-server":
+            service_config_yaml = no_policy_server(service_config_yaml)
         k8s_yaml(service_config_yaml)
         config_objects = []
         for object in decode_yaml_stream(service_config_yaml):
@@ -205,8 +210,6 @@ def proxy_local_service_if_set(service_name, service_chart, service_namespace, a
             service_objects.append(object["metadata"]["name"] + ":" + object["kind"].lower())
         k8s_resource(new_name=service_name, objects=service_objects, resource_deps=all_service_deps, labels=user_service_labels, links=user_service_links, pod_readiness="ignore")
     else:
-        if service_name == "faf-lobby-server":
-            service_yaml = no_policy_server(service_yaml)
         if service_name == "faf-icebreaker":
             service_yaml = remove_init_container(service_yaml)
 
@@ -223,6 +226,7 @@ def extract_ingress_details(yaml):
             return ["port=" + str(service["port"]), "name=" + service["name"]]
 
 agnostic_local_resource("create-hosts-file-content", cmd=["./tilt/scripts/print-hosts.sh"], labels=["core"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL, allow_parallel=True)
+agnostic_local_resource("populate-featured-mod-files", cmd=["./tilt/scripts/update-faf-featured-mod.sh", faf_data_dir], labels=["database"], resource_deps=["faf-db-migrations"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL, allow_parallel=True)
 
 k8s_yaml("cluster/namespaces.yaml")
 k8s_yaml(helm_with_build_cache("infra/clusterroles", namespace="faf-infra", values=["config/local.yaml"]))
@@ -351,12 +355,12 @@ k8s_resource(new_name="faf-policy-server-config", objects=["faf-policy-server:co
 user_service_deps = ["faf-db-migrations", "ory-hydra"]
 user_service_labels = ["user"]
 user_service_links = [link("http://user.localhost/register", "User Service Registration")]
-proxy_local_service_if_set(service_name="faf-user-service", service_chart="apps/faf-user-service", service_namespace="faf-apps", service_deps=user_service_deps, service_labels=user_service_labels, service_links=user_service_links, config_patch={"HYDRA_TOKEN_ISSUER": "http://ory-hydra:4444", "HYDRA_JWKS_URL": "http://ory-hydra:4444/.well-known/jwks.json", "LOBBY_URL":"ws://localhost:8003", "REPLAY_URL":"ws://localhost:15001"})
+proxy_local_service_if_set(service_name="faf-user-service", service_chart="apps/faf-user-service", service_namespace="faf-apps", service_deps=user_service_deps, service_labels=user_service_labels, service_links=user_service_links, config_patch={"HYDRA_TOKEN_ISSUER": "http://ory-hydra:4444", "HYDRA_JWKS_URL": "http://ory-hydra:4444/.well-known/jwks.json", "LOBBY_URL":"ws://ws.localhost", "REPLAY_URL":"ws://replay-ws.localhost"})
 
 website_deps = ["wordpress"]
 website_labels = ["website"]
 website_links = [link("http://www.localhost", "FAForever Website")]
-proxy_local_service_if_set(service_name="faf-website", service_chart="apps/faf-website", service_namespace="faf-apps", service_deps=website_deps, service_labels=website_labels, service_links=website_links, additional_values=["apps/faf-website/values-prod.yaml"], config_patch={"OAUTH_URL": "http://ory-hydra:4444", "OAUTH_PUBLIC_URL": "http://hydra.localhost:4444", "API_URL": "http://faf-api:8010", "WP_URL": "http://wordpress:80"})
+proxy_local_service_if_set(service_name="faf-website", service_chart="apps/faf-website", service_namespace="faf-apps", service_deps=website_deps, service_labels=website_labels, service_links=website_links, additional_values=["apps/faf-website/values-prod.yaml"], config_patch={"OAUTH_URL": "http://ory-hydra:4444", "OAUTH_PUBLIC_URL": "http://hydra.localhost", "API_URL": "http://faf-api:8010", "WP_URL": "http://wordpress:80"})
 
 api_deps=["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
 api_labels=["api"]
