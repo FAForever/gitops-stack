@@ -141,6 +141,12 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
             entryPoints = spec["entryPoints"]
             if "websecure" in entryPoints:
                 entryPoints.append("web")
+        if containers or job_template_containers:
+            metadata = object["metadata"]
+            if "annotations" not in metadata or not metadata["annotations"]:
+                metadata["annotations"] = {}
+
+            metadata["annotations"]["reloader.stakater.com/auto"] = "true"
 
     return encode_yaml_stream(objects)
 
@@ -311,7 +317,7 @@ k8s_resource(workload="faf-db-migrations", objects=["faf-db-migrations:secret"],
 k8s_yaml("tilt/yaml/populate-db.yaml")
 k8s_resource(workload="populate-db", resource_deps=["faf-db-migrations"], labels=["database"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
 
-k8s_yaml(helm_with_build_cache("apps/ergochat", namespace="faf-apps", values=["config/local.yaml"]))
+k8s_yaml(helm_with_build_cache("apps/ergochat", namespace="faf-apps", values=["config/local.yaml"], set=["serverName=chat.faforever.local"]))
 k8s_resource(new_name="ergochat-config", objects=["ergochat:configmap", "ergochat:secret"], labels=["chat"])
 k8s_resource(workload="ergochat", objects=["ergochat-webirc:ingressroute"], resource_deps=["traefik"] + mariadb_setup_resources, port_forwards=["8097:8097"], labels=["chat"])
 
@@ -355,38 +361,43 @@ k8s_resource(new_name="faf-policy-server-config", objects=["faf-policy-server:co
 user_service_deps = ["faf-db-migrations", "ory-hydra"]
 user_service_labels = ["user"]
 user_service_links = [link("http://user.localhost/register", "User Service Registration")]
-proxy_local_service_if_set(service_name="faf-user-service", service_chart="apps/faf-user-service", service_namespace="faf-apps", service_deps=user_service_deps, service_labels=user_service_labels, service_links=user_service_links, config_patch={"HYDRA_TOKEN_ISSUER": "http://ory-hydra:4444", "HYDRA_JWKS_URL": "http://ory-hydra:4444/.well-known/jwks.json", "LOBBY_URL":"ws://ws.localhost", "REPLAY_URL":"ws://replay-ws.localhost"})
+user_service_patch = {"HYDRA_TOKEN_ISSUER": "http://ory-hydra:4444", "HYDRA_JWKS_URL": "http://ory-hydra:4444/.well-known/jwks.json", "LOBBY_URL":"ws://ws.localhost", "REPLAY_URL":"ws://replay-ws.localhost"}
+proxy_local_service_if_set(service_name="faf-user-service", service_chart="apps/faf-user-service", service_namespace="faf-apps", service_deps=user_service_deps, service_labels=user_service_labels, service_links=user_service_links, config_patch=user_service_patch)
 
 website_deps = ["wordpress"]
 website_labels = ["website"]
 website_links = [link("http://www.localhost", "FAForever Website")]
-proxy_local_service_if_set(service_name="faf-website", service_chart="apps/faf-website", service_namespace="faf-apps", service_deps=website_deps, service_labels=website_labels, service_links=website_links, additional_values=["apps/faf-website/values-prod.yaml"], config_patch={"OAUTH_URL": "http://ory-hydra:4444", "OAUTH_PUBLIC_URL": "http://hydra.localhost", "API_URL": "http://faf-api:8010", "WP_URL": "http://wordpress:80"})
+website_patch = {"OAUTH_URL": "http://ory-hydra:4444", "OAUTH_PUBLIC_URL": "http://hydra.localhost", "API_URL": "http://faf-api:8010", "WP_URL": "http://wordpress:80"}
+proxy_local_service_if_set(service_name="faf-website", service_chart="apps/faf-website", service_namespace="faf-apps", service_deps=website_deps, service_labels=website_labels, service_links=website_links, additional_values=["apps/faf-website/values-prod.yaml"], config_patch=website_patch)
 
-api_deps=["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
-api_labels=["api"]
-api_links=[link("http://api.localhost", "FAF API")]
-proxy_local_service_if_set(service_name="faf-api", service_chart="apps/faf-api", service_namespace="faf-apps", service_deps=api_deps, service_labels=api_labels, service_links=api_links, config_patch={"JWT_FAF_HYDRA_ISSUER": "http://ory-hydra:4444"})
+api_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
+api_labels = ["api"]
+api_links = [link("http://api.localhost", "FAF API")]
+api_patch = {"JWT_FAF_HYDRA_ISSUER": "http://ory-hydra:4444", "REPLAY_DOWNLOAD_URL_FORMAT": "http://replays.localhost/%s", "MOD_DOWNLOAD_URL_FORMAT": "http://content.localhost/mods/%s", "MAP_DOWNLOAD_URL_FORMAT": "http://content.localhost/maps/%s", "FEATURED_MOD_URL_FORMAT":"http://content.localhost/legacy-featured-mod-files/%s/%s", "AVATAR_DOWNLOAD_URL_FORMAT":"http://content.localhost/faf/avatars/%s"}
+proxy_local_service_if_set(service_name="faf-api", service_chart="apps/faf-api", service_namespace="faf-apps", service_deps=api_deps, service_labels=api_labels, service_links=api_links, config_patch=api_patch)
 
-league_service_deps=mariadb_setup_resources + rabbitmq_setup_resources
-league_service_labels=["leagues"]
+league_service_deps = mariadb_setup_resources + rabbitmq_setup_resources
+league_service_labels = ["leagues"]
 proxy_local_service_if_set(service_name="faf-league-service", service_chart="apps/faf-league-service", service_namespace="faf-apps", service_deps=league_service_deps, service_labels=league_service_labels)
 
-lobby_server_deps=["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
-lobby_server_labels=["lobby"]
-proxy_local_service_if_set(service_name="faf-lobby-server", service_chart="apps/faf-lobby-server", service_namespace="faf-apps", service_deps=lobby_server_deps, service_labels=lobby_server_labels, config_patch={"HYDRA_JWKS_URI": "http://ory-hydra:4444/.well-known/jwks.json"})
+lobby_server_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
+lobby_server_labels = ["lobby"]
+lobby_server_patch = {"HYDRA_JWKS_URI": "http://ory-hydra:4444/.well-known/jwks.json"}
+proxy_local_service_if_set(service_name="faf-lobby-server", service_chart="apps/faf-lobby-server", service_namespace="faf-apps", service_deps=lobby_server_deps, service_labels=lobby_server_labels, config_patch=lobby_server_patch)
 
-replay_server_deps=["faf-db-migrations"]
-replay_server_labels=["replay"]
+replay_server_deps = ["faf-db-migrations"]
+replay_server_labels = ["replay"]
 proxy_local_service_if_set(service_name="faf-replay-server", service_chart="apps/faf-replay-server", service_namespace="faf-apps", service_deps=replay_server_deps, service_labels=replay_server_labels)
 
-unitdb_labels=["unitdb"]
-unitdb_links=[link("http://unitdb.localhost", "Rackover UnitDB")]
+unitdb_labels = ["unitdb"]
+unitdb_links = [link("http://unitdb.localhost", "Rackover UnitDB")]
 proxy_local_service_if_set(service_name="faf-unitdb", service_chart="apps/faf-unitdb", service_namespace="faf-apps", service_labels=unitdb_labels, service_links=unitdb_links)
 
-ws_bridge_deps=["faf-lobby-server"]
-ws_bridge_labels=["lobby"]
+ws_bridge_deps = ["faf-lobby-server"]
+ws_bridge_labels = ["lobby"]
 proxy_local_service_if_set(service_name="faf-ws-bridge", service_chart="apps/faf-ws-bridge", service_namespace="faf-apps", service_deps=ws_bridge_deps, service_labels=ws_bridge_labels)
 
-icebreaker_deps=["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
-icebreaker_labels=["api"]
-proxy_local_service_if_set(service_name="faf-icebreaker", service_chart="apps/faf-icebreaker", service_namespace="faf-apps", service_deps=icebreaker_deps, service_labels=icebreaker_labels, config_patch={"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false"})
+icebreaker_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
+icebreaker_labels = ["api"]
+icebreaker_patch = {"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false"}
+proxy_local_service_if_set(service_name="faf-icebreaker", service_chart="apps/faf-icebreaker", service_namespace="faf-apps", service_deps=icebreaker_deps, service_labels=icebreaker_labels, config_patch=icebreaker_patch)
