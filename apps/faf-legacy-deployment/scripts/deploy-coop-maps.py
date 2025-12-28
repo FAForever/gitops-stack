@@ -195,7 +195,7 @@ def new_file_is_different(old_file_name: str, new_file_name: str) -> bool:
     return old_file_md5 != new_file_md5
 
 
-def update_database(coop_map: CoopMap, new_version: int) -> None:
+def update_database(conn, coop_map: CoopMap, new_version: int) -> None:
     logger.debug(f"Updating coop map {coop_map} in database to version {new_version}")
 
     query = f"""
@@ -203,7 +203,7 @@ def update_database(coop_map: CoopMap, new_version: int) -> None:
         SET version = {new_version}, filename = "maps/{coop_map.build_zip_filename(new_version)}"
         WHERE id = {coop_map.map_id}
     """
-    run_sql(query)
+    run_sql(conn, query)
 
 
 def copytree(src, dst, symlinks=False, ignore=None):
@@ -229,7 +229,7 @@ def create_zip_package(coop_map: CoopMap, version: int, files: List[str], tmp_fo
             zip_file.write(path, arcname=f"/{coop_map.build_folder_name(version)}/{os.path.relpath(path, tmp_folder_path)}")
 
 
-def process_coop_map(coop_map: CoopMap, simulate: bool, git_directory:str, coop_maps_path: str):
+def process_coop_map(conn, coop_map: CoopMap, simulate: bool, git_directory:str, coop_maps_path: str):
     logger.info(f"Processing: {coop_map}")
 
     temp_dir = TemporaryDirectory()
@@ -260,7 +260,7 @@ def process_coop_map(coop_map: CoopMap, simulate: bool, git_directory:str, coop_
             zip_file_path = os.path.join(coop_maps_path, coop_map.build_zip_filename(new_version))
             create_zip_package(coop_map, new_version, processing_files, temp_dir.name, zip_file_path)
 
-            update_database(coop_map, new_version)
+            update_database(conn, coop_map, new_version)
         else:
             logger.info(f"Updating database skipped due to simulation")
     else:
@@ -288,26 +288,6 @@ def run_checked_shell(cmd: List[str]) -> subprocess.CompletedProcess:
     """
     logger.debug("Run shell command: {cmd}".format(cmd=cmd))
     return subprocess.run(cmd, check=True, stdout=subprocess.PIPE)
-
-
-def run_sql(sql: str, container: str = "faf-db", database: str = "faf_lobby") -> str:
-
-    """
-    Run a sql-query against the faf-db in the docker container
-    :param database: name of the database where to run the query
-    :param container: name of the docker container where to run the query
-    :param sql: the sql-query to run
-    :return: the query output as string
-    """
-    try:
-        sql_text_result = run_checked_shell(
-            ["docker", "exec", "-u", "root", container, "mysql", database, "-e", sql]
-        ).stdout.decode()  # type: str
-        logger.debug(f"SQL output >>> \n{sql_text_result}<<<")
-        return sql_text_result
-    except subprocess.CalledProcessError as e:
-        logger.error(f"""Executing sql query failed: {sql}\n\t\tError message: {str(e)}""")
-        exit(1)
 
 
 def git_checkout(path: str, tag: str) -> None:
@@ -373,9 +353,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     git_checkout(args.git_directory, args.version)
+    conn = get_db_connection()
 
     for coop_map in coop_maps:
         try:
-            process_coop_map(coop_map, args.simulate, args.git_directory, args.coop_maps_path)
+            process_coop_map(conn, coop_map, args.simulate, args.git_directory, args.coop_maps_path)
         except Exception as error:
             logger.warning(f"Unable to parse {coop_map}", exc_info=True)
