@@ -30,7 +30,7 @@ network:
 # server configuration
 server:
   # server name
-  name: {{ .Values.baseDomain }}
+  name: {{ default .Values.baseDomain .Values.serverName }}
 
   # addresses to listen on
   listeners:
