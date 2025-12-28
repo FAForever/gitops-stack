@@ -208,8 +208,9 @@ def proxy_local_service_if_set(service_name, service_chart, service_namespace, a
         all_service_deps.append("traefik")
 
     if (service_name in local_services):
-        
         service_ingress_details = extract_ingress_details(service_traefik_yaml)
+        if not service_ingress_details:
+            service_ingress_details = ["name="+service_name]
         service_proxy_yaml = helm_with_build_cache("tilt/helm/host-proxy", specifier=service_name, namespace=service_namespace, values=["config/local.yaml"], set=host_details+service_ingress_details)
         k8s_yaml(service_proxy_yaml)
         for object in decode_yaml_stream(service_proxy_yaml):
@@ -230,6 +231,7 @@ def extract_ingress_details(yaml):
             routes = object["spec"]["routes"]
             service = routes[0]["services"][0]
             return ["port=" + str(service["port"]), "name=" + service["name"]]
+    return []
 
 agnostic_local_resource("create-hosts-file-content", cmd=["./tilt/scripts/print-hosts.sh"], labels=["core"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL, allow_parallel=True)
 agnostic_local_resource("populate-featured-mod-files", cmd=["./tilt/scripts/update-faf-featured-mod.sh", faf_data_dir], labels=["database"], resource_deps=["faf-db-migrations"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL, allow_parallel=True)
