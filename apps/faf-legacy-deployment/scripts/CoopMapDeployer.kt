@@ -2,19 +2,17 @@
 
 package com.faforever.coopmapdeployer
 
-import ch.qos.logback.classic.Logger
-import ch.qos.logback.classic.Level
+import com.faforever.FafDatabase
+import com.faforever.GitRepo
+import com.faforever.Log
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
-import org.eclipse.jgit.api.Git
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.attribute.FileTime
 import java.security.MessageDigest
-import java.sql.Connection
-import java.sql.DriverManager
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -26,37 +24,8 @@ import kotlin.io.path.walk
 
 private val log = LoggerFactory.getLogger("coop-maps-updater")
 
-
 private const val FIXED_TIMESTAMP = 1078100502L // 2004-03-01T00:21:42Z
 private val FIXED_FILE_TIME = FileTime.fromMillis(FIXED_TIMESTAMP)
-
-data class GitRepo(
-    val workDir: Path,
-    val repoUrl: String,
-    val gitRef: String,
-) {
-    fun checkout(): Path {
-        if (Files.exists(workDir.resolve(".git"))) {
-            log.info("Repo exists — fetching and checking out $gitRef...")
-            Git.open(workDir.toFile()).use { git ->
-                git.fetch().call()
-                git.checkout().setName(gitRef).call()
-            }
-        } else {
-            log.info("Cloning repository $repoUrl")
-            Git.cloneRepository()
-                .setURI(repoUrl)
-                .setDirectory(workDir.toFile())
-                .call()
-            log.info("Checking out $gitRef")
-            Git.open(workDir.toFile()).use { git ->
-                git.checkout().setName(gitRef).call()
-            }
-        }
-
-        return workDir
-    }
-}
 
 
 data class CoopMap(
@@ -120,22 +89,11 @@ private val coopMaps = listOf(
     CoopMap("FAF_Coop_Operation_Red_Revenge", 49, 4),
 )
 
-data class FafDatabase(
-    val host: String,
-    val database: String,
-    val username: String,
-    val password: String,
+data class CoopMapDatabase(
     val dryRun: Boolean
-) : AutoCloseable {
-    private val connection: Connection =
-        DriverManager.getConnection(
-            "jdbc:mariadb://$host/$database?useSSL=false&serverTimezone=UTC",
-            username,
-            password
-        )
-
+) : FafDatabase() {
     fun getLatestVersion(map: CoopMap): Int {
-        connection.createStatement().use { st ->
+        createStatement().use { st ->
             st.executeQuery("SELECT version FROM coop_map WHERE id=${map.mapId}")
                 .use { rs ->
                     if (!rs.next()) error("Map ${map.mapId} not found")
@@ -144,7 +102,7 @@ data class FafDatabase(
         }
     }
 
-    fun updateDatabase(map: CoopMap, version: Int) {
+    fun update(map: CoopMap, version: Int) {
         val sql = """
         UPDATE coop_map
         SET version=$version,
@@ -152,16 +110,12 @@ data class FafDatabase(
         WHERE id=${map.mapId}
     """.trimIndent()
 
-        connection.createStatement().use { it.executeUpdate(sql) }
-    }
-
-    override fun close() {
-        connection.close()
+        createStatement().use { it.executeUpdate(sql) }
     }
 }
 
 private fun processCoopMap(
-    db: FafDatabase,
+    db: CoopMapDatabase,
     map: CoopMap,
     simulate: Boolean,
     gitDir: String,
@@ -200,7 +154,7 @@ private fun processCoopMap(
         if (!simulate) {
             val finalZip = Path.of(mapsDir, map.zipName(newVersion))
             createZip(map, newVersion, files, tmp, finalZip)
-            db.updateDatabase(map, newVersion)
+            db.update(map, newVersion)
         }
     } finally {
         tmp.toFile().deleteRecursively()
@@ -253,23 +207,16 @@ private fun md5(path: Path): String {
 }
 
 fun main(args: Array<String>) {
+    Log.init()
+
     val MAP_DIR = System.getenv("MAP_DIR") ?: "/opt/faf/data/faf-coop-maps"
     val PATCH_VERSION = System.getenv("PATCH_VERSION") ?: error("PATCH_VERSION required")
     val REPO_URL = System.getenv("GIT_REPO_URL") ?: "https://github.com/FAForever/faf-coop-maps"
     val GIT_REF = System.getenv("GIT_REF") ?: "v$PATCH_VERSION"
-    val WORKDIR = System.getenv("GIT_WORKDIR") ?: "/tmp/fa-coop-kt"
+    val WORKDIR = System.getenv("GIT_WORKDIR") ?: "/tmp/faf-coop-maps"
     val DRYRUN = (System.getenv("DRY_RUN") ?: "false").lowercase() in listOf("1", "true", "yes")
 
-    val DB_HOST = System.getenv("DATABASE_HOST") ?: "localhost"
-    val DB_NAME = System.getenv("DATABASE_NAME") ?: "faf"
-    val DB_USER = System.getenv("DATABASE_USERNAME") ?: "root"
-    val DB_PASS = System.getenv("DATABASE_PASSWORD") ?: "banana"
-
-    val level = System.getenv("LOG_LEVEL") ?: "INFO"
-
-    val root = LoggerFactory
-        .getLogger(Logger.ROOT_LOGGER_NAME) as Logger
-    root.level = Level.toLevel(level, Level.INFO)
+    log.info("=== Kotlin Coop Map Deployer v{} ===", PATCH_VERSION)
 
     Files.createDirectories(Paths.get(MAP_DIR))
 
@@ -279,13 +226,7 @@ fun main(args: Array<String>) {
         gitRef = GIT_REF,
     ).checkout()
 
-    FafDatabase(
-        host = DB_HOST,
-        database = DB_NAME,
-        username = DB_USER,
-        password = DB_PASS,
-        dryRun = DRYRUN
-    ).use { db ->
+    CoopMapDatabase(dryRun = DRYRUN).use { db ->
         coopMaps.forEach {
             try {
                 processCoopMap(db, it, DRYRUN, WORKDIR, MAP_DIR)
@@ -294,5 +235,4 @@ fun main(args: Array<String>) {
             }
         }
     }
-
 }

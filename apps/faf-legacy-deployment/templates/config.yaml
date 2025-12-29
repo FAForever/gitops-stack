@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-legacy-deployment
+  labels:
+    app: faf-legacy-deployment
+data:
+  DATABASE_HOST: "mariadb"
+  DATABASE_NAME: "faf_lobby"
