@@ -1,4 +1,7 @@
-import org.apache.commons.compress.archivers.zip.Zip64Mode
+@file:Suppress("PackageDirectoryMismatch")
+
+package com.faforever.coopdeployer
+
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.eclipse.jgit.api.Git
@@ -18,9 +21,6 @@ import java.security.MessageDigest
 import java.sql.Connection
 import java.sql.DriverManager
 import java.time.Duration
-import java.util.zip.CRC32
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 import kotlin.io.path.inputStream
 
 private val log = LoggerFactory.getLogger("CoopDeployer")
@@ -34,7 +34,7 @@ fun Path.setPerm664() {
     Files.setPosixFilePermissions(this, perms)
 }
 
-data class FeatureModGitRepo(
+data class GitRepo(
     val workDir: Path,
     val repoUrl: String,
     val gitRef: String,
@@ -424,7 +424,7 @@ fun main() {
 
     log.info("=== Kotlin Coop Deployer v{} ===", PATCH_VERSION)
 
-    val repo = FeatureModGitRepo(
+    val repo = GitRepo(
         workDir = Paths.get(WORKDIR),
         repoUrl = REPO_URL,
         gitRef = GIT_REF
