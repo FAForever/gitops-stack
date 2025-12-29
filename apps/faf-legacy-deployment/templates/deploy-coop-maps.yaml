@@ -33,37 +33,32 @@ spec:
       template:
         spec:
           containers:
-            - image: python:3.13
+            - image: gradle:9.2-jdk21
               imagePullPolicy: Always
-              name: faf-coop-deployment
+              name: faf-deploy-coop
+              workingDir: /workspace
               envFrom:
                 - configMapRef:
-                    name: faf-deploy-coop-maps
+                    name: faf-deploy-coop
                 - secretRef:
                     name: faf-legacy-deployment
-              command: [ "sh" ]
-              args: [ "-c", "pip install mysql-connector-python && python3 /tmp/deploy-coop-maps.py $PATCH_VERSION" ]
+              command: [ "gradle", "deployCoopMaps" ]
+              # We need to mount single files via subpath because Gradle breaks otherwise (symbolic link to read-only directory)
               volumeMounts:
-                - mountPath: /tmp/deploy-coop-maps.py
+                - mountPath: /workspace/build.gradle.kts
                   name: faf-deploy-scripts
-                  subPath: "deploy-coop-maps.py"
-                - mountPath: /opt/faf/data/maps
-                  name: faf-maps
-                - mountPath: /opt/featured-mods/faf-coop-maps
-                  name: faf-coop-maps
+                  subPath: "build.gradle.kts"
+                - mountPath: /workspace/CoopMapDeployer.kt
+                  name: faf-deploy-scripts
+                  subPath: "CoopMapDeployer.kt"
+                - mountPath: /workspace/legacy-featured-mod-files
+                  name: faf-featured-mods
           restartPolicy: Never
           volumes:
             - name: faf-deploy-scripts
               configMap:
                 name: "faf-deploy-scripts"
-            - name: faf-deploy-coop-maps
-              configMap:
-                name: "faf-deploy-coop-maps"
-            - name: faf-maps
+            - name: faf-featured-mods
               hostPath:
-                path: /opt/faf/data/maps
-                type: Directory
-            - name: faf-coop-maps
-              hostPath:
-                path: /opt/faf/data/faf-coop-maps
+                path: /opt/faf/data/legacy-featured-mod-files
                 type: Directory

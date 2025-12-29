@@ -42,7 +42,7 @@ spec:
                     name: faf-deploy-coop
                 - secretRef:
                     name: faf-legacy-deployment
-              command: [ "gradle", "run" ]
+              command: [ "gradle", "deployCoop" ]
               # We need to mount single files via subpath because Gradle breaks otherwise (symbolic link to read-only directory)
               volumeMounts:
                 - mountPath: /workspace/build.gradle.kts
