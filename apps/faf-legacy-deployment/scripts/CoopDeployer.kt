@@ -2,9 +2,11 @@
 
 package com.faforever.coopdeployer
 
+import com.faforever.FafDatabase
+import com.faforever.GitRepo
+import com.faforever.Log
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
-import org.eclipse.jgit.api.Git
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URI
@@ -18,8 +20,6 @@ import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.FileTime
 import java.nio.file.attribute.PosixFilePermission
 import java.security.MessageDigest
-import java.sql.Connection
-import java.sql.DriverManager
 import java.time.Duration
 import kotlin.io.path.inputStream
 
@@ -34,33 +34,6 @@ fun Path.setPerm664() {
     Files.setPosixFilePermissions(this, perms)
 }
 
-data class GitRepo(
-    val workDir: Path,
-    val repoUrl: String,
-    val gitRef: String,
-) {
-    fun checkout(): Path {
-        if (Files.exists(workDir.resolve(".git"))) {
-            log.info("Repo exists — fetching and checking out $gitRef...")
-            Git.open(workDir.toFile()).use { git ->
-                git.fetch().call()
-                git.checkout().setName(gitRef).call()
-            }
-        } else {
-            log.info("Cloning repository $repoUrl")
-            Git.cloneRepository()
-                .setURI(repoUrl)
-                .setDirectory(workDir.toFile())
-                .call()
-            log.info("Checking out $gitRef")
-            Git.open(workDir.toFile()).use { git ->
-                git.checkout().setName(gitRef).call()
-            }
-        }
-
-        return workDir
-    }
-}
 
 data class GithubReleaseAssetDownloader(
     val repoOwner: String = "FAForever",
@@ -160,24 +133,13 @@ data class GithubReleaseAssetDownloader(
 
 }
 
-data class FafDatabase(
-    val host: String,
-    val database: String,
-    val username: String,
-    val password: String,
+data class CoopDatabase(
     val dryRun: Boolean
-) : AutoCloseable {
+) : FafDatabase() {
     /**
      * Definition of an existing file in the database
      */
     data class PatchFile(val mod: String, val fileId: Int, val name: String, val md5: String, val version: Int)
-
-    private val connection: Connection =
-        DriverManager.getConnection(
-            "jdbc:mariadb://$host/$database?useSSL=false&serverTimezone=UTC",
-            username,
-            password
-        )
 
     fun getCurrentPatchFile(mod: String, fileId: Int): PatchFile? {
         val sql = """
@@ -191,7 +153,7 @@ data class FafDatabase(
         WHERE uf.fileId = ?
     """.trimIndent()
 
-        connection.prepareStatement(sql).use { stmt ->
+        prepareStatement(sql).use { stmt ->
             stmt.setInt(1, fileId)
             val rs = stmt.executeQuery()
             while (rs.next()) {
@@ -213,22 +175,18 @@ data class FafDatabase(
         }
         val del = "DELETE FROM updates_${mod}_files WHERE fileId=? AND version=?"
         val ins = "INSERT INTO updates_${mod}_files (fileId, version, name, md5, obselete) VALUES (?, ?, ?, ?, 0)"
-        connection.prepareStatement(del).use {
+        prepareStatement(del).use {
             it.setInt(1, fileId)
             it.setInt(2, version)
             it.executeUpdate()
         }
-        connection.prepareStatement(ins).use {
+        prepareStatement(ins).use {
             it.setInt(1, fileId)
             it.setInt(2, version)
             it.setString(3, name)
             it.setString(4, md5)
             it.executeUpdate()
         }
-    }
-
-    override fun close() {
-        connection.close()
     }
 }
 
@@ -238,7 +196,7 @@ private val MINIMUM_ZIP_FILE_TIME = FileTime.fromMillis(MINIMUM_ZIP_DATE)
 class Patcher(
     val patchVersion: Int,
     val targetDir: Path,
-    val db: FafDatabase,
+    val db: CoopDatabase,
     val dryRun: Boolean,
 ) {
     /**
@@ -409,17 +367,13 @@ class Patcher(
 }
 
 fun main() {
+    Log.init()
+
     val PATCH_VERSION = System.getenv("PATCH_VERSION") ?: error("PATCH_VERSION required")
     val REPO_URL = System.getenv("GIT_REPO_URL") ?: "https://github.com/FAForever/fa-coop.git"
     val GIT_REF = System.getenv("GIT_REF") ?: "v$PATCH_VERSION"
-    val WORKDIR = System.getenv("GIT_WORKDIR") ?: "/tmp/fa-coop-kt"
+    val WORKDIR = System.getenv("GIT_WORKDIR") ?: "/tmp/fa-coop"
     val DRYRUN = (System.getenv("DRY_RUN") ?: "false").lowercase() in listOf("1", "true", "yes")
-
-    val DB_HOST = System.getenv("DATABASE_HOST") ?: "localhost"
-    val DB_NAME = System.getenv("DATABASE_NAME") ?: "faf"
-    val DB_USER = System.getenv("DATABASE_USERNAME") ?: "root"
-    val DB_PASS = System.getenv("DATABASE_PASSWORD") ?: "banana"
-
     val TARGET_DIR = Paths.get("./legacy-featured-mod-files")
 
     log.info("=== Kotlin Coop Deployer v{} ===", PATCH_VERSION)
@@ -476,13 +430,7 @@ fun main() {
         Patcher.PatchFile(25, "FAF_Coop_Operation_Tight_Spot_VO.v%d.nx2", null),
     )
 
-    FafDatabase(
-        host = DB_HOST,
-        database = DB_NAME,
-        username = DB_USER,
-        password = DB_PASS,
-        dryRun = DRYRUN
-    ).use { db ->
+    CoopDatabase(dryRun = DRYRUN).use { db ->
         val patcher = Patcher(
             patchVersion = PATCH_VERSION.toInt(),
             targetDir = TARGET_DIR,
