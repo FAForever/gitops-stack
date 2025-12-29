@@ -5,7 +5,6 @@ metadata:
   labels:
     app: faf-deploy-coop-maps
 data:
-  PATCH_VERSION: "v9.0.2"
   DATABASE_HOST: "mariadb"
   DATABASE_NAME: "faf_lobby"
 
@@ -37,20 +36,22 @@ spec:
               imagePullPolicy: Always
               name: faf-deploy-coop
               workingDir: /workspace
+              env:
+                - name: PATCH_VERSION
+                  value: "9.0.2"
               envFrom:
                 - configMapRef:
                     name: faf-deploy-coop
                 - secretRef:
                     name: faf-legacy-deployment
-              command: [ "gradle", "deployCoopMaps" ]
+              command:
+                - "sh"
+                - "-c"
+                - "cp /scripts/* /workspace && gradle deployCoopMaps"
               # We need to mount single files via subpath because Gradle breaks otherwise (symbolic link to read-only directory)
               volumeMounts:
-                - mountPath: /workspace/build.gradle.kts
+                - mountPath: /scripts
                   name: faf-deploy-scripts
-                  subPath: "build.gradle.kts"
-                - mountPath: /workspace/CoopMapDeployer.kt
-                  name: faf-deploy-scripts
-                  subPath: "CoopMapDeployer.kt"
                 - mountPath: /workspace/legacy-featured-mod-files
                   name: faf-featured-mods
           restartPolicy: Never
