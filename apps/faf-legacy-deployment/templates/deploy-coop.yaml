@@ -37,20 +37,22 @@ spec:
               imagePullPolicy: Always
               name: faf-deploy-coop
               workingDir: /workspace
+              env:
+                - name: PATCH_VERSION
+                  value: "66"
               envFrom:
                 - configMapRef:
                     name: faf-deploy-coop
                 - secretRef:
                     name: faf-legacy-deployment
-              command: [ "gradle", "deployCoop" ]
+              command:
+                - "sh"
+                - "-c"
+                - "cp /scripts/* /workspace && gradle deployCoop"
               # We need to mount single files via subpath because Gradle breaks otherwise (symbolic link to read-only directory)
               volumeMounts:
-                - mountPath: /workspace/build.gradle.kts
+                - mountPath: /workspace
                   name: faf-deploy-scripts
-                  subPath: "build.gradle.kts"
-                - mountPath: /workspace/CoopDeployer.kt
-                  name: faf-deploy-scripts
-                  subPath: "CoopDeployer.kt"
                 - mountPath: /workspace/legacy-featured-mod-files
                   name: faf-featured-mods
           restartPolicy: Never
