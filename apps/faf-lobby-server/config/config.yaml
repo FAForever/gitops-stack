@@ -45,4 +45,14 @@ LADDER_TOP_PLAYER_SEARCH_EXPANSION_STEP: 1.0
 
 QUEUE_POP_TIME_MAX: 90
 
+# 3rd Jan 2026: Set ban duration to 10 minutes, same as for first violation.
+# When a player can't connect to a matchmaking game, all players they can't
+# connect to receive a violation. If the same players re-queue and are matched
+# again, they easily collect several violations, resulting in 30 min bans.
+#
+# This should be temporary. The in-development Pioneer ICE Adapter is better in
+# terms of initial connections. Once it goes into prod we can revert this.
+# But as we all know, nothing is more permanent than a temporary solution.
+LADDER_VIOLATIONS_BAN_DURATION: 600
+
 # LADDER_VIOLATIONS_ENABLED: false
