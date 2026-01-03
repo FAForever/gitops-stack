@@ -42,4 +42,14 @@ MINORITY_BONUS: 1
 
 QUEUE_POP_TIME_MAX: 90
 
-# LADDER_VIOLATIONS_ENABLED: false
+# 3rd Jan 2026: Disable matchmaking bans
+# There are problems with the ban system when a game doesn't start due to
+# connection issues. The current hypothesis is that all players except for the
+# match host receive a violation, regardless of whether they could establish
+# connections successfully or not.
+#
+# The in-development Pioneer ICE Adapter is better in terms of initial
+# connections. So the impact of the erroneous violations might become small
+# enough to simpy accept it. Once Pioneer goes into prod we can think about
+# reverting this.
+LADDER_VIOLATIONS_ENABLED: false
