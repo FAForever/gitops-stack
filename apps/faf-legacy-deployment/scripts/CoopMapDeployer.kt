@@ -131,7 +131,11 @@ private fun processCoopMap(
             else it.copyTo(target)
         }
 
-        val files = tmp.walk().filter { it.isRegularFile() }.toList()
+        val files = tmp.walk()
+            .filter { it.isRegularFile() }
+            // Files.walk does not guarantee fixed order, but we need it
+            .sortedBy { tmp.relativize(it).toString() }
+            .toList()
         val currentVersion = db.getLatestVersion(map)
 
         val currentZip = Path.of(mapsDir, map.zipName(currentVersion))
@@ -175,11 +179,16 @@ private fun createZip(
             val rel = base.relativize(file)
             val entryPath = "/${map.folderName(version)}/$rel"
 
-            val bytes = file.readText()
-                .replace(
-                    "/maps/${map.folderName}/",
-                    "/maps/${map.folderName(version)}/"
-                ).toByteArray()
+            val bytes: ByteArray = if (file.isTextFile()) {
+                file.readText()
+                    .replace(
+                        "/maps/${map.folderName}/",
+                        "/maps/${map.folderName(version)}/",
+                    )
+                    .toByteArray()
+            } else {
+                file.readBytes()
+            }
 
             val entry = ZipArchiveEntry(entryPath).apply {
                 // Ensure deterministic times
@@ -199,6 +208,9 @@ private fun createZip(
         zip.finish()
     }
 }
+
+private fun Path.isTextFile() = listOf(".md", ".lua", ".json", ".txt").any { it.endsWith(it) }
+
 
 private fun md5(path: Path): String {
     val md = MessageDigest.getInstance("MD5")
