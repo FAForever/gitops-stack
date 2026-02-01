@@ -40,14 +40,14 @@ spec:
               volumeMounts:
                 - mountPath: /scripts
                   name: faf-deploy-scripts
-                - mountPath: /workspace/legacy-featured-mod-files
-                  name: faf-featured-mods
+                - mountPath: /workspace/output
+                  name: output
           restartPolicy: Never
           volumes:
             - name: faf-deploy-scripts
               configMap:
                 name: "faf-deploy-scripts"
-            - name: faf-featured-mods
+            - name: output
               hostPath:
-                path: /opt/faf/data/legacy-featured-mod-files
+                path: /opt/faf/data/maps
                 type: Directory

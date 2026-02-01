@@ -235,7 +235,7 @@ private fun Path.isTextFile() = listOf(".md", ".lua", ".json", ".txt").any { toS
 fun main(args: Array<String>) {
     Log.init()
 
-    val MAP_DIR = System.getenv("MAP_DIR") ?: "/opt/faf/data/faf-coop-maps"
+    val MAP_DIR = System.getenv("MAP_DIR") ?: "./output"
     val PATCH_VERSION = System.getenv("PATCH_VERSION") ?: error("PATCH_VERSION required")
     val REPO_URL = System.getenv("GIT_REPO_URL") ?: "https://github.com/FAForever/faf-coop-maps"
     val GIT_REF = System.getenv("GIT_REF") ?: "v$PATCH_VERSION"
