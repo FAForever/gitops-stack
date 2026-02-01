@@ -1,6 +1,6 @@
 image:
   repository: rabbitmq
-  tag: 3.13.7-management-alpine
+  tag: 4.2.3-management-alpine
 
 infisical-secret:
   name: rabbitmq
