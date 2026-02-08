@@ -133,12 +133,12 @@ fun generateChecksums(
  * Extract checksums.md5 content from an existing ZIP file.
  * Returns null if the file doesn't exist or doesn't contain checksums.md5.
  */
-fun extractChecksumsFromZip(zipPath: Path): String? {
+fun extractChecksumsFromZip(zipPath: Path, entryName: String = CHECKSUMS_FILENAME): String? {
     if (!Files.exists(zipPath)) return null
 
     return try {
         ZipFile.builder().setPath(zipPath).get().use { zip ->
-            val entry = zip.getEntry(CHECKSUMS_FILENAME) ?: return null
+            val entry = zip.getEntry(entryName) ?: return null
             zip.getInputStream(entry).bufferedReader().readText()
         }
     } catch (e: Exception) {
