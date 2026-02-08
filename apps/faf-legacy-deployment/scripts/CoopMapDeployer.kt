@@ -33,7 +33,7 @@ data class CoopMap(
         "${folderName.lowercase()}.v${version.toString().padStart(4, '0')}.zip"
 
     fun folderName(version: Int) =
-        "${folderName.lowercase()}.v${version.toString().padStart(4, '0')}"
+        "${folderName}.v${version.toString().padStart(4, '0')}"
 }
 
 private val coopMaps = listOf(
@@ -139,7 +139,7 @@ private fun processCoopMap(
 
         // Compare with checksums from existing ZIP
         val currentZip = Path.of(mapsDir, map.zipName(currentVersion))
-        val oldChecksums = extractChecksumsFromZip(currentZip)
+        val oldChecksums = extractChecksumsFromZip(currentZip, "${map.folderName(currentVersion)}/$CHECKSUMS_FILENAME")
 
         val changed = currentVersion == 0 || newChecksums != oldChecksums
 
@@ -181,12 +181,15 @@ private fun generateChecksumsForMap(
  */
 private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray {
     return if (file.isTextFile()) {
-        file.readText()
+        var text = file.readText()
             .replace(
                 "/maps/${map.folderName}/",
                 "/maps/${map.folderName(version)}/",
             )
-            .toByteArray()
+        if (file.toString().endsWith("_scenario.lua")) {
+            text = text.replace(Regex("""(map_version\s*=\s*)\d+"""), "$1$version")
+        }
+        text.toByteArray()
     } else {
         file.readBytes()
     }
@@ -202,22 +205,24 @@ private fun createZip(
     ZipArchiveOutputStream(out.toFile()).use { zip ->
         zip.setMethod(ZipArchiveEntry.DEFLATED)
 
-        // Generate and write checksums.md5 as first entry
+        // Write all files inside versioned subfolder
+        val versionedFolder = map.folderName(version)
+
+        // Generate and write checksums.md5 as first entry inside subfolder
         val checksums = generateChecksumsForMap(map, version, files, base)
         val checksumBytes = checksums.toByteArray()
-        val checksumEntry = ZipArchiveEntry(CHECKSUMS_FILENAME).apply {
+        val checksumEntry = ZipArchiveEntry("$versionedFolder/$CHECKSUMS_FILENAME").apply {
             size = checksumBytes.size.toLong()
         }
         zip.putArchiveEntry(checksumEntry)
         zip.write(checksumBytes)
         zip.closeArchiveEntry()
 
-        // Write all files at root level
         files.forEach { file ->
             val rel = base.relativize(file).toString().replace("\\", "/")
             val bytes = getFileContent(file, map, version)
 
-            val entry = ZipArchiveEntry(rel).apply {
+            val entry = ZipArchiveEntry("$versionedFolder/$rel").apply {
                 size = bytes.size.toLong()
             }
 
