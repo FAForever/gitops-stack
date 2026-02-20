@@ -26,7 +26,7 @@ clients:
 
   - name: "FAF Moderator Client"
     id: "8ff5c14f-60e2-41b9-b594-a641dc5013be"
-    grantType: "authorization_code"
+    grantType: "authorization_code,refresh_token"
     scope: "openid,offline,public_profile,upload_avatar,administrative_actions,read_sensible_userdata,manage_vault"
     redirectUri: "http://localhost,http://localhost:8080/,http://127.0.0.1"
     logoUri: "https://$BASE_DOMAIN/images/faf-logo.png"
