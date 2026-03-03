@@ -185,6 +185,7 @@ private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray {
             .replace(
                 "/maps/${map.folderName}/",
                 "/maps/${map.folderName(version)}/",
+                ignoreCase = true,
             )
         if (file.toString().endsWith("_scenario.lua")) {
             text = text.replace(Regex("""(map_version\s*=\s*)\d+"""), "$1$version")
