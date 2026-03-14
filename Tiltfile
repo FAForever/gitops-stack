@@ -264,13 +264,17 @@ traefik_yaml = helm_with_build_cache("cluster/traefik", values=["config/local.ya
 k8s_yaml(traefik_yaml)
 
 traefik_identifiers = []
+traefik_crds = []
 for object in decode_yaml_stream(traefik_yaml):
     name = object["metadata"]["name"]
     kind = object["kind"].lower()
-    if kind != "deployment" and kind != "service":
+    if kind != "deployment" and kind != "service" and kind != "customresourcedefinition":
         traefik_identifiers.append(name + ":" + kind)
+    if kind == "customresourcedefinition":
+        traefik_crds.append(name + ":" + kind)
 
-k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces"], labels=["traefik"])
+k8s_resource(new_name="traefik-crds", objects=traefik_crds, labels=["traefik"])
+k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "traefik-crds"], labels=["traefik"])
 k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
