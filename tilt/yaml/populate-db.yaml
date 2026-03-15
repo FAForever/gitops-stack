@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
         - name: populate-db
-          image: mariadb:12.1
+          image: mariadb:12.2
           imagePullPolicy: Always
           envFrom:
             - secretRef:
