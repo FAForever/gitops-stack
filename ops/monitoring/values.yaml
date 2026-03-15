@@ -143,10 +143,10 @@ loki:
   # Disable anti-affinity
   singleBinary:
     replicas: 1
-    affinity: null
+    affinity: {}
 
   gateway:
-    affinity: null
+    affinity: {}
 
 
 k8s-monitoring:

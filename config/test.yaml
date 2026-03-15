@@ -1,8 +1,5 @@
 hostName: "faftest2"
 environment: "test"
-infisical: # deprecated, use infisical-secret instead
-  projectSlug: "k3s-cluster-zj-th"
-  envSlug: "test"
 infisical-secret:
   enabled: true
   projectSlug: "k3s-cluster-zj-th"
