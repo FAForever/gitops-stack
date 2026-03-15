@@ -1,6 +1,6 @@
 image:
   repository: "mariadb"
-  tag: "12.1"
+  tag: "12.2"
 
 infisical-secret:
   name: mariadb
