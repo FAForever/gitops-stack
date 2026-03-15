@@ -1,6 +1,7 @@
 traefik:
   deployment:
     enabled: true
+    dnsPolicy: ClusterFirstWithHostNet # Required with hostNetwork
 
   additionalArguments:
     - "--entrypoints.websecure.http.encodequerysemicolons=true"
@@ -9,7 +10,6 @@ traefik:
     type: Recreate
 
   hostNetwork: true
-  dnsPolicy: ClusterFirstWithHostNet
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -28,11 +28,12 @@ traefik:
       port: 9101
 
     web:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
-          permanent: true
+      http:
+        redirections:
+          entryPoint:
+            to: websecure
+            scheme: https
+            permanent: true
           
     websecure:
       # New setup behind proxy
