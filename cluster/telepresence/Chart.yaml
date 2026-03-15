@@ -3,5 +3,5 @@ name: telepresence
 version: 1.0.0
 dependencies:
   - name: telepresence-oss
-    version: 2.25.1
+    version: 2.27.2
     repository: oci://ghcr.io/telepresenceio
