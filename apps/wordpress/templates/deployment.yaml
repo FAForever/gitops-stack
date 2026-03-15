@@ -21,7 +21,7 @@ spec:
         app: wordpress
     spec:
       containers:
-        - image: wordpress
+        - image: wordpress:latest
           imagePullPolicy: Always
           name: wordpress
           envFrom:
