@@ -20,7 +20,7 @@ spec:
       template:
         spec:
           containers:
-            - image: gradle:9.2-jdk21
+            - image: gradle:9.4-jdk21
               imagePullPolicy: Always
               name: faf-deploy-coop
               workingDir: /workspace
