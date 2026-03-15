@@ -5,7 +5,5 @@ infisical-secret:
   projectSlug: "k3s-cluster-zj-th"
   envSlug: "prod"
 baseDomain: "faforever.com"
-traefik:
-  tlsStoreSecret: "cloudflare-faf-com"
 zfs:
   nodeId: "fafprod3"

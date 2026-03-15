@@ -8,7 +8,5 @@ infisical-secret:
   projectSlug: "k3s-cluster-zj-th"
   envSlug: "test"
 baseDomain: "faforever.xyz"
-traefik:
-  tlsStoreSecret: "cloudflare-faf-xyz"
 zfs:
   nodeId: "faftest2"
