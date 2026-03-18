@@ -1,0 +1,102 @@
+{{- if .Values.cifsMount.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: replay-mounter
+  namespace: replay-mounter
+spec:
+  selector:
+    matchLabels:
+      app: replay-mounter
+  template:
+    metadata:
+      labels:
+        app: replay-mounter
+    spec:
+      nodeSelector:
+        openebs.io/nodeid: {{ .Values.zfs.nodeId }}
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: replay-mounter
+        image: {{ .Values.cifsMount.image }}
+        securityContext:
+          privileged: true
+        env:
+        - name: CIFS_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.cifsMount.credentialsSecret }}
+              key: CIFS_SERVER
+        - name: CIFS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.cifsMount.credentialsSecret }}
+              key: CIFS_USERNAME
+        - name: CIFS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.cifsMount.credentialsSecret }}
+              key: CIFS_PASSWORD
+        - name: MOUNT_TARGET
+          value: "{{ .Values.cifsMount.mountPath }}"
+        volumeMounts:
+        - name: host-base
+          mountPath: "{{ .Values.cifsMount.hostBasePath }}"
+          mountPropagation: Bidirectional
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Installing cifs-utils..."
+          apk add --no-cache cifs-utils
+          echo "cifs-utils installed."
+
+          cleanup() {
+            echo "Shutting down, unmounting $MOUNT_TARGET..."
+            umount "$MOUNT_TARGET" 2>/dev/null || \
+            umount -l "$MOUNT_TARGET" 2>/dev/null || true
+            exit 0
+          }
+          trap cleanup TERM INT
+
+          mount_cifs() {
+            mkdir -p "$MOUNT_TARGET"
+            echo "Mounting $CIFS_SERVER -> $MOUNT_TARGET..."
+            mount -t cifs "$CIFS_SERVER" "$MOUNT_TARGET" \
+              -o "username=$CIFS_USERNAME,password=$CIFS_PASSWORD,{{ .Values.cifsMount.mountOptions }}"
+          }
+
+          is_mounted() { grep -q " $MOUNT_TARGET cifs " /proc/mounts; }
+          is_alive() { timeout 5 ls "$MOUNT_TARGET" > /dev/null 2>&1; }
+
+          if is_mounted; then
+            echo "Mount already present, skipping initial mount."
+          else
+            echo "Mount not present, mounting..."
+            until mount_cifs; do echo "Mount failed, retrying in 10s..."; sleep 10; done
+            echo "Mount successful."
+          fi
+
+          echo "Entering watchdog loop (30s interval)..."
+          # is_mounted catches a fully gone mount (umount);
+          # is_alive catches a dead connection (soft mount returns error instead of hanging)
+          while true; do
+            sleep 30 &
+            wait $!
+            if ! is_mounted; then
+              echo "Watchdog: mount gone, remounting..."
+              mount_cifs || true
+            elif ! is_alive; then
+              echo "Watchdog: mount unreachable, remounting..."
+              umount -l "$MOUNT_TARGET" 2>/dev/null || true
+              mount_cifs || true
+            else
+              echo "Watchdog: mount healthy at $(date -Iseconds)."
+            fi
+          done
+      volumes:
+      - name: host-base
+        hostPath:
+          path: "{{ .Values.cifsMount.hostBasePath }}"
+          type: Directory
+{{- end }}

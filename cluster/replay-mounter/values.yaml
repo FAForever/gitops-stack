@@ -1,0 +1,14 @@
+cifsMount:
+  enabled: false
+  mountPath: "/opt/faf/data/replays-old"
+  hostBasePath: "/opt/faf/data"    # parent dir shared via Bidirectional propagation
+  credentialsSecret: "cifs-credentials"
+  mountOptions: "ro,soft,vers=3.0,uid=1000,gid=1000,file_mode=0644,dir_mode=0755"
+  image: "alpine:3.21"
+
+# zfs.nodeId injected from config/prod.yaml
+# infisical-secret.enabled injected from config/prod.yaml
+infisical-secret:
+  name: cifs-credentials
+  secretNamespace: replay-mounter   # namespace where infisical-machine-identity lives
+  overrideSecretPath: "/replay-mounter"

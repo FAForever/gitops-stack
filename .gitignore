@@ -12,3 +12,6 @@ spicy-secrets/**
 tilt_config.json
 .local-data/
 .helm-cache/
+
+# Script related stuff
+**/.gradle
