@@ -17,7 +17,7 @@ clients:
   - name: "FAF Classic Client (Python)"
     id: "95ecec08-29c1-4c48-ae0a-b000ff349cb8"
     grantType: "authorization_code,refresh_token"
-    scope: "openid,offline,lobby,public_profile"
+    scope: "openid,offline,lobby,public_profile,upload_map,upload_mod"
     redirectUri: "http://localhost,http://127.0.0.1"
     logoUri: "https://$BASE_DOMAIN/images/faf-logo.png"
     tosUri: "https://$BASE_DOMAIN/tos"
