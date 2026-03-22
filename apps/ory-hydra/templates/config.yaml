@@ -9,6 +9,7 @@ data:
   URLS_SELF_ISSUER: "https://hydra.{{.Values.baseDomain}}"
   URLS_LOGIN: "https://user.{{.Values.baseDomain}}/oauth2/login"
   URLS_CONSENT: "https://user.{{.Values.baseDomain}}/oauth2/consent"
+  URLS_DEVICE_VERIFICATION: "https://user.{{.Values.baseDomain}}/oauth2/device-login"
   STRATEGIES_ACCESS_TOKEN: "jwt"
   OAUTH2_CLIENT_CREDENTIALS_DEFAULT_GRANT_ALLOWED_SCOPE: "true"
   # These are only used for mariadb init script, it is redundant in the DSN secret! Don't forget to also create a secret for DB_PASSWORD
