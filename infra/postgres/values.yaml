@@ -1,6 +1,6 @@
 image:
   repository: "postgres"
-  tag: "17.9-bookworm"
+  tag: "18.3-bookworm"
 
 upgrade-image:
   repository: "pgautoupgrade/pgautoupgrade"
