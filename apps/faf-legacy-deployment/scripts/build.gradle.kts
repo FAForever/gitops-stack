@@ -12,7 +12,7 @@ dependencies {
     implementation("org.eclipse.jgit:org.eclipse.jgit:7.6.0.202603022253-r")
     implementation("org.apache.commons:commons-compress:1.28.0")
     implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("ch.qos.logback:logback-classic:1.5.23")
+    implementation("ch.qos.logback:logback-classic:1.5.32")
 }
 
 // Use the root level for files
