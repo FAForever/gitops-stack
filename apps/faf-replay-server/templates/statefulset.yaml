@@ -21,7 +21,7 @@ spec:
         prometheus.io/path: '/'
     spec:
       containers:
-        - image: faforever/faf-rust-replayserver:0.4.0
+        - image: faforever/faf-rust-replayserver:0.4.1
           imagePullPolicy: Always
           name: faf-replay-server
           envFrom:
