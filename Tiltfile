@@ -409,4 +409,4 @@ proxy_local_service_if_set(service_name="faf-ws-bridge", service_chart="apps/faf
 icebreaker_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
 icebreaker_labels = ["api"]
 icebreaker_patch = {"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false"}
-proxy_local_service_if_set(service_name="faf-icebreaker", service_chart="apps/faf-icebreaker", service_namespace="faf-apps", service_deps=icebreaker_deps, service_labels=icebreaker_labels, config_patch=icebreaker_patch)
+proxy_local_service_if_set(service_name="faf-icebreaker", service_chart="apps/faf-icebreaker", service_namespace="faf-apps", service_deps=icebreaker_deps, service_labels=icebreaker_labels, additional_values=["apps/faf-icebreaker/values-prod.yaml"], config_patch=icebreaker_patch)
