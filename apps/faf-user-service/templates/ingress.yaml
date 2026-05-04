@@ -1,3 +1,25 @@
+{{- if .Values.cors.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: faf-user-service-cors
+spec:
+  headers:
+    accessControlAllowMethods:
+      - "GET"
+      - "POST"
+      - "OPTIONS"
+    accessControlAllowHeaders:
+      - "Content-Type"
+      - "Authorization"
+      - "X-HMAC"
+    accessControlAllowOriginListRegex:
+      {{- toYaml .Values.cors.allowOriginListRegex | nindent 6 }}
+    accessControlAllowCredentials: true
+    accessControlMaxAge: 600
+    addVaryHeader: true
+---
+{{- end }}
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -11,3 +33,7 @@ spec:
       services:
         - name: faf-user-service
           port: 8080
+      {{- if .Values.cors.enabled }}
+      middlewares:
+        - name: faf-user-service-cors
+      {{- end }}
