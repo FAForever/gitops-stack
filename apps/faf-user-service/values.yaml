@@ -1,2 +1,5 @@
 infisical-secret:
   name: faf-user-service
+cors:
+  enabled: false
+  allowOriginListRegex: []
