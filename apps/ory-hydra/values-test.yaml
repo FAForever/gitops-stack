@@ -1,0 +1,5 @@
+cors:
+  enabled: true
+  allowOriginListRegex:
+    - "^https?://localhost(:[0-9]+)?$"
+    - "^https?://127\\.0\\.0\\.1(:[0-9]+)?$"

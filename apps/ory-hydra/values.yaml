@@ -3,6 +3,9 @@ image:
   tag: "v25.4.0"
 infisical-secret:
   name: ory-hydra
+cors:
+  enabled: false
+  allowOriginListRegex: []
 clients:
   - name: "FAF Client"
     id: "2e8808cf-5889-469b-b2c3-01f0cc58c4af"
