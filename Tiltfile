@@ -106,6 +106,9 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
 
     if is_ci:
         agnostic_local(command)
+        objects = read_yaml_stream(cached_yaml)
+        if not objects:
+            fail("No objects found for chart " + chart)
     else:
         deps = [chart]
         deps.extend(values)
