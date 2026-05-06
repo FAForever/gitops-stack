@@ -151,7 +151,7 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
             entryPoints = spec["entryPoints"]
             if "websecure" in entryPoints:
                 entryPoints.append("web")
-        if containers or job_template_containers:
+        if not is_ci and (containers or job_template_containers):
             metadata = object["metadata"]
             if "annotations" not in metadata or not metadata["annotations"]:
                 metadata["annotations"] = {}
@@ -252,8 +252,9 @@ k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:na
 k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], labels=["core"])
 k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra", "init-apps:serviceaccount:faf-apps", "allow-init-apps-read-app-config-infra:rolebinding", "allow-init-apps-read-app-config-apps:rolebinding"], resource_deps=["clusterroles"], labels=["core"])
 
-k8s_yaml(helm_with_build_cache("disabled/reloader", namespace="faf-ops", values=["config/local.yaml"]))
-k8s_resource(workload="release-name-reloader", new_name="reloader", objects=["release-name-reloader:serviceaccount", "release-name-reloader-metadata-role:role", "release-name-reloader-role:clusterrole", "release-name-reloader-metadata-role-binding:rolebinding", "release-name-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
+if not is_ci:
+    k8s_yaml(helm_with_build_cache("disabled/reloader", namespace="faf-ops", values=["config/local.yaml"]))
+    k8s_resource(workload="release-name-reloader", new_name="reloader", objects=["release-name-reloader:serviceaccount", "release-name-reloader-metadata-role:role", "release-name-reloader-role:clusterrole", "release-name-reloader-metadata-role-binding:rolebinding", "release-name-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
 
 storage_yaml = helm_with_build_cache("cluster/storage", values=["config/local.yaml"], set=["dataPath="+data_absolute_path])
 storage_yaml = to_hostpath_storage(storage_yaml, use_named_volumes=use_named_volumes)
