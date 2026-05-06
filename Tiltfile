@@ -8,6 +8,7 @@ config.define_string("faf-data-dir", args=False, usage="Directory where the FAF 
 config.define_string("base-domain", args=False, usage="Base Domain to use for all faf services. Defaults to faforever.localhost")
 config.define_string_list("local-services", args=False, usage="Names of services that you intend to run locally")
 cfg = config.parse()
+is_ci = os.getenv("CI", False)
 windows_bash_path = cfg.get("windows-bash-path", "C:\\Program Files\\Git\\bin\\bash.exe")
 host_ip = cfg.get("host-ip", "")
 local_services = cfg.get("local-services", [])
@@ -102,18 +103,21 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
     command.extend(value_flags)
     command.extend(set_flags)
     command.extend(["--set", "baseDomain=" + base_domain])
-    
-    deps = [chart]
-    deps.extend(values)
-    agnostic_local_resource(name=chart_resource + "-helm", cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
 
-    if not os.path.exists(cached_yaml):
+    if is_ci:
         agnostic_local(command)
+    else:
+        deps = [chart]
+        deps.extend(values)
+        agnostic_local_resource(name=chart_resource + "-helm", cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
 
-    objects = read_yaml_stream(cached_yaml)
-    if not objects:
-        agnostic_local(command)
+        if not os.path.exists(cached_yaml):
+            agnostic_local(command)
+
         objects = read_yaml_stream(cached_yaml)
+        if not objects:
+            agnostic_local(command)
+            objects = read_yaml_stream(cached_yaml)
 
     watch_file(cached_yaml)
 
