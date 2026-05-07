@@ -8,6 +8,7 @@ config.define_string("faf-data-dir", args=False, usage="Directory where the FAF 
 config.define_string("base-domain", args=False, usage="Base Domain to use for all faf services. Defaults to faforever.localhost")
 config.define_string_list("local-services", args=False, usage="Names of services that you intend to run locally")
 cfg = config.parse()
+is_ci = os.getenv("CI", False)
 windows_bash_path = cfg.get("windows-bash-path", "C:\\Program Files\\Git\\bin\\bash.exe")
 host_ip = cfg.get("host-ip", "")
 local_services = cfg.get("local-services", [])
@@ -102,18 +103,24 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
     command.extend(value_flags)
     command.extend(set_flags)
     command.extend(["--set", "baseDomain=" + base_domain])
-    
-    deps = [chart]
-    deps.extend(values)
-    agnostic_local_resource(name=chart_resource + "-helm", cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
 
-    if not os.path.exists(cached_yaml):
-        agnostic_local(command)
-
-    objects = read_yaml_stream(cached_yaml)
-    if not objects:
+    if is_ci:
         agnostic_local(command)
         objects = read_yaml_stream(cached_yaml)
+        if not objects:
+            fail("No objects found for chart " + chart)
+    else:
+        deps = [chart]
+        deps.extend(values)
+        agnostic_local_resource(name=chart_resource + "-helm", cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
+
+        if not os.path.exists(cached_yaml):
+            agnostic_local(command)
+
+        objects = read_yaml_stream(cached_yaml)
+        if not objects:
+            agnostic_local(command)
+            objects = read_yaml_stream(cached_yaml)
 
     watch_file(cached_yaml)
 
@@ -144,7 +151,7 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
             entryPoints = spec["entryPoints"]
             if "websecure" in entryPoints:
                 entryPoints.append("web")
-        if containers or job_template_containers:
+        if not is_ci and (containers or job_template_containers):
             metadata = object["metadata"]
             if "annotations" not in metadata or not metadata["annotations"]:
                 metadata["annotations"] = {}
@@ -245,8 +252,9 @@ k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:na
 k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], labels=["core"])
 k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra", "init-apps:serviceaccount:faf-apps", "allow-init-apps-read-app-config-infra:rolebinding", "allow-init-apps-read-app-config-apps:rolebinding"], resource_deps=["clusterroles"], labels=["core"])
 
-k8s_yaml(helm_with_build_cache("disabled/reloader", namespace="faf-ops", values=["config/local.yaml"]))
-k8s_resource(workload="release-name-reloader", new_name="reloader", objects=["release-name-reloader:serviceaccount", "release-name-reloader-metadata-role:role", "release-name-reloader-role:clusterrole", "release-name-reloader-metadata-role-binding:rolebinding", "release-name-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
+if not is_ci:
+    k8s_yaml(helm_with_build_cache("disabled/reloader", namespace="faf-ops", values=["config/local.yaml"]))
+    k8s_resource(workload="release-name-reloader", new_name="reloader", objects=["release-name-reloader:serviceaccount", "release-name-reloader-metadata-role:role", "release-name-reloader-role:clusterrole", "release-name-reloader-metadata-role-binding:rolebinding", "release-name-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
 
 storage_yaml = helm_with_build_cache("cluster/storage", values=["config/local.yaml"], set=["dataPath="+data_absolute_path])
 storage_yaml = to_hostpath_storage(storage_yaml, use_named_volumes=use_named_volumes)
