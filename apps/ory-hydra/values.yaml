@@ -137,7 +137,7 @@ clients:
       name: ory-hydra
       key: FAFTRACKER_SECRET
     grantType: "authorization_code,refresh_token"
-    scope: "openid,offline,public_profile,lobby"
+    scope: "openid,offline,public_profile"
     redirectUri: "https://faftracker.xyz/api/auth/callback"
     logoUri: "https://faftracker.xyz/favicon.svg"
     clientUri: "https://faftracker.xyz"
