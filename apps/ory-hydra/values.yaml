@@ -127,3 +127,15 @@ clients:
     policyUri: "https://$BASE_DOMAIN/privacy"
     logoUri: "https://$BASE_DOMAIN/images/faf-logo.png"
     tokenEndpointAuthMethod: "client_secret_post"
+
+  - name: "FAF Tracker"
+    id: "8213f968-676b-4ef5-b9b7-571b60b6ca91"
+    secret:
+      name: ory-hydra
+      key: FAFTRACKER_SECRET
+    grantType: "authorization_code,refresh_token"
+    scope: "openid,offline,public_profile"
+    redirectUri: "https://faftracker.xyz/api/auth/callback"
+    logoUri: "https://faftracker.xyz/favicon.svg"
+    clientUri: "https://faftracker.xyz"
+    tokenEndpointAuthMethod: "client_secret_post"
