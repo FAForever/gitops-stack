@@ -1,6 +1,6 @@
 image:
   repository: "mongo"
-  tag: "8.2.3"
+  tag: "8.3.2"
 
 infisical-secret:
   name: mongodb
