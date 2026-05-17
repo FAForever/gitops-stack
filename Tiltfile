@@ -248,7 +248,7 @@ agnostic_local_resource("populate-featured-mod-files", cmd=["./tilt/scripts/upda
 
 k8s_yaml("cluster/namespaces.yaml")
 k8s_yaml(helm_with_build_cache("infra/clusterroles", namespace="faf-infra", values=["config/local.yaml"]))
-k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace", "traefik:namespace"], labels=["core"])
+k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace", "traefik:namespace", "replay-mounter:namespace"], labels=["core"])
 k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], labels=["core"])
 k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra", "init-apps:serviceaccount:faf-apps", "allow-init-apps-read-app-config-infra:rolebinding", "allow-init-apps-read-app-config-apps:rolebinding"], resource_deps=["clusterroles"], labels=["core"])
 
