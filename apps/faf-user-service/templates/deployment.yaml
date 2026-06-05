@@ -18,8 +18,8 @@ spec:
         app: faf-user-service
       annotations:
         prometheus.io/scrape: 'true'
-        prometheus.io/port: '8081'
-        prometheus.io/path: '/actuator/prometheus'
+        prometheus.io/port: '8080'
+        prometheus.io/path: '/q/metrics'
     spec:
       containers:
         - image: faforever/faf-user-service:4.2.0
