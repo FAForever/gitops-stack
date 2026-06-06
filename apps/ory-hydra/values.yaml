@@ -142,3 +142,15 @@ clients:
     logoUri: "https://faftracker.xyz/favicon.svg"
     clientUri: "https://faftracker.xyz"
     tokenEndpointAuthMethod: "client_secret_post"
+
+  - name: "FA Metrics"
+    id: "20ca564b-d0d3-445f-8317-ce7cff4f878d"
+    secret:
+      name: ory-hydra
+      key: FA_METRICS_CLIENT_SECRET
+    grantType: "authorization_code,refresh_token"
+    scope: "openid,offline,public_profile"
+    redirectUri: "https://faf-auth-proxy.services.atlantishq.de/realms/atlantis/broker/faf/endpoint"
+    logoUri: "https://fa-metrics.rancher.katzencluster.atlantishq.de/favicon.svg"
+    clientUri: "https://faf-auth-proxy.services.atlantishq.de"
+    tokenEndpointAuthMethod: "client_secret_post"
