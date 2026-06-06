@@ -22,7 +22,7 @@ jobs:
         run: ctlptl create cluster kind --registry=ctlptl-registry
 
       - name: Cache Helm Output
-        id: cache-helm-ooutput
+        id: cache-helm-output
         uses: actions/cache@v5
         with:
           path: .helm-cache
@@ -34,4 +34,18 @@ jobs:
       - name: Test Using Local Config
         run: tilt ci --timeout "5m"
 
+      - name: List images
+        run: |
+            registry_host=$(ctlptl get cluster kind-kind -o template --template '{{.status.localRegistryHosting.host}}')
+            kubectl get pods --all-namespaces -o jsonpath="{.items[*].spec['initContainers', 'containers'][*].image}" \
+            | tr -s '[[:space:]]' '\n' \
+            | sort \
+            | uniq \
+            | grep -Ev "(registry.k8s.io|docker.io|:latest|:main)" \
+            | grep ":.*$" \
+            | while IFS= read -r line; do
+                  docker image pull $line
+                  docker image save $line -o .image-cache/${line//\//-}.tar
+              done
+            docker image list
       
