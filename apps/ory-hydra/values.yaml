@@ -1,6 +1,6 @@
 image:
   repository: "oryd/hydra"
-  tag: "v25.4.0"
+  tag: "v26.2.0"
 infisical-secret:
   name: ory-hydra
 cors:
