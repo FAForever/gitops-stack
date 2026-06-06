@@ -40,10 +40,10 @@ spec:
           resources:
             limits:
               memory: 2Gi
-              cpu: 3000m
+              cpu: 1000m
             requests:
-              memory: 1Gi
-              cpu: 500m
+              memory: 250Mi
+              cpu: 100m
           startupProbe:
             httpGet:
               port: 9000
