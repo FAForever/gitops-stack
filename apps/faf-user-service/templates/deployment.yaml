@@ -36,6 +36,7 @@ spec:
               readOnly: true
           ports:
             - containerPort: 8080
+            - containerPort: 9000
           resources:
             limits:
               memory: 2Gi
