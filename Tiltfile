@@ -16,7 +16,7 @@ local_services = cfg.get("local", [])
 applications = cfg.get("run", [])
 base_domain = cfg.get("base-domain", "faforever.localhost")
 
-specified_services = applications + local_services
+specified_services = applications
 if (specified_services):
     specified_services = specified_services + ["populate-featured-mod-files", "create-hosts-file-content"]
 
