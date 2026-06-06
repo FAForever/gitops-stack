@@ -18,7 +18,7 @@ spec:
         app: faf-user-service
       annotations:
         prometheus.io/scrape: 'true'
-        prometheus.io/port: '8080'
+        prometheus.io/port: '9000'
         prometheus.io/path: '/q/metrics'
     spec:
       containers:
