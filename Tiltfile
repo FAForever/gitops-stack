@@ -6,13 +6,17 @@ config.define_string("host-ip", args=False, usage="IP Address of the host to ena
 config.define_string("hostname", args=False, usage="Accessible name of the host to enable redirection to local services")
 config.define_string("faf-data-dir", args=False, usage="Directory where the FAF Data lives normally C:/ProgramData/FAForever on Windows or ~/.faforever on Linux")
 config.define_string("base-domain", args=False, usage="Base Domain to use for all faf services. Defaults to faforever.localhost")
-config.define_string_list("local-services", args=False, usage="Names of services that you intend to run locally")
+config.define_string_list("local", args=False, usage="Names of services that you intend to run locally")
+config.define_string_list("run", args=False, usage="Names of applciatioons that you intend to run")
 cfg = config.parse()
 is_ci = os.getenv("CI", False)
 windows_bash_path = cfg.get("windows-bash-path", "C:\\Program Files\\Git\\bin\\bash.exe")
 host_ip = cfg.get("host-ip", "")
-local_services = cfg.get("local-services", [])
+local_services = cfg.get("local", [])
+applications = cfg.get("run", [])
 base_domain = cfg.get("base-domain", "faforever.localhost")
+
+config.set_enabled_resources(applications + local_services + ["populate-featured-mod-files", "create-hosts-file-content"])
 
 data_relative_path = ".local-data"
 if os.name == "nt":
@@ -137,6 +141,7 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
         containers = template_spec.get("containers", []) 
         for container in containers:
             container["imagePullPolicy"] = default_pull_policy
+            container["resources"] = {}
         init_containers = template_spec.get("initContainers", []) 
         for init_container in init_containers:
             init_container["imagePullPolicy"] = default_pull_policy
@@ -225,7 +230,7 @@ def proxy_local_service_if_set(service_name, service_chart, service_namespace, a
         k8s_yaml(service_proxy_yaml)
         for object in decode_yaml_stream(service_proxy_yaml):
             service_objects.append(object["metadata"]["name"] + ":" + object["kind"].lower())
-        k8s_resource(new_name=service_name, objects=service_objects, resource_deps=all_service_deps, labels=service_labels, links=user_service_links, pod_readiness="ignore")
+        k8s_resource(new_name=service_name, objects=service_objects, resource_deps=all_service_deps, labels=service_labels, links=service_links, pod_readiness="ignore")
     else:
         if service_name == "faf-icebreaker":
             service_yaml = remove_init_container(service_yaml)
@@ -283,7 +288,7 @@ for object in decode_yaml_stream(traefik_yaml):
 
 k8s_resource(new_name="traefik-crds", objects=traefik_crds, labels=["traefik"])
 k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "traefik-crds"], labels=["traefik"])
-k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"])
+k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"], links=[link("http://traefik.{}".format(base_domain), "FAF Traefik")])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
 postgres_init_user_yaml, postgres_resource_yaml = filter_yaml(postgres_yaml, {"app": "postgres-sync-db-user"})
@@ -353,15 +358,18 @@ k8s_resource(workload="nodebb", objects=["nodebb:ingressroute"], resource_deps=[
 k8s_yaml(keep_objects_of_kind(helm_with_build_cache("apps/debezium", namespace="faf-apps", values=["config/local.yaml"]), kinds=["ConfigMap", "Secret"]))
 k8s_resource(new_name="debezium-config", objects=["debezium:configmap", "debezium:secret"], labels=["database"])
 
+hydra_deps = ["ory-hydra-migration", "traefik"]
+hydra_labels = ["hydra"]
+hydra_links = [link("http://hydra.{}/.well-known/openid-configuration".format(base_domain), "Hydra Configuration")]
 hydra_yaml = helm_with_build_cache("apps/ory-hydra", namespace="faf-apps", values=["config/local.yaml"])
 hydra_client_create_yaml, hydra_resources_yaml = filter_yaml(hydra_yaml, {"app": "ory-hydra-create-clients"})
 _, hydra_resources_yaml = filter_yaml(hydra_resources_yaml, {"app": "ory-hydra-janitor"})
 hydra_resources_yaml = patch_config(hydra_resources_yaml, "ory-hydra", {"URLS_SELF_ISSUER": "http://ory-hydra:4444", "URLS_SELF_PUBLIC": "http://hydra.{}".format(base_domain), "URLS_LOGIN": "http://user.{}/oauth2/login".format(base_domain), "URLS_CONSENT": "http://user.{}/oauth2/consent".format(base_domain), "DEV": "true"})
 k8s_yaml(hydra_resources_yaml)
 k8s_yaml(hydra_client_create_yaml)
-k8s_resource(new_name="ory-hydra-config", objects=["ory-hydra:configmap", "ory-hydra:secret"], labels=["hydra"])
-k8s_resource(workload="ory-hydra-migration", resource_deps=["ory-hydra-config"] + postgres_setup_resources, labels=["hydra"])
-k8s_resource(workload="ory-hydra", objects=["ory-hydra:ingressroute"], resource_deps=["ory-hydra-migration", "traefik"], port_forwards=["4444", "4445"], labels=["hydra"])
+k8s_resource(new_name="ory-hydra-config", objects=["ory-hydra:configmap", "ory-hydra:secret"], labels=hydra_labels)
+k8s_resource(workload="ory-hydra-migration", resource_deps=["ory-hydra-config"] + postgres_setup_resources, labels=hydra_labels)
+k8s_resource(workload="ory-hydra", objects=["ory-hydra:ingressroute"], resource_deps=hydra_deps, port_forwards=["4444", "4445"], labels=hydra_labels, links=hydra_links)
 for object in decode_yaml_stream(hydra_client_create_yaml):
     k8s_resource(workload=object["metadata"]["name"], resource_deps=["ory-hydra"], labels=["hydra"])
 
