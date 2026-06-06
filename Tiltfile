@@ -16,7 +16,11 @@ local_services = cfg.get("local", [])
 applications = cfg.get("run", [])
 base_domain = cfg.get("base-domain", "faforever.localhost")
 
-config.set_enabled_resources(applications + local_services + ["populate-featured-mod-files", "create-hosts-file-content"])
+specified_services = applications + local_services
+if (specified_services):
+    specified_services = specified_services + ["populate-featured-mod-files", "create-hosts-file-content"]
+
+config.set_enabled_resources(specified_services)
 
 data_relative_path = ".local-data"
 if os.name == "nt":
@@ -254,7 +258,7 @@ agnostic_local_resource("populate-featured-mod-files", cmd=["./tilt/scripts/upda
 k8s_yaml("cluster/namespaces.yaml")
 k8s_yaml(helm_with_build_cache("infra/clusterroles", namespace="faf-infra", values=["config/local.yaml"]))
 k8s_resource(new_name="namespaces", objects=["faf-infra:namespace", "faf-apps:namespace", "faf-ops:namespace", "traefik:namespace", "replay-mounter:namespace"], labels=["core"])
-k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], labels=["core"])
+k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], resource_deps=["namespaces"], labels=["core"])
 k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra", "init-apps:serviceaccount:faf-apps", "allow-init-apps-read-app-config-infra:rolebinding", "allow-init-apps-read-app-config-apps:rolebinding"], resource_deps=["clusterroles"], labels=["core"])
 
 if not is_ci:
