@@ -33,7 +33,7 @@ if os.name == "nt":
         drive, path_without_drive = os.getcwd().split(":")
         data_absolute_path = os.path.join("//run/desktop/mnt/host/", drive, path_without_drive, data_relative_path).replace("\\","/").lower()
         use_named_volumes = ["mariadb"]
-    elif k8s_context() == "minikube":
+    elif k8s_context() == "minikube" or k8s_context() == "kind-kind":
         hostname = cfg.get("hostname", "")
         data_absolute_path = "//data/" + data_relative_path
         use_named_volumes = []
@@ -291,7 +291,8 @@ for object in decode_yaml_stream(traefik_yaml):
         traefik_crds.append(name + ":" + kind)
 
 k8s_resource(new_name="traefik-crds", objects=traefik_crds, labels=["traefik"])
-k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "traefik-crds"], labels=["traefik"])
+agnostic_local_resource("wait-for-traefik-crd", cmd=["kubectl", "wait", "--for=condition=established", "--timeout=60s", "crd/ingressroutes.traefik.io"], resource_deps=["traefik-crds"], labels=["traefik"])
+k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "wait-for-traefik-crd"], labels=["traefik"])
 k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"], links=[link("http://traefik.{}".format(base_domain), "FAF Traefik")])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
