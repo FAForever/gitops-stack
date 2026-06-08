@@ -11,7 +11,7 @@ dependencies {
     implementation("org.mariadb.jdbc:mariadb-java-client:3.5.8")
     implementation("org.eclipse.jgit:org.eclipse.jgit:7.6.0.202603022253-r")
     implementation("org.apache.commons:commons-compress:1.28.0")
-    implementation("org.slf4j:slf4j-api:2.0.17")
+    implementation("org.slf4j:slf4j-api:2.0.18")
     implementation("ch.qos.logback:logback-classic:1.5.34")
 }
 
