@@ -423,10 +423,6 @@ unitdb_labels = ["unitdb"]
 unitdb_links = [link("http://unitdb.{}".format(base_domain), "Rackover UnitDB")]
 proxy_local_service_if_set(service_name="faf-unitdb", service_chart="apps/faf-unitdb", service_namespace="faf-apps", service_labels=unitdb_labels, service_links=unitdb_links)
 
-ws_bridge_deps = ["faf-lobby-server"]
-ws_bridge_labels = ["lobby"]
-proxy_local_service_if_set(service_name="faf-ws-bridge", service_chart="apps/faf-ws-bridge", service_namespace="faf-apps", service_deps=ws_bridge_deps, service_labels=ws_bridge_labels)
-
 icebreaker_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
 icebreaker_labels = ["api"]
 icebreaker_patch = {"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false"}
