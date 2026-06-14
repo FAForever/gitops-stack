@@ -18,7 +18,7 @@ base_domain = cfg.get("base-domain", "faforever.localhost")
 
 specified_services = applications
 if (specified_services):
-    specified_services = specified_services + ["populate-featured-mod-files", "create-hosts-file-content"]
+    specified_services = specified_services + ["populate-featured-mod-files", "create-hosts-file-content", "populate-db"]
 
 config.set_enabled_resources(specified_services)
 
