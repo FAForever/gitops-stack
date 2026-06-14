@@ -262,7 +262,7 @@ k8s_resource(new_name="clusterroles", objects=["read-cm-secrets:clusterrole"], r
 k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra", "init-apps:serviceaccount:faf-apps", "allow-init-apps-read-app-config-infra:rolebinding", "allow-init-apps-read-app-config-apps:rolebinding"], resource_deps=["clusterroles"], labels=["core"])
 
 if not is_ci:
-    k8s_yaml(helm_with_build_cache("disabled/reloader", namespace="faf-ops", values=["config/local.yaml"]))
+    k8s_yaml(helm_with_build_cache("tilt/reloader", namespace="faf-ops", values=["config/local.yaml"]))
     k8s_resource(workload="release-name-reloader", new_name="reloader", objects=["release-name-reloader:serviceaccount", "release-name-reloader-metadata-role:role", "release-name-reloader-role:clusterrole", "release-name-reloader-metadata-role-binding:rolebinding", "release-name-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
 
 storage_yaml = helm_with_build_cache("cluster/storage", values=["config/local.yaml"], set=["dataPath="+data_absolute_path])
