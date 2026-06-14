@@ -1,11 +1,10 @@
 CONFIGURATION_REFRESH_TIME: 60
 LOG_LEVEL: "INFO"
 
-LISTEN:
-  - ADDRESS:
-    PORT: 8003
-    PROTOCOL: SimpleJsonProtocol
-    PROXY: true
+# The server speaks WebSocket natively on 8003/ws (the defaults). Traefik
+# terminates TLS and forwards directly to this pod, so trust the
+# CF-Connecting-IP header that Cloudflare sets to get the real client IP.
+WS_FORWARDED_IP_HEADER: "CF-Connecting-IP"
 
 DB_SERVER: "mariadb"
 DB_LOGIN: "faf-python-server"
