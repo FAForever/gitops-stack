@@ -17,8 +17,9 @@ spec:
       labels:
         app: faf-icebreaker
       annotations:
-        # Does not provide metrics at the moment
-        prometheus.io/scrape: 'false'
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8080'
+        prometheus.io/path: '/q/metrics'
     spec:
       initContainers:
         - name: geolite-db-dl
