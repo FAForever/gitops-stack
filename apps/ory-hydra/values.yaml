@@ -154,3 +154,15 @@ clients:
     logoUri: "https://fa-metrics.rancher.katzencluster.atlantishq.de/favicon.svg"
     clientUri: "https://faf-auth-proxy.services.atlantishq.de"
     tokenEndpointAuthMethod: "client_secret_post"
+
+  - name: "FAF Tournaments"
+    id: "f4d9a7e2-1c3b-4a8e-9f26-8b5e0d47c1a9"
+    secret:
+      name: ory-hydra
+      key: FAFTOURNEY_SECRET
+    grantType: "authorization_code,refresh_token"
+    scope: "openid,offline,public_profile"
+    redirectUri: "https://tournaments.doodlepros.com/auth/faf/callback"
+    logoUri: "https://tournaments.doodlepros.com/favicon.svg"
+    clientUri: "https://tournaments.doodlepros.com"
+    tokenEndpointAuthMethod: "client_secret_post"
