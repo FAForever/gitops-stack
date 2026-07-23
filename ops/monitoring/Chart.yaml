@@ -9,5 +9,5 @@ dependencies:
   version: 6.55.0
   repository: https://grafana.github.io/helm-charts
 - name: k8s-monitoring
-  version: 4.0.1
+  version: 4.3.1
   repository: https://grafana.github.io/helm-charts
