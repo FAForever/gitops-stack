@@ -7,7 +7,9 @@ import com.faforever.FafDatabase
 import com.faforever.GitRepo
 import com.faforever.Log
 import com.faforever.extractChecksumsFromZip
+import com.faforever.fixScmapPaths
 import com.faforever.generateChecksums
+import com.faforever.referencesOwnMapFolder
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.slf4j.LoggerFactory
@@ -180,6 +182,17 @@ private fun generateChecksumsForMap(
  * Get file content with path rewriting for text files.
  */
 private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray {
+    if (file.isScmapFile()) {
+        val bytes = file.readBytes()
+        // Only missions whose map references assets in their own folder need the version
+        // inserted. Everything else - including the placeholder .scmap files of the missions
+        // that use a base game map - is passed through and never parsed.
+        return if (bytes.referencesOwnMapFolder(map.folderName)) {
+            fixScmapPaths(bytes, map.folderName, version)
+        } else {
+            bytes
+        }
+    }
     return if (file.isTextFile()) {
         var text = file.readText()
             .replace(
@@ -237,6 +250,8 @@ private fun createZip(
 }
 
 private fun Path.isTextFile() = listOf(".md", ".lua", ".json", ".txt").any { toString().endsWith(it) }
+
+private fun Path.isScmapFile() = toString().lowercase().endsWith(".scmap")
 
 fun main(args: Array<String>) {
     Log.init()
