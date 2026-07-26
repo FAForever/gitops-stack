@@ -1,0 +1,22 @@
+name: Compile legacy deployment scripts
+
+# Throwaway check, only lives in the fork. Compiles the coop deployment scripts with the
+# same image the CronJob uses, so a Kotlin error shows up before the PR is opened.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  compile:
+
+    runs-on: ubuntu-latest
+    container:
+      image: gradle:9.4-jdk21
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Compile
+        working-directory: apps/faf-legacy-deployment/scripts
+        run: gradle --no-daemon --stacktrace compileKotlin
