@@ -38,6 +38,19 @@ fun ByteArray.referencesOwnMapFolder(folderName: String): Boolean {
 }
 
 /**
+ * Result of [fixScmapPaths].
+ *
+ * @property bytes the rewritten map file
+ * @property rewritten every path that received the version, as written into [bytes]
+ * @property skipped paths inside /maps that lead to another folder and were left alone
+ */
+class ScmapPathFix(
+    val bytes: ByteArray,
+    val rewritten: List<String>,
+    val skipped: List<String>,
+)
+
+/**
  * Rewrites the map folder segment of every path embedded in a .scmap so that it carries
  * the release version:
  *
@@ -45,7 +58,8 @@ fun ByteArray.referencesOwnMapFolder(folderName: String): Boolean {
  *  -> /maps/faf_coop_operation_blockade.v0004/env/layers/sand.dds
  *
  * Only paths that point at [folderName] itself are touched. Paths pointing somewhere else
- * are left alone and logged - several missions deliberately reference a base game map
+ * are left alone and reported in [ScmapPathFix.skipped] - several missions deliberately
+ * reference a base game map
  * (`/maps/X1CA_001/X1CA_001.scmap`) or another map's texture, and versioning those would
  * break them.
  *
@@ -63,21 +77,22 @@ fun ByteArray.referencesOwnMapFolder(folderName: String): Boolean {
  * @throws IllegalArgumentException if the file is not a .scmap
  * @throws IllegalStateException if the result fails verification
  */
-fun fixScmapPaths(bytes: ByteArray, folderName: String, version: Int): ByteArray {
+fun fixScmapPaths(bytes: ByteArray, folderName: String, version: Int): ScmapPathFix {
     require(bytes.isScmap()) { "$folderName: not a .scmap file, header mismatch" }
 
     val suffix = if (version >= 0) ".v%04d".format(version) else ""
     val rewriter = ScmapRewriter(bytes, folderName, suffix)
     val result = rewriter.rewrite()
+    val fix = ScmapPathFix(result, rewriter.rewritten.toList(), rewriter.skipped.distinct())
 
-    if (suffix.isEmpty()) return result
+    if (suffix.isEmpty()) return fix
 
-    rewriter.skipped.distinct().forEach {
+    fix.skipped.forEach {
         log.warn("$folderName: path leads outside the mission folder, left unchanged: $it")
     }
     log.info(
-        "$folderName: rewrote {} path(s) in {}, {} byte(s) added",
-        rewriter.rewritten, folderName, result.size - bytes.size
+        "$folderName: rewrote {} path(s) in the map file, {} byte(s) added",
+        fix.rewritten.size, result.size - bytes.size
     )
 
     check(result.size - bytes.size == rewriter.addedBytes) {
@@ -89,7 +104,7 @@ fun fixScmapPaths(bytes: ByteArray, folderName: String, version: Int): ByteArray
     check(verified.contentEquals(result)) {
         "$folderName: rewritten .scmap does not round trip, refusing to ship it"
     }
-    return result
+    return fix
 }
 
 private class ScmapRewriter(
@@ -101,11 +116,10 @@ private class ScmapRewriter(
     private val out = ByteArrayOutputStream(src.size + 1024)
     private var pos = 0
 
-    var rewritten = 0
-        private set
+    val rewritten = mutableListOf<String>()
+    val skipped = mutableListOf<String>()
     var addedBytes = 0
         private set
-    val skipped = mutableListOf<String>()
 
     fun rewrite(): ByteArray {
         copy(16)                                        // header
@@ -264,10 +278,11 @@ private class ScmapRewriter(
             return lower
         }
 
-        rewritten++
         addedBytes += suffix.length - (parts[1].length - segment.length)
-        return "/" + parts.mapIndexed { i, part -> if (i == 1) segment + suffix else part }
+        val fixed = "/" + parts.mapIndexed { i, part -> if (i == 1) segment + suffix else part }
             .joinToString("/")
+        rewritten += fixed
+        return fixed
     }
 
     /** Null terminated string. [isPath] marks the ones that may need the version. */
