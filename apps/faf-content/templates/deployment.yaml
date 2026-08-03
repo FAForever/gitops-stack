@@ -8,6 +8,10 @@ metadata:
     reloader.stakater.com/auto: "true"
     keel.sh/trigger: poll
     keel.sh/policy: force
+    ghcr:
+      io/nodebb/nodebb:4:
+        12:
+    
     keel.sh/pollSchedule: "@hourly"
 spec:
   replicas: 1
