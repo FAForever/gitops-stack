@@ -9,8 +9,7 @@ import com.faforever.Log
 import com.faforever.extractChecksumsFromZip
 import com.faforever.fixScmapPaths
 import com.faforever.generateChecksums
-import com.faforever.isScmap
-import com.faforever.referencesOwnMapFolder
+import com.faforever.needsPathFix
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.slf4j.LoggerFactory
@@ -25,6 +24,7 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 import kotlin.io.path.walk
+import kotlin.system.exitProcess
 
 private val log = LoggerFactory.getLogger("coop-maps-updater")
 
@@ -162,7 +162,7 @@ private fun processCoopMap(
             val partialZip = Path.of(mapsDir, "${map.zipName(newVersion)}.part")
             try {
                 createZip(map, newVersion, files, tmp, partialZip)
-                Files.move(partialZip, finalZip, StandardCopyOption.REPLACE_EXISTING)
+                Files.move(partialZip, finalZip, StandardCopyOption.ATOMIC_MOVE)
             } finally {
                 Files.deleteIfExists(partialZip)
             }
@@ -197,7 +197,7 @@ private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray {
         // Only missions whose map references assets in their own folder need the version
         // inserted. Everything else - including the placeholder .scmap files of the missions
         // that use a base game map - is passed through and never parsed.
-        return if (bytes.referencesOwnMapFolder(map.folderName)) {
+        return if (bytes.needsPathFix(map.folderName)) {
             fixScmapPaths(bytes, map.folderName, version).bytes
         } else {
             bytes
@@ -250,7 +250,7 @@ private fun verifyRelease(map: CoopMap, version: Int, files: List<Path>, base: P
 
         if (file.isScmapFile()) {
             val bytes = file.readBytes()
-            if (bytes.isScmap() && bytes.referencesOwnMapFolder(map.folderName)) {
+            if (bytes.needsPathFix(map.folderName)) {
                 fixScmapPaths(bytes, map.folderName, version).rewritten
                     .filterNot(::resolves)
                     .forEach { broken += "$relative points at $it, which is not in the release" }
@@ -338,13 +338,23 @@ fun main(args: Array<String>) {
         gitRef = GIT_REF,
     ).checkout()
 
+    val failed = mutableListOf<CoopMap>()
+
     CoopMapDatabase(dryRun = DRYRUN).use { db ->
         coopMaps.forEach {
             try {
                 processCoopMap(db, it, DRYRUN, WORKDIR, MAP_DIR)
             } catch (e: Exception) {
-                log.warn("Failed processing $it", e)
+                failed += it
+                log.error("Failed processing $it", e)
             }
         }
+    }
+
+    // one mission failing must not stop the others, but it may not pass for a successful run
+    // either - a refused release is only visible in the logs otherwise
+    if (failed.isNotEmpty()) {
+        log.error("{} mission(s) were not deployed: {}", failed.size, failed.joinToString { it.folderName })
+        exitProcess(1)
     }
 }

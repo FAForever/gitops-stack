@@ -18,24 +18,30 @@ private val SCMAP_HEADER = byteArrayOf(
 fun ByteArray.isScmap(): Boolean =
     size >= SCMAP_HEADER.size && SCMAP_HEADER.indices.all { this[it] == SCMAP_HEADER[it] }
 
-/**
- * Case insensitive raw byte search for "/maps/<folderName>", so we only parse map files
- * that actually reference their own folder. Missions whose .scmap contains no such path
- * (and the placeholder files that are not maps at all) are passed through untouched.
- */
-fun ByteArray.referencesOwnMapFolder(folderName: String): Boolean {
-    val needle = "/maps/${folderName.lowercase()}".toByteArray(Charsets.ISO_8859_1)
-    if (needle.size > size) return false
-    outer@ for (i in 0..size - needle.size) {
-        for (j in needle.indices) {
+/** Case insensitive raw byte search for an ASCII needle. */
+fun ByteArray.containsAscii(needle: String): Boolean {
+    val bytes = needle.lowercase().toByteArray(Charsets.ISO_8859_1)
+    if (bytes.size > size) return false
+    outer@ for (i in 0..size - bytes.size) {
+        for (j in bytes.indices) {
             var b = this[i + j].toInt() and 0xFF
             if (b in 0x41..0x5A) b += 0x20                       // ASCII toLowerCase
-            if (b != (needle[j].toInt() and 0xFF)) continue@outer
+            if (b != (bytes[j].toInt() and 0xFF)) continue@outer
         }
         return true
     }
     return false
 }
+
+/**
+ * Whether the map references its own folder, so we only parse map files that actually need
+ * the fix. Missions whose .scmap contains no such path (and the placeholder files that are
+ * not maps at all) are passed through untouched.
+ */
+fun ByteArray.referencesOwnMapFolder(folderName: String) = containsAscii("/maps/$folderName")
+
+/** A .scmap only needs rewriting when it is one and it points into its own folder. */
+fun ByteArray.needsPathFix(folderName: String) = isScmap() && referencesOwnMapFolder(folderName)
 
 /**
  * Result of [fixScmapPaths].
@@ -95,9 +101,19 @@ fun fixScmapPaths(bytes: ByteArray, folderName: String, version: Int): ScmapPath
         fix.rewritten.size, result.size - bytes.size
     )
 
+    // the file may only have grown by exactly what went into the paths - anything else means
+    // the structural pass lost or invented bytes somewhere between them
     check(result.size - bytes.size == rewriter.addedBytes) {
         "$folderName: byte delta ${result.size - bytes.size} does not match the " +
             "${rewriter.addedBytes} byte(s) added to paths"
+    }
+    // no unversioned reference to the mission folder may survive. This is the one check that
+    // catches a path the parser never recognised as a path in the first place - the delta
+    // accounting and the round trip below are both blind to a rewrite that simply did not
+    // happen, which is exactly the bug this whole class exists to fix.
+    check(!result.containsAscii("/maps/$folderName/")) {
+        "$folderName: the rewritten .scmap still contains unversioned /maps/$folderName/ " +
+            "path(s), refusing to ship it"
     }
     // the rewritten file has to parse again and come out byte identical
     val verified = ScmapRewriter(result, folderName, "").rewrite()
@@ -262,25 +278,29 @@ private class ScmapRewriter(
 
     /**
      * If [path] points into this mission's own folder inside /maps, the version is added to
-     * the folder name. Paths are lower cased, which is what the maps deployed so far look
-     * like. Everything else is returned untouched.
+     * the folder name and the path is lower cased - that is what `fix_paths` does and what
+     * the maps deployed so far look like.
+     *
+     * Everything else is returned byte for byte as it came in, including paths under /maps
+     * that lead to another folder. Those are shipped unparsed today and work, so there is
+     * nothing to gain by touching them - and something to lose: this method is also handed
+     * whatever a mis-framed [transferString] believes to be a string, and lower casing that
+     * would silently flip bytes inside binary data without changing the length, which no
+     * check in [fixScmapPaths] could catch.
      */
     private fun addVersion(path: String): String {
         if (suffix.isEmpty()) return path
-        val lower = path.lowercase()
-        val parts = lower.split('/').filter { it.isNotEmpty() }
-        // expected: ["maps", "map_name", "env", ...]
-        if (parts.size < 3 || parts[0] != "maps") return lower
+        val match = MAP_PATH.matchEntire(path) ?: return path
+        val (prefix, segment, rest) = match.destructured
 
-        val segment = parts[1].replace(VERSIONED, "")
-        if (segment != folder) {
+        val bare = segment.lowercase().replace(VERSIONED, "")
+        if (bare != folder) {
             skipped += path
-            return lower
+            return path
         }
 
-        addedBytes += suffix.length - (parts[1].length - segment.length)
-        val fixed = "/" + parts.mapIndexed { i, part -> if (i == 1) segment + suffix else part }
-            .joinToString("/")
+        val fixed = (prefix + bare + suffix + rest).lowercase()
+        addedBytes += fixed.length - path.length
         rewritten += fixed
         return fixed
     }
@@ -336,5 +356,8 @@ private class ScmapRewriter(
 
     private companion object {
         val VERSIONED = Regex("""\.v\d{4}$""")
+
+        /** `/maps/<folder>/<something>`, with the three parts captured separately. */
+        val MAP_PATH = Regex("""^(/?maps/)([^/]+)(/.*)$""", RegexOption.IGNORE_CASE)
     }
 }

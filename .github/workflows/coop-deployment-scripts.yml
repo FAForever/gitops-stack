@@ -10,6 +10,10 @@ on:
       - 'apps/faf-legacy-deployment/scripts/**'
       - '.github/workflows/coop-deployment-scripts.yml'
 
+# the job builds and runs repository controlled Kotlin, so it gets nothing but read access
+permissions:
+  contents: read
+
 jobs:
   verify:
 
@@ -20,12 +24,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          # nothing here pushes, so the job token has no business staying in .git/config
+          persist-credentials: false
 
       - name: Check out the coop missions
         uses: actions/checkout@v6
         with:
           repository: FAForever/faf-coop-maps
           path: faf-coop-maps
+          persist-credentials: false
 
       - name: Compile
         working-directory: apps/faf-legacy-deployment/scripts
