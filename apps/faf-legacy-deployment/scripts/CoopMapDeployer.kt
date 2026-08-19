@@ -315,9 +315,9 @@ private fun createZip(
     }
 }
 
-private fun Path.isTextFile() = listOf(".md", ".lua", ".json", ".txt").any { toString().endsWith(it) }
+private fun Path.isTextFile() = listOf(".md", ".lua", ".json", ".txt").any { toString().endsWith(it, ignoreCase = true) }
 
-private fun Path.isScmapFile() = toString().lowercase().endsWith(".scmap")
+private fun Path.isScmapFile() = toString().endsWith(".scmap", ignoreCase = true)
 
 fun main(args: Array<String>) {
     Log.init()
