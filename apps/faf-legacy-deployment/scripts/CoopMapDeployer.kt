@@ -25,6 +25,7 @@ import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 import kotlin.io.path.walk
 import kotlin.system.exitProcess
+import kotlin.toString
 
 private val log = LoggerFactory.getLogger("coop-maps-updater")
 
@@ -191,33 +192,33 @@ private fun generateChecksumsForMap(
 /**
  * Get file content with path rewriting for text files.
  */
-private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray {
-    if (file.isScmapFile()) {
-        val bytes = file.readBytes()
-        // Only missions whose map references assets in their own folder need the version
-        // inserted. Everything else - including the placeholder .scmap files of the missions
-        // that use a base game map - is passed through and never parsed.
-        return if (bytes.needsPathFix(map.folderName)) {
-            fixScmapPaths(bytes, map.folderName, version).bytes
-        } else {
-            bytes
+private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray =
+    when {
+        file.isScmapFile() -> {
+            val bytes = file.readBytes()
+            // Only missions whose map references assets in their own folder need the version
+            // inserted. Everything else - including the placeholder .scmap files of the missions
+            // that use a base game map - is passed through and never parsed.
+            if (bytes.needsPathFix(map.folderName)) {
+                fixScmapPaths(bytes, map.folderName, version).bytes
+            } else {
+                bytes
+            }
         }
-    }
-    return if (file.isTextFile()) {
-        var text = file.readText()
-            .replace(
-                "/maps/${map.folderName}/",
-                "/maps/${map.folderName(version)}/",
-                ignoreCase = true,
-            )
-        if (file.toString().endsWith("_scenario.lua")) {
-            text = text.replace(Regex("""(map_version\s*=\s*)\d+"""), "$1$version")
+        file.isTextFile() -> {
+            var text = file.readText()
+                .replace(
+                    "/maps/${map.folderName}/",
+                    "/maps/${map.folderName(version)}/",
+                    ignoreCase = true,
+                )
+            if (file.toString().endsWith("_scenario.lua")) {
+                text = text.replace(Regex("""(map_version\s*=\s*)\d+"""), "$1$version")
+            }
+            text.toByteArray()
         }
-        text.toByteArray()
-    } else {
-        file.readBytes()
+        else -> file.readBytes()
     }
-}
 
 /**
  * Checks that every path the release points at actually exists in the release.
