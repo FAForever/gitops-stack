@@ -234,6 +234,11 @@ private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray =
  * @throws IllegalStateException if a rewritten map path does not resolve
  */
 private fun verifyRelease(map: CoopMap, version: Int, files: List<Path>, base: Path) {
+    // Everything below is compared case insensitively, and it has to be: 28 of the paths
+    // embedded in the map files point at lower case names while the files themselves are
+    // mixed case. That is in the missions as committed, it predates this deployment, and
+    // those maps load - a case sensitive comparison would refuse releases that demonstrably
+    // work. What the rewriting must not do is add mismatches on top of that; see addVersion.
     val prefix = "/maps/${map.folderName(version)}/".lowercase()
     val shipped = files
         .map { prefix + base.relativize(it).toString().replace("\\", "/").lowercase() }
