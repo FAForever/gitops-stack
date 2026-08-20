@@ -37,6 +37,13 @@ fun ByteArray.containsAscii(needle: String): Boolean {
  * Whether the map references its own folder, so we only parse map files that actually need
  * the fix. Missions whose .scmap contains no such path (and the placeholder files that are
  * not maps at all) are passed through untouched.
+ *
+ * Deliberately without a trailing slash, unlike the leftover scan in [fixScmapPaths]. This
+ * one has to match `/maps/<folder>.v0003/...` as well - a self reference that already
+ * carries a version - so that such a file reaches the parser, where the old suffix is
+ * stripped instead of a second one being stacked on top. The leftover scan wants the exact
+ * opposite: it asserts that no *unversioned* reference survived, so it needs the trailing
+ * slash to not match the versioned form it just wrote.
  */
 fun ByteArray.referencesOwnMapFolder(folderName: String) = containsAscii("/maps/$folderName")
 
@@ -365,7 +372,16 @@ private class ScmapRewriter(
     private companion object {
         val VERSIONED = Regex("""\.v\d{4}$""")
 
-        /** `/maps/<folder>/<something>`, with the three parts captured separately. */
-        val MAP_PATH = Regex("""^(/?maps/)([^/]+)(/.*)$""", RegexOption.IGNORE_CASE)
+        /**
+         * `/maps/<folder>/<something>`, with the three parts captured separately.
+         *
+         * The leading slash is required, so this matches exactly what
+         * [referencesOwnMapFolder] searches for. All 40 paths embedded in the missions carry
+         * it; the slashless form was only ever accepted because `fix_paths` splits on `/`
+         * discarding empty segments, which makes `maps/x/y` and `/maps/x/y` indistinguishable
+         * to it. Accepting a form the gate does not detect means the gate can wave a file
+         * through that the rewriter would have changed.
+         */
+        val MAP_PATH = Regex("""^(/maps/)([^/]+)(/.*)$""", RegexOption.IGNORE_CASE)
     }
 }
