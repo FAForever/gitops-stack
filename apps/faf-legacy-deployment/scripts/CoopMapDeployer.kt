@@ -7,13 +7,16 @@ import com.faforever.FafDatabase
 import com.faforever.GitRepo
 import com.faforever.Log
 import com.faforever.extractChecksumsFromZip
+import com.faforever.fixScmapPaths
 import com.faforever.generateChecksums
+import com.faforever.needsPathFix
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.isDirectory
@@ -21,6 +24,8 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 import kotlin.io.path.walk
+import kotlin.system.exitProcess
+import kotlin.toString
 
 private val log = LoggerFactory.getLogger("coop-maps-updater")
 
@@ -151,9 +156,17 @@ private fun processCoopMap(
         val newVersion = currentVersion + 1
         log.info("$map updated → v$newVersion")
 
+        verifyRelease(map, newVersion, files, tmp)
+
         if (!simulate) {
             val finalZip = Path.of(mapsDir, map.zipName(newVersion))
-            createZip(map, newVersion, files, tmp, finalZip)
+            val partialZip = Path.of(mapsDir, "${map.zipName(newVersion)}.part")
+            try {
+                createZip(map, newVersion, files, tmp, partialZip)
+                Files.move(partialZip, finalZip, StandardCopyOption.ATOMIC_MOVE)
+            } finally {
+                Files.deleteIfExists(partialZip)
+            }
             db.update(map, newVersion)
         }
     } finally {
@@ -178,23 +191,101 @@ private fun generateChecksumsForMap(
 
 /**
  * Get file content with path rewriting for text files.
+ *
+ * Text files are read and written as ISO-8859-1. Latin-1 maps every byte to exactly one
+ * char and back, and the replacements below only ever touch ASCII, so a file comes out
+ * byte identical no matter what it is really encoded in. Reading as UTF-8 would turn
+ * anything that is not valid UTF-8 into U+FFFD and write that into the release instead.
+ * Every text file in the missions is valid UTF-8 today, so this changes no checksum - it
+ * only keeps the first file with a Latin-1 accent in it from being corrupted silently.
  */
-private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray {
-    return if (file.isTextFile()) {
-        var text = file.readText()
-            .replace(
-                "/maps/${map.folderName}/",
-                "/maps/${map.folderName(version)}/",
-                ignoreCase = true,
-            )
-        if (file.toString().endsWith("_scenario.lua")) {
-            text = text.replace(Regex("""(map_version\s*=\s*)\d+"""), "$1$version")
+private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray =
+    when {
+        file.isScmapFile() -> {
+            val bytes = file.readBytes()
+            // Only missions whose map references assets in their own folder need the version
+            // inserted. Everything else - including the placeholder .scmap files of the missions
+            // that use a base game map - is passed through and never parsed.
+            if (bytes.needsPathFix(map.folderName)) {
+                fixScmapPaths(bytes, map.folderName, version).bytes
+            } else {
+                bytes
+            }
         }
-        text.toByteArray()
-    } else {
-        file.readBytes()
+        file.isTextFile() -> {
+            var text = file.readText(Charsets.ISO_8859_1)
+                .replace(
+                    "/maps/${map.folderName}/",
+                    "/maps/${map.folderName(version)}/",
+                    ignoreCase = true,
+                )
+            if (file.toString().endsWith("_scenario.lua", ignoreCase = true)) {
+                text = text.replace(Regex("""(map_version\s*=\s*)\d+"""), "$1$version")
+            }
+            text.toByteArray(Charsets.ISO_8859_1)
+        }
+        else -> file.readBytes()
+    }
+
+/**
+ * Checks that every path the release points at actually exists in the release.
+ *
+ * The paths rewritten inside a .scmap are checked hard: if one of them does not resolve to
+ * a file that ends up in the zip, the mission is not deployed at all. That is the case the
+ * whole path rewriting exists for, and getting it wrong ships a map with missing textures
+ * that nothing else would notice.
+ *
+ * References in text files are only reported. Some of them have been broken for years -
+ * typos in comment headers - and failing on those would block releases for cosmetic reasons.
+ *
+ * @throws IllegalStateException if a rewritten map path does not resolve
+ */
+private fun verifyRelease(map: CoopMap, version: Int, files: List<Path>, base: Path) {
+    // Everything below is compared case insensitively, and it has to be: 28 of the paths
+    // embedded in the map files point at lower case names while the files themselves are
+    // mixed case. That is in the missions as committed, it predates this deployment, and
+    // those maps load - a case sensitive comparison would refuse releases that demonstrably
+    // work. What the rewriting must not do is add mismatches on top of that; see addVersion.
+    val prefix = "/maps/${map.folderName(version)}/".lowercase()
+    val shipped = files
+        .map { prefix + base.relativize(it).toString().replace("\\", "/").lowercase() }
+        .toSet()
+
+    // over capture is possible when a path is read out of binary data, so a reference counts
+    // as resolved when it starts with a shipped file
+    fun resolves(reference: String) =
+        shipped.any { reference.lowercase() == it || reference.lowercase().startsWith(it) }
+
+    val broken = mutableListOf<String>()
+
+    files.forEach { file ->
+        val relative = base.relativize(file).toString().replace("\\", "/")
+
+        if (file.isScmapFile()) {
+            val bytes = file.readBytes()
+            if (bytes.needsPathFix(map.folderName)) {
+                fixScmapPaths(bytes, map.folderName, version).rewritten
+                    .filterNot(::resolves)
+                    .forEach { broken += "$relative points at $it, which is not in the release" }
+            }
+        } else if (file.isTextFile()) {
+            val text = String(getFileContent(file, map, version), Charsets.ISO_8859_1)
+            MAP_REFERENCE.findAll(text)
+                .map { it.value }
+                .filter { it.lowercase().startsWith("/maps/${map.folderName.lowercase()}") }
+                .filterNot(::resolves)
+                .distinct()
+                .forEach { log.warn("$map: $relative points at $it, which is not in the release") }
+        }
+    }
+
+    check(broken.isEmpty()) {
+        broken.forEach { log.error("$map: $it") }
+        "$map: ${broken.size} rewritten map path(s) do not resolve, not deploying this mission"
     }
 }
+
+private val MAP_REFERENCE = Regex("""/maps/[^"'\s,)]+""", RegexOption.IGNORE_CASE)
 
 private fun createZip(
     map: CoopMap,
@@ -236,7 +327,9 @@ private fun createZip(
     }
 }
 
-private fun Path.isTextFile() = listOf(".md", ".lua", ".json", ".txt").any { toString().endsWith(it) }
+private fun Path.isTextFile() = listOf(".md", ".lua", ".json", ".txt").any { toString().endsWith(it, ignoreCase = true) }
+
+private fun Path.isScmapFile() = toString().endsWith(".scmap", ignoreCase = true)
 
 fun main(args: Array<String>) {
     Log.init()
@@ -258,13 +351,23 @@ fun main(args: Array<String>) {
         gitRef = GIT_REF,
     ).checkout()
 
+    val failed = mutableListOf<CoopMap>()
+
     CoopMapDatabase(dryRun = DRYRUN).use { db ->
         coopMaps.forEach {
             try {
                 processCoopMap(db, it, DRYRUN, WORKDIR, MAP_DIR)
             } catch (e: Exception) {
-                log.warn("Failed processing $it", e)
+                failed += it
+                log.error("Failed processing $it", e)
             }
         }
+    }
+
+    // one mission failing must not stop the others, but it may not pass for a successful run
+    // either - a refused release is only visible in the logs otherwise
+    if (failed.isNotEmpty()) {
+        log.error("{} mission(s) were not deployed: {}", failed.size, failed.joinToString { it.folderName })
+        exitProcess(1)
     }
 }
