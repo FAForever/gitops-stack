@@ -92,8 +92,11 @@ fun main() {
 
                 fix.rewritten.filterNot { it.contains(".v0004/") }
                     .forEach { failures += "$folder: not versioned: $it" }
-                fix.rewritten.filter { it != it.lowercase() }
-                    .forEach { failures += "$folder: not lower cased: $it" }
+                // only the /maps/<folder>.vNNNN head is lower cased, the rest of the path
+                // keeps the casing the map file had - see addVersion
+                fix.rewritten.map { it.substringBefore(".v0004/") }
+                    .filter { it != it.lowercase() }
+                    .forEach { failures += "$folder: map folder not lower cased: $it" }
                 fix.rewritten.filter { DOUBLE_VERSION.containsMatchIn(it) }
                     .forEach { failures += "$folder: version added twice: $it" }
             } catch (e: Exception) {

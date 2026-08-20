@@ -279,8 +279,15 @@ private class ScmapRewriter(
 
     /**
      * If [path] points into this mission's own folder inside /maps, the version is added to
-     * the folder name and the path is lower cased - that is what `fix_paths` does and what
-     * the maps deployed so far look like.
+     * the folder name. Only the `/maps/<folder>.vNNNN` head is lower cased; everything
+     * after it keeps the casing it had.
+     *
+     * `fix_paths` lower cases the whole path, and this deliberately does not. Two of the
+     * four affected missions reference their decals in exactly the casing the files carry
+     * on disk - `env/decals/FAF_Coop_Operation_Golden_Crystals_nm.dds` and the three like
+     * it - and lower casing those introduces a mismatch that is not in the source data.
+     * The other 28 paths already point at lower case names while the files are mixed case,
+     * so a lower cased tail buys nothing there either.
      *
      * Everything else is returned byte for byte as it came in, including paths under /maps
      * that lead to another folder. Those are shipped unparsed today and work, so there is
@@ -300,7 +307,7 @@ private class ScmapRewriter(
             return path
         }
 
-        val fixed = (prefix + bare + suffix + rest).lowercase()
+        val fixed = (prefix + bare + suffix).lowercase() + rest
         addedBytes += fixed.length - path.length
         rewritten += fixed
         return fixed
