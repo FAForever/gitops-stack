@@ -191,6 +191,13 @@ private fun generateChecksumsForMap(
 
 /**
  * Get file content with path rewriting for text files.
+ *
+ * Text files are read and written as ISO-8859-1. Latin-1 maps every byte to exactly one
+ * char and back, and the replacements below only ever touch ASCII, so a file comes out
+ * byte identical no matter what it is really encoded in. Reading as UTF-8 would turn
+ * anything that is not valid UTF-8 into U+FFFD and write that into the release instead.
+ * Every text file in the missions is valid UTF-8 today, so this changes no checksum - it
+ * only keeps the first file with a Latin-1 accent in it from being corrupted silently.
  */
 private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray =
     when {
@@ -206,7 +213,7 @@ private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray =
             }
         }
         file.isTextFile() -> {
-            var text = file.readText()
+            var text = file.readText(Charsets.ISO_8859_1)
                 .replace(
                     "/maps/${map.folderName}/",
                     "/maps/${map.folderName(version)}/",
@@ -215,7 +222,7 @@ private fun getFileContent(file: Path, map: CoopMap, version: Int): ByteArray =
             if (file.toString().endsWith("_scenario.lua")) {
                 text = text.replace(Regex("""(map_version\s*=\s*)\d+"""), "$1$version")
             }
-            text.toByteArray()
+            text.toByteArray(Charsets.ISO_8859_1)
         }
         else -> file.readBytes()
     }
