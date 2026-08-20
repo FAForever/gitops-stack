@@ -22,7 +22,7 @@ spec:
         prometheus.io/path: '/q/metrics'
     spec:
       containers:
-        - image: faforever/faf-user-service:4.2.0
+        - image: "faforever/faf-user-service:{{ .Values.image.tag }}"
           imagePullPolicy: Always
           name: faf-user-service
           envFrom:
