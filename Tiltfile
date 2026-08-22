@@ -392,7 +392,7 @@ user_service_deps = ["faf-db-migrations", "ory-hydra"]
 user_service_labels = ["user"]
 user_service_links = [link("http://user.{}/register".format(base_domain), "User Service Registration")]
 user_service_patch = {"HYDRA_TOKEN_ISSUER": "http://ory-hydra:4444", "HYDRA_JWKS_URL": "http://ory-hydra:4444/.well-known/jwks.json", "LOBBY_URL":"ws://ws.{}".format(base_domain), "REPLAY_URL":"ws://replay-ws.{}".format(base_domain)}
-proxy_local_service_if_set(service_name="faf-user-service", service_chart="apps/faf-user-service", service_namespace="faf-apps", service_deps=user_service_deps, service_labels=user_service_labels, service_links=user_service_links, config_patch=user_service_patch)
+proxy_local_service_if_set(service_name="faf-user-service", service_chart="apps/faf-user-service", service_namespace="faf-apps", service_deps=user_service_deps, additional_values=["apps/faf-user-service/values-prod.yaml"], service_labels=user_service_labels, service_links=user_service_links, config_patch=user_service_patch)
 
 website_deps = ["wordpress"]
 website_labels = ["website"]
