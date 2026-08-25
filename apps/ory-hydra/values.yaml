@@ -9,7 +9,7 @@ cors:
 clients:
   - name: "FAF Client"
     id: "2e8808cf-5889-469b-b2c3-01f0cc58c4af"
-    grantType: "authorization_code,refresh_token"
+    grantType: "authorization_code,refresh_token,device_code"
     scope: "openid,email,offline,public_profile,lobby,upload_map,upload_mod"
     redirectUri: "http://127.0.0.1"
     logoUri: "https://$BASE_DOMAIN/images/faf-logo.png"

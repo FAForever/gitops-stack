@@ -13,3 +13,9 @@ data:
 {{ tpl (.Files.Get "mail/welcome-to-faf.html") . | indent 4 }}
   "email-taken.html": |-
 {{ tpl (.Files.Get "mail/email-taken.html") . | indent 4 }}
+  "email-change-confirmation.html": |-
+{{ tpl (.Files.Get "mail/email-change-confirmation.html") . | indent 4 }}
+  "email-change-notification.html": |-
+{{ tpl (.Files.Get "mail/email-change-notification.html") . | indent 4 }}
+  "password-change-notification.html": |-
+{{ tpl (.Files.Get "mail/password-change-notification.html") . | indent 4 }}
