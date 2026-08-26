@@ -1,0 +1,9 @@
+replicaCount: 1
+
+image:
+  repository: faforever/faf-coop-deployer
+  tag: latest
+  pullPolicy: Always
+
+infisical-secret:
+  name: faf-coop-deployer
