@@ -38,6 +38,14 @@ tasks.register<JavaExec>("deployCoopMaps") {
     mainClass.set("com.faforever.coopmapdeployer.CoopMapDeployerKt")
 }
 
+tasks.register<JavaExec>("verifyCoopPreviews") {
+    group = "verification"
+    description = "Render a preview for every map in a faf-coop-maps checkout (MAPS_REPO)"
+
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("com.faforever.CoopMapPreviewsCheckKt")
+}
+
 tasks.register<JavaExec>("verifyScmapFixer") {
     group = "verification"
     description = "Run the .scmap path fixer over every map in a faf-coop-maps checkout (MAPS_REPO)"
