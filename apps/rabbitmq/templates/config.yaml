@@ -6,7 +6,7 @@ metadata:
     app: rabbitmq
 data:
   ADMIN_USER: "faf-admin"
-  "enabled_plugins": "[rabbitmq_management,rabbitmq_prometheus]."
+  "enabled_plugins": "[rabbitmq_management,rabbitmq_prometheus,rabbitmq_shovel,rabbitmq_shovel_management]."
   "rabbitmq_conf": |-
     default_user = $(ADMIN_USER)
     default_pass = $(ADMIN_PASSWORD)
