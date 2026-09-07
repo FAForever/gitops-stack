@@ -26,3 +26,9 @@ data:
   IRC_TOKEN_TTL: "86400"
   REPLAY_URL: "wss://replay-ws.{{.Values.baseDomain}}"
   ALTCHA_ENABLED: "true"
+  RABBITMQ_USER: "faf-user-service"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_HOST: "rabbitmq"
+  NODEBB_READ_API_URL: https://forum.{{.Values.baseDomain}}/api
+  NODEBB_WRITE_API_URL: https://forum.{{.Values.baseDomain}}/api/v3
+  WIKIJS_GRAPHQL_URL: https://wiki.{{.Values.baseDomain}}/graphql
