@@ -254,6 +254,7 @@ def extract_ingress_details(yaml):
 
 agnostic_local_resource("create-hosts-file-content", cmd=["./tilt/scripts/print-hosts.sh"], labels=["core"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL, allow_parallel=True)
 agnostic_local_resource("populate-featured-mod-files", cmd=["./tilt/scripts/update-faf-featured-mod.sh", faf_data_dir], labels=["database"], resource_deps=["faf-db-migrations"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL, allow_parallel=True)
+agnostic_local_resource("populate-db", cmd=["./tilt/scripts/populate-database.sh"], labels=["database"], resource_deps=["faf-db-migrations"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL, allow_parallel=True)
 
 k8s_yaml("cluster/namespaces.yaml")
 k8s_yaml(helm_with_build_cache("infra/clusterroles", namespace="faf-infra", values=["config/local.yaml"]))
@@ -340,9 +341,6 @@ for object in decode_yaml_stream(rabbitmq_init_user_yaml):
 
 k8s_yaml(cronjob_to_job(helm_with_build_cache("apps/faf-db-migrations", namespace="faf-apps", values=["config/local.yaml"])))
 k8s_resource(workload="faf-db-migrations", objects=["faf-db-migrations:secret"], resource_deps=mariadb_setup_resources, labels=["database"])
-
-k8s_yaml("tilt/yaml/populate-db.yaml")
-k8s_resource(workload="populate-db", resource_deps=["faf-db-migrations"], labels=["database"], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
 
 k8s_yaml(helm_with_build_cache("apps/ergochat", namespace="faf-apps", values=["config/local.yaml"]))
 k8s_resource(new_name="ergochat-config", objects=["ergochat:configmap", "ergochat:secret"], labels=["chat"])
