@@ -26,3 +26,4 @@ data:
   IRC_TOKEN_TTL: "86400"
   REPLAY_URL: "wss://replay-ws.{{.Values.baseDomain}}"
   ALTCHA_ENABLED: "true"
+  RABBITMQ_USER: "faf-user-service"

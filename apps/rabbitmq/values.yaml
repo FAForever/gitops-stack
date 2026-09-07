@@ -26,3 +26,7 @@ users:
     secretRef: faf-icebreaker
     usernameKey: RABBITMQ_USER
     passwordKey: RABBITMQ_PASSWORD
+  - configMapRef: faf-user-service
+    secretRef: faf-user-service
+    usernameKey: RABBITMQ_USER
+    passwordKey: RABBITMQ_PASSWORD
