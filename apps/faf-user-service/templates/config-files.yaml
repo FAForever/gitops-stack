@@ -7,6 +7,10 @@ metadata:
 data:
   "account-activation.html": |-
 {{ tpl (.Files.Get "mail/account-activation.html") . | indent 4 }}
+  "account-deletion-confirmation.html": |-
+{{ tpl (.Files.Get "mail/account-deletion-confirmation.html") . | indent 4 }}
+  "account-deletion-notification.html": |-
+{{ tpl (.Files.Get "mail/account-deletion-notification.html") . | indent 4 }}
   "password-reset.html": |-
 {{ tpl (.Files.Get "mail/password-reset.html") . | indent 4 }}
   "welcome-to-faf.html": |-
