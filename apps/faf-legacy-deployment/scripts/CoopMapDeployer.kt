@@ -6,9 +6,11 @@ import com.faforever.CHECKSUMS_FILENAME
 import com.faforever.FafDatabase
 import com.faforever.GitRepo
 import com.faforever.Log
+import com.faforever.ensureMapPreviews
 import com.faforever.extractChecksumsFromZip
 import com.faforever.fixScmapPaths
 import com.faforever.generateChecksums
+import com.faforever.writeMapPreviews
 import com.faforever.needsPathFix
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
@@ -150,6 +152,12 @@ private fun processCoopMap(
 
         if (!changed) {
             log.info("$map unchanged")
+            // An unchanged mission is never rezipped, so this is the only chance to give
+            // the ones deployed before previews existed the image the API already points
+            // at. See CoopMapPreviews.
+            if (!simulate) {
+                ensureMapPreviews(tmp, Path.of(mapsDir), map.zipName(currentVersion).removeSuffix(".zip"))
+            }
             return
         }
 
@@ -167,6 +175,12 @@ private fun processCoopMap(
             } finally {
                 Files.deleteIfExists(partialZip)
             }
+            // Before the database points at the new version: the preview URL the API mints
+            // is derived from the version, so publishing the row first would open a window
+            // in which every client asks for an image that is not there yet.
+            val previewSource =
+                writeMapPreviews(tmp, Path.of(mapsDir), map.zipName(newVersion).removeSuffix(".zip"))
+            log.info("$map preview: $previewSource")
             db.update(map, newVersion)
         }
     } finally {
