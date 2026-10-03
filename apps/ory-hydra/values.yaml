@@ -166,3 +166,12 @@ clients:
     logoUri: "https://tournaments.doodlepros.com/favicon.svg"
     clientUri: "https://tournaments.doodlepros.com"
     tokenEndpointAuthMethod: "client_secret_post"
+
+  - name: "Web vault by Jip Wijnia"
+    id: "54576b8e-14bc-473d-9f85-31e6327c9e3b"
+    grantType: "authorization_code,refresh_token"
+    scope: "openid,offline,public_profile"
+    redirectUri: "https://vault.jipwijnia.nl/,http://127.0.0.1"
+    logoUri: "https://vault.jipwijnia.nl/favicon.png"
+    clientUri: "https://github.com/Garanas/scfa-cs-replay"
+    tokenEndpointAuthMethod: "none"
