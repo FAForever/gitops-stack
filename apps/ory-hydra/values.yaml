@@ -171,7 +171,7 @@ clients:
     id: "54576b8e-14bc-473d-9f85-31e6327c9e3b"
     grantType: "authorization_code,refresh_token"
     scope: "openid,offline,public_profile"
-    redirectUri: "https://vault.jipwijnia.nl/,http://127.0.0.1"
+    redirectUri: "https://vault.jipwijnia.nl/"
     logoUri: "https://vault.jipwijnia.nl/favicon.png"
     clientUri: "https://github.com/Garanas/scfa-cs-replay"
     tokenEndpointAuthMethod: "none"
