@@ -162,7 +162,7 @@ clients:
       key: FAFTOURNEY_SECRET
     grantType: "authorization_code,refresh_token"
     scope: "openid,offline,public_profile"
-    redirectUri: "https://tournaments.doodlepros.com/auth/faf/callback"
+    redirectUri: "https://tournaments.doodlepros.com/auth/faf/callback,https://tournaments.$BASE_DOMAIN/auth/faf/callback"
     logoUri: "https://tournaments.doodlepros.com/favicon.svg"
     clientUri: "https://tournaments.doodlepros.com"
     tokenEndpointAuthMethod: "client_secret_post"

@@ -7,8 +7,10 @@ metadata:
 data:
   PORT: "8090"
   DATA_DIR: "/data"
-  # FAF login stays dormant until FAF_CLIENT_ID and FAF_CLIENT_SECRET are set
-  # in the secret as well; the site then falls back to name-only login.
+  # The "FAF Tournaments" client in apps/ory-hydra. FAF login stays dormant
+  # until FAF_CLIENT_SECRET (Hydra's FAFTOURNEY_SECRET) is in the secret too;
+  # the site then falls back to name-only login.
+  FAF_CLIENT_ID: "f4d9a7e2-1c3b-4a8e-9f26-8b5e0d47c1a9"
   FAF_HYDRA_HOST: "hydra.{{.Values.baseDomain}}"
   FAF_API_HOST: "api.{{.Values.baseDomain}}"
   FAF_REDIRECT_URI: "https://tournaments.{{.Values.baseDomain}}/auth/faf/callback"
