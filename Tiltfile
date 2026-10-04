@@ -316,7 +316,7 @@ k8s_resource(workload="mariadb", objects=["mariadb:configmap", "mariadb:secret",
 mariadb_setup_resources = []
 for object in decode_yaml_stream(mariadb_init_user_yaml):
     mariadb_setup_resources.append(object["metadata"]["name"])
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mariadb", "faf-api-config", "faf-user-service-config", "faf-lobby-server-config", "faf-replay-server-config", "faf-policy-server-config", "faf-league-service-config", "wordpress-config", "ergochat-config"], labels=["database"])
+    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mariadb", "faf-api-config", "faf-user-service-config", "faf-lobby-server-config", "faf-replay-server-config", "faf-policy-server-config", "faf-league-service-config", "wordpress-config", "ergochat-config", "faf-icebreaker-config"], labels=["database"])
 
 mongodb_yaml = helm_with_build_cache("infra/mongodb", namespace="faf-infra", values=["config/local.yaml"])
 mongodb_init_user_yaml, mongodb_resource_yaml = filter_yaml(mongodb_yaml, {"app": "mongodb-sync-db-user"})
@@ -337,7 +337,7 @@ k8s_resource(workload="rabbitmq", objects=["rabbitmq:configmap", "rabbitmq:secre
 rabbitmq_setup_resources = []
 for object in decode_yaml_stream(rabbitmq_init_user_yaml):
     rabbitmq_setup_resources.append(object["metadata"]["name"])
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "rabbitmq", "faf-api-config", "faf-icebreaker-config", "faf-lobby-server-config", "debezium-config", "faf-league-service-config"], labels=["rabbitmq"])
+    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "rabbitmq", "faf-api-config", "faf-icebreaker-config", "faf-lobby-server-config", "debezium-config", "faf-league-service-config", "faf-user-service-config"], labels=["rabbitmq"])
 
 k8s_yaml(cronjob_to_job(helm_with_build_cache("apps/faf-db-migrations", namespace="faf-apps", values=["config/local.yaml"])))
 k8s_resource(workload="faf-db-migrations", objects=["faf-db-migrations:secret"], resource_deps=mariadb_setup_resources, labels=["database"])
