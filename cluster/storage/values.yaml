@@ -93,3 +93,8 @@ managedStorages:
       size: 1Gi
     pvc:
       namespace: faf-ops
+  - pv:
+      name: faf-tournaments
+      size: 5Gi
+    pvc:
+      namespace: faf-apps

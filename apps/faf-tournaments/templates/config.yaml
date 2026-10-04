@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-tournaments
+  labels:
+    app: faf-tournaments
+data:
+  PORT: "8090"
+  DATA_DIR: "/data"
+  # FAF login stays dormant until FAF_CLIENT_ID and FAF_CLIENT_SECRET are set
+  # in the secret as well; the site then falls back to name-only login.
+  FAF_HYDRA_HOST: "hydra.{{.Values.baseDomain}}"
+  FAF_API_HOST: "api.{{.Values.baseDomain}}"
+  FAF_REDIRECT_URI: "https://tournaments.{{.Values.baseDomain}}/auth/faf/callback"

@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-tournaments
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`tournaments.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-tournaments
+          port: 8090
