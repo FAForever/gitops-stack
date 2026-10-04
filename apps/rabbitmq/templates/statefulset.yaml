@@ -32,7 +32,7 @@ spec:
               protocol: TCP
           startupProbe:
             exec:
-              command: ["rabbitmq-diagnostics", "-q", "ping"]
+              command: ["rabbitmq-diagnostics", "-q", "check_running"]
             initialDelaySeconds: 15
             timeoutSeconds: 15
             periodSeconds: 5
