@@ -73,6 +73,8 @@ This repository aims to provide a ready-to-go [Tilt](https://docs.tilt.dev/) set
 * [helm](https://helm.sh/docs/intro/install/) must be installed to generate the k8s from the helm charts in the gitops repo
 * For Windows users:
     * A bash program. By default git bash is used with an assumed installation directory of C:/Program Files/Git
+* System Resource Usage
+    * For local development containers takee about 4GB with docker desktop on windows full k8s used 11GB
 
 ## Startup Services
 In the root directory of the repository run `tilt up`. This will start all the faf services in the correct order. The status of each service can be viewed in the tilt UI by visiting <http://localhost:10350>. This is the control server for tilt where you can restart services or disable them for substitution by services you would like to run from source code as you actively develop them.
