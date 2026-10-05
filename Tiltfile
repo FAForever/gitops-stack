@@ -28,23 +28,16 @@ if os.name == "nt":
     if not os.path.exists(windows_bash_path):
         fail("Windows users need to supply a valid path to a bash executable")
 
+    data_absolute_path = "//data/" + data_relative_path
     if k8s_context() == "docker-desktop":
         hostname = cfg.get("hostname", "host.docker.internal")
-        drive, path_without_drive = os.getcwd().split(":")
-        data_absolute_path = os.path.join("//run/desktop/mnt/host/", drive, path_without_drive, data_relative_path).replace("\\","/").lower()
-        use_named_volumes = ["mariadb"]
     elif k8s_context() == "minikube" or k8s_context() == "kind-kind":
         hostname = cfg.get("hostname", "")
-        data_absolute_path = "//data/" + data_relative_path
-        use_named_volumes = []
-    else:
-        fail("Cannot determine how to mount for windows host")
 
 else:
     faf_data_dir = cfg.get("faf-data-dir", "~/.faforever")
     hostname = cfg.get("hostname", "")
     data_absolute_path = os.path.join(os.getcwd(), data_relative_path)
-    use_named_volumes = []
 
 host_details = ["hostIP="+host_ip, "hostname="+hostname]
 
@@ -169,15 +162,12 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
 
     return encode_yaml_stream(objects)
 
-def to_hostpath_storage(yaml, use_named_volumes):
+def to_hostpath_storage(yaml):
     objects = decode_yaml_stream(yaml)
     for object in objects:
         if object["kind"] == "PersistentVolume":
             object["spec"].pop("nodeAffinity", None)
             localpath_spec = object["spec"].pop("local", {"path": ""})
-            if os.path.basename(localpath_spec["path"]) in use_named_volumes:
-                volume_name = os.path.basename(localpath_spec["path"])
-                localpath_spec["path"] = volume_name
             
             object["spec"]["hostPath"] = localpath_spec
             object["spec"]["hostPath"]["type"] = "DirectoryOrCreate"
@@ -267,7 +257,7 @@ if not is_ci:
     k8s_resource(workload="release-name-reloader", new_name="reloader", objects=["release-name-reloader:serviceaccount", "release-name-reloader-metadata-role:role", "release-name-reloader-role:clusterrole", "release-name-reloader-metadata-role-binding:rolebinding", "release-name-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
 
 storage_yaml = helm_with_build_cache("cluster/storage", values=["config/local.yaml"], set=["dataPath="+data_absolute_path])
-storage_yaml = to_hostpath_storage(storage_yaml, use_named_volumes=use_named_volumes)
+storage_yaml = to_hostpath_storage(storage_yaml)
 k8s_yaml(storage_yaml)
 
 volume_identifiers = []
