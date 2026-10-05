@@ -421,6 +421,10 @@ unitdb_labels = ["unitdb"]
 unitdb_links = [link("http://unitdb.{}".format(base_domain), "Rackover UnitDB")]
 proxy_local_service_if_set(service_name="faf-unitdb", service_chart="apps/faf-unitdb", service_namespace="faf-apps", service_labels=unitdb_labels, service_links=unitdb_links)
 
+tournaments_labels = ["tournaments"]
+tournaments_links = [link("http://tournaments.{}".format(base_domain), "FAF Tournaments")]
+proxy_local_service_if_set(service_name="faf-tournaments", service_chart="apps/faf-tournaments", service_namespace="faf-apps", service_deps=["volumes"], service_labels=tournaments_labels, service_links=tournaments_links)
+
 icebreaker_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
 icebreaker_labels = ["api"]
 icebreaker_patch = {"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false"}
