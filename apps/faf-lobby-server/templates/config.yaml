@@ -5,11 +5,9 @@ metadata:
   labels:
     app: faf-lobby-server
 data:
-  CONFIGURATION_FILE: "/config/config.yaml"
-  # Redundant, but required for rabbitmq/mariadb init script
-  MQ_USER: "faf-lobby-server"
-  DB_LOGIN: "faf-python-server"
-  DB_NAME: "faf_lobby"
-  HYDRA_JWKS_URI: "https://hydra.{{ .Values.baseDomain }}/.well-known/jwks.json"
-  "config.yaml": |-
-{{ tpl ( .Files.Get "config/config.yaml" ) . | indent 4 }}
+  DATABASE_NAME: "faf_lobby"
+  DATABASE_USER: "faf-lobby-server"
+  DATABASE_HOST: "mariadb"
+  RABBITMQ_USER: "faf-lobby-server"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"

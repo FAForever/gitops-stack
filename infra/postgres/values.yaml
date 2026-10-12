@@ -10,6 +10,13 @@ infisical-secret:
   name: postgres
 
 databasesAndUsers:
+  # Message Broker Database
+  - configMapRef: faf-message-broker
+    secretRef: faf-message-broker
+    databaseKey: DATABASE_NAME
+    usernameKey: DATABASE_USER
+    passwordKey: DATABASE_PASSWORD
+
   # Others
   - configMapRef: wikijs
     secretRef: wikijs

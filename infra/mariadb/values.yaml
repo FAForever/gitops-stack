@@ -7,6 +7,12 @@ infisical-secret:
 
 databasesAndUsers:
   # Main FAF database
+  - configMapRef: faf-lobby-server
+    secretRef: faf-lobby-server
+    databaseKey: DATABASE_NAME
+    usernameKey: DATABASE_USERNAME
+    passwordKey: DATABASE_PASSWORD
+
   - configMapRef: faf-api
     secretRef: faf-api
     databaseKey: DATABASE_NAME
@@ -17,12 +23,6 @@ databasesAndUsers:
     secretRef: faf-user-service
     databaseKey: DB_DATABASE
     usernameKey: DB_USERNAME
-    passwordKey: DB_PASSWORD
-
-  - configMapRef: faf-lobby-server
-    secretRef: faf-lobby-server
-    databaseKey: DB_NAME
-    usernameKey: DB_LOGIN
     passwordKey: DB_PASSWORD
 
   - configMapRef: faf-replay-server

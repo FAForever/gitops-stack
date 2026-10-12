@@ -177,18 +177,6 @@ def to_hostpath_storage(yaml):
             
     return encode_yaml_stream(objects)
 
-def no_policy_server(yaml):
-    objects = decode_yaml_stream(yaml)
-    for object in objects:
-        if object["kind"] == "ConfigMap" and object["metadata"]["name"] == "faf-lobby-server":
-            config_yaml = object["data"]["config.yaml"]
-            config_objects = decode_yaml(config_yaml)
-            config_objects["USE_POLICY_SERVER"] = False
-            config_yaml = encode_yaml(config_objects)
-            object["data"]["config.yaml"] = str(config_yaml)
-            
-    return encode_yaml_stream(objects)
-
 def proxy_local_service_if_set(service_name, service_chart, service_namespace, additional_values=[], config_patch={}, service_deps=[], service_labels=[], service_links=[]):
     all_service_deps = []
     all_service_deps.extend(service_deps)
@@ -198,8 +186,6 @@ def proxy_local_service_if_set(service_name, service_chart, service_namespace, a
     service_config_yaml, service_yaml = filter_yaml(service_yaml, kind="ConfigMap|Secret")
     service_config_yaml = patch_config(yaml=service_config_yaml, config_name=service_name, config=config_patch)
     if (service_config_yaml):
-        if service_name == "faf-lobby-server":
-            service_config_yaml = no_policy_server(service_config_yaml)
         k8s_yaml(service_config_yaml)
         config_objects = []
         for object in decode_yaml_stream(service_config_yaml):
@@ -225,7 +211,7 @@ def proxy_local_service_if_set(service_name, service_chart, service_namespace, a
         for object in decode_yaml_stream(service_proxy_yaml):
             service_objects.append(object["metadata"]["name"] + ":" + object["kind"].lower())
         k8s_resource(new_name=service_name, objects=service_objects, resource_deps=all_service_deps, labels=service_labels, links=service_links, pod_readiness="ignore")
-    else:
+    elif (service_yaml):
         if service_name == "faf-icebreaker":
             service_yaml = remove_init_container(service_yaml)
 
@@ -295,7 +281,7 @@ k8s_resource(workload="postgres", objects=["postgres:configmap", "postgres:secre
 postgres_setup_resources = []
 for object in decode_yaml_stream(postgres_init_user_yaml):
     postgres_setup_resources.append(object["metadata"]["name"])
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "postgres", "wikijs-config", "ory-hydra-config"], labels=["database"])
+    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "postgres", "wikijs-config", "ory-hydra-config", "faf-message-broker-config"], labels=["database"])
 
 mariadb_yaml = helm_with_build_cache("infra/mariadb", namespace="faf-infra", values=["config/local.yaml"])
 mariadb_init_user_yaml, mariadb_resource_yaml = filter_yaml(mariadb_yaml, {"app": "mariadb-sync-db-user"})
@@ -306,7 +292,7 @@ k8s_resource(workload="mariadb", objects=["mariadb:configmap", "mariadb:secret",
 mariadb_setup_resources = []
 for object in decode_yaml_stream(mariadb_init_user_yaml):
     mariadb_setup_resources.append(object["metadata"]["name"])
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mariadb", "faf-api-config", "faf-user-service-config", "faf-lobby-server-config", "faf-replay-server-config", "faf-policy-server-config", "faf-league-service-config", "wordpress-config", "ergochat-config", "faf-icebreaker-config"], labels=["database"])
+    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mariadb", "faf-api-config", "faf-user-service-config", "faf-message-broker-config", "faf-replay-server-config", "faf-policy-server-config", "faf-league-service-config", "wordpress-config", "ergochat-config", "faf-icebreaker-config"], labels=["database"])
 
 mongodb_yaml = helm_with_build_cache("infra/mongodb", namespace="faf-infra", values=["config/local.yaml"])
 mongodb_init_user_yaml, mongodb_resource_yaml = filter_yaml(mongodb_yaml, {"app": "mongodb-sync-db-user"})
@@ -327,7 +313,7 @@ k8s_resource(workload="rabbitmq", objects=["rabbitmq:configmap", "rabbitmq:secre
 rabbitmq_setup_resources = []
 for object in decode_yaml_stream(rabbitmq_init_user_yaml):
     rabbitmq_setup_resources.append(object["metadata"]["name"])
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "rabbitmq", "faf-api-config", "faf-icebreaker-config", "faf-lobby-server-config", "debezium-config", "faf-league-service-config", "faf-user-service-config"], labels=["rabbitmq"])
+    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "rabbitmq", "faf-api-config", "faf-icebreaker-config", "faf-lobby-server-config", "faf-message-broker-config", "debezium-config", "faf-league-service-config", "faf-user-service-config"], labels=["rabbitmq"])
 
 k8s_yaml(cronjob_to_job(helm_with_build_cache("apps/faf-db-migrations", namespace="faf-apps", values=["config/local.yaml"])))
 k8s_resource(workload="faf-db-migrations", objects=["faf-db-migrations:secret"], resource_deps=mariadb_setup_resources, labels=["database"])
@@ -398,10 +384,14 @@ league_service_deps = mariadb_setup_resources + rabbitmq_setup_resources
 league_service_labels = ["leagues"]
 proxy_local_service_if_set(service_name="faf-league-service", service_chart="apps/faf-league-service", service_namespace="faf-apps", service_deps=league_service_deps, service_labels=league_service_labels)
 
-lobby_server_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
+lobby_server_deps = rabbitmq_setup_resources
 lobby_server_labels = ["lobby"]
-lobby_server_patch = {"HYDRA_JWKS_URI": "http://ory-hydra:4444/.well-known/jwks.json"}
-proxy_local_service_if_set(service_name="faf-lobby-server", service_chart="apps/faf-lobby-server", service_namespace="faf-apps", service_deps=lobby_server_deps, service_labels=lobby_server_labels, config_patch=lobby_server_patch)
+proxy_local_service_if_set(service_name="faf-lobby-server", service_chart="apps/faf-lobby-server", service_namespace="faf-apps", service_deps=lobby_server_deps, service_labels=lobby_server_labels)
+
+message_broker_deps = ["ory-hydra"] + rabbitmq_setup_resources
+message_broker_labels = ["lobby"]
+message_broker_patch = {"HYDRA_JWKS_URI": "http://ory-hydra:4444/.well-known/jwks.json", "USE_POLICY_SERVER": "false"}
+proxy_local_service_if_set(service_name="faf-message-broker", service_chart="apps/faf-message-broker", service_namespace="faf-apps", service_deps=message_broker_deps, service_labels=message_broker_labels, config_patch=message_broker_patch)
 
 replay_server_deps = ["faf-db-migrations"]
 replay_server_labels = ["replay"]
