@@ -384,7 +384,7 @@ league_service_deps = mariadb_setup_resources + rabbitmq_setup_resources
 league_service_labels = ["leagues"]
 proxy_local_service_if_set(service_name="faf-league-service", service_chart="apps/faf-league-service", service_namespace="faf-apps", service_deps=league_service_deps, service_labels=league_service_labels)
 
-lobby_server_deps = rabbitmq_setup_resources
+lobby_server_deps = ["faf-db-migrations"] + rabbitmq_setup_resources
 lobby_server_labels = ["lobby"]
 lobby_server_patch = {"HYDRA_JWKS_URI": "http://ory-hydra:4444/.well-known/jwks.json"}
 proxy_local_service_if_set(service_name="faf-lobby-server", service_chart="apps/faf-lobby-server", service_namespace="faf-apps", service_deps=lobby_server_deps, service_labels=lobby_server_labels, config_patch=lobby_server_patch)
