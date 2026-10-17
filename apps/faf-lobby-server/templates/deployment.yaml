@@ -34,8 +34,6 @@ spec:
               name: faf-lobby-server
               subPath: "config.yaml"
           ports:
-            - name: websocket
-              containerPort: 8003
             - name: metrics
               containerPort: 8011
             - name: control
