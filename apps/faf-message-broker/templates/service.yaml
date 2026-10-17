@@ -8,6 +8,6 @@ spec:
   selector:
     app: faf-message-broker
   ports:
-    - name: websocket
-      port: 8003
-      targetPort: 8003
+    - name: broker
+      port: 8080
+      targetPort: 8080
