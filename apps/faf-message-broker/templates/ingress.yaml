@@ -1,7 +1,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: faf-lobby-server
+  name: faf-message-broker
 spec:
   entryPoints:
     - websecure
@@ -9,5 +9,5 @@ spec:
     - match: Host(`lobby.{{.Values.baseDomain}}`) || Host(`ws.{{.Values.baseDomain}}`)
       kind: Rule
       services:
-        - name: faf-lobby-server
-          port: 8003
+        - name: faf-message-broker
+          port: 8080

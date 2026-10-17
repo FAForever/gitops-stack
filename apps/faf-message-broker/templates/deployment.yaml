@@ -1,0 +1,47 @@
+ apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-message-broker
+  labels:
+    app: faf-message-broker
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-message-broker
+  template:
+    metadata:
+      labels:
+        app: faf-message-broker
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9000'
+        prometheus.io/path: '/q/metrics'
+    spec:
+      containers:
+        - image: faforever/faf-message-broker:main
+          imagePullPolicy: Always
+          name: faf-message-broker
+          envFrom:
+            - configMapRef:
+                name: faf-message-broker
+            - secretRef:
+                name: faf-message-broker
+          ports:
+            - containerPort: 8003
+          # startupProbe:
+          #   httpGet:
+          #     port: 9000
+          #     path: /q/health
+          #   failureThreshold: 10
+          #   periodSeconds: 3
+          # livenessProbe:
+          #   httpGet:
+          #     port: 9000
+          #     path: /q/health
+          #   failureThreshold: 3
+          #   periodSeconds: 10
+      restartPolicy: Always

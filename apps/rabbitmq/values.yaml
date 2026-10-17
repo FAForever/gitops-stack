@@ -8,8 +8,12 @@ infisical-secret:
 users:
   - configMapRef: faf-lobby-server
     secretRef: faf-lobby-server
-    usernameKey: MQ_USER
-    passwordKey: MQ_PASSWORD
+    usernameKey: RABBITMQ_USER
+    passwordKey: RABBITMQ_PASSWORD
+  - configMapRef: faf-message-broker
+    secretRef: faf-message-broker
+    usernameKey: RABBITMQ_USER
+    passwordKey: RABBITMQ_PASSWORD
   - configMapRef: faf-api
     secretRef: faf-api
     usernameKey: RABBIT_USERNAME
