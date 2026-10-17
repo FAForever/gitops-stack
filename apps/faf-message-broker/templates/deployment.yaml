@@ -31,17 +31,17 @@ spec:
             - secretRef:
                 name: faf-message-broker
           ports:
-            - containerPort: 8003
-          # startupProbe:
-          #   httpGet:
-          #     port: 9000
-          #     path: /q/health
-          #   failureThreshold: 10
-          #   periodSeconds: 3
-          # livenessProbe:
-          #   httpGet:
-          #     port: 9000
-          #     path: /q/health
-          #   failureThreshold: 3
-          #   periodSeconds: 10
+            - containerPort: 8080
+          startupProbe:
+            httpGet:
+              port: 9000
+              path: /q/health
+            failureThreshold: 10
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: 9000
+              path: /q/health
+            failureThreshold: 3
+            periodSeconds: 10
       restartPolicy: Always
