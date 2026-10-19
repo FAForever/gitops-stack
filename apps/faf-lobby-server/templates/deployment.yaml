@@ -21,7 +21,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 3600
       containers:
-        - image: faforever/faf-python-server:v1.18.3
+        - image: faforever/faf-python-server:feature-message-broker
           imagePullPolicy: Always
           name: faf-lobby-server
           envFrom:

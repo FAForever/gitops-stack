@@ -13,3 +13,4 @@ data:
   RABBITMQ_PORT: "5672"
   USE_POLICY_SERVER: "true"
   HYDRA_JWKS_URL: "http://ory-hydra:4444/.well-known/jwks.json"
+  PUBLISH_UNKNOWN_MESSAGES: "true"
