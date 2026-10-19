@@ -43,6 +43,7 @@ LADDER_TOP_PLAYER_SEARCH_EXPANSION_MAX: 0.5
 LADDER_TOP_PLAYER_SEARCH_EXPANSION_STEP: 0.5
 
 QUEUE_POP_TIME_MAX: 90
+USE_POLICY_SERVER: false
 
 # 3rd Jan 2026: Disable matchmaking bans
 # There are problems with the ban system when a game doesn't start due to

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-message-broker
+  labels:
+    app: faf-message-broker
+data:
+  DATABASE_NAME: "faf-messages"
+  DATABASE_USER: "faf-message-broker"
+  DATABASE_HOST: "postgres"
+  RABBITMQ_USER: "faf-message-broker"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  USE_POLICY_SERVER: "true"
+  HYDRA_JWKS_URL: "http://ory-hydra:4444/.well-known/jwks.json"
+  HYDRA_TOKEN_ISSUER: "https://hydra.{{.Values.baseDomain}}"
+  PUBLISH_UNKNOWN_MESSAGES: "true"
+  ALLOWED_HOST: "lobby.{{.Values.baseDomain}},ws.{{.Values.baseDomain}}"
+  POLICY_SERVER_URL: "http://faf-policy-server:8097"

@@ -8,9 +8,6 @@ spec:
   selector:
     app: faf-lobby-server
   ports:
-    - name: websocket
-      port: 8003
-      targetPort: 8003
     - name: metrics
       port: 8011
       targetPort: 8011

@@ -21,7 +21,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 3600
       containers:
-        - image: faforever/faf-python-server:v1.18.3
+        - image: faforever/faf-python-server:v1.19.0
           imagePullPolicy: Always
           name: faf-lobby-server
           envFrom:
@@ -34,8 +34,6 @@ spec:
               name: faf-lobby-server
               subPath: "config.yaml"
           ports:
-            - name: websocket
-              containerPort: 8003
             - name: metrics
               containerPort: 8011
             - name: control
