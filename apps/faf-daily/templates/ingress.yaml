@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-daily
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`daily.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-daily
+          port: 8090

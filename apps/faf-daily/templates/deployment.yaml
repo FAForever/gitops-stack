@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-daily
+  labels:
+    app: faf-daily
+  annotations:
+    reloader.stakater.com/auto: "true"
+    # Pushing to main in FAForever/daily is the release: the image is
+    # republished as `latest`, and Keel rolls it out.
+    keel.sh/policy: force
+    keel.sh/matchTag: "true"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 10m"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  # The solve counter is one stats.json on one volume: the old pod has to be
+  # gone before the new one starts, or both would write the same file.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: faf-daily
+  template:
+    metadata:
+      labels:
+        app: faf-daily
+    spec:
+      # The image runs as the unprivileged `node` user (uid 1000), and a local
+      # volume keeps whatever owner its directory was created with.
+      initContainers:
+        - name: data-owner
+          image: busybox:1.37
+          command: ["sh", "-c", "chown -R 1000:1000 /data"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      containers:
+        - image: faforever/faf-daily:latest
+          imagePullPolicy: Always
+          name: faf-daily
+          envFrom:
+            - configMapRef:
+                name: faf-daily
+            - secretRef:
+                name: faf-daily
+          ports:
+            - containerPort: 8090
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8090
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8090
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: faf-daily-pvc
+      restartPolicy: Always

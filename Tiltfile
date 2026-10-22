@@ -402,6 +402,10 @@ tournaments_labels = ["tournaments"]
 tournaments_links = [link("http://tournaments.{}".format(base_domain), "FAF Tournaments")]
 proxy_local_service_if_set(service_name="faf-tournaments", service_chart="apps/faf-tournaments", service_namespace="faf-apps", service_deps=["volumes"], service_labels=tournaments_labels, service_links=tournaments_links)
 
+daily_labels = ["daily"]
+daily_links = [link("http://daily.{}".format(base_domain), "FAF Daily")]
+proxy_local_service_if_set(service_name="faf-daily", service_chart="apps/faf-daily", service_namespace="faf-apps", service_deps=["volumes"], service_labels=daily_labels, service_links=daily_links)
+
 icebreaker_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
 icebreaker_labels = ["api"]
 icebreaker_patch = {"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false", "QUARKUS_LOG_CONSOLE_JSON_ENABLED": "false"}
