@@ -30,6 +30,11 @@ spec:
                 name: faf-message-broker
             - secretRef:
                 name: faf-message-broker
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              memory: 250Mi
           ports:
             - containerPort: 8080
             - containerPort: 9000
