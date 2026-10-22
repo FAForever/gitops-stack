@@ -408,10 +408,6 @@ replay_server_deps = ["faf-db-migrations"]
 replay_server_labels = ["replay"]
 proxy_local_service_if_set(service_name="faf-replay-server", service_chart="apps/faf-replay-server", service_namespace="faf-apps", service_deps=replay_server_deps, service_labels=replay_server_labels)
 
-unitdb_labels = ["unitdb"]
-unitdb_links = [link("http://unitdb.{}".format(base_domain), "Rackover UnitDB")]
-proxy_local_service_if_set(service_name="faf-unitdb", service_chart="apps/faf-unitdb", service_namespace="faf-apps", service_labels=unitdb_labels, service_links=unitdb_links)
-
 tournaments_labels = ["tournaments"]
 tournaments_links = [link("http://tournaments.{}".format(base_domain), "FAF Tournaments")]
 proxy_local_service_if_set(service_name="faf-tournaments", service_chart="apps/faf-tournaments", service_namespace="faf-apps", service_deps=["volumes"], service_labels=tournaments_labels, service_links=tournaments_links)
