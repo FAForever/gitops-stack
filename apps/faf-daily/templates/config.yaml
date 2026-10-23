@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-daily
+  labels:
+    app: faf-daily
+data:
+  PORT: "8090"
+  # The answer secret comes from DAILY_SECRET in the secret. The file is only
+  # the fallback the service generates itself when that is not set.
+  DAILY_SECRET_FILE: "/data/secret"
+  DAILY_STATS_FILE: "/data/stats.json"

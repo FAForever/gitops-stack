@@ -98,3 +98,8 @@ managedStorages:
       size: 5Gi
     pvc:
       namespace: faf-apps
+  - pv:
+      name: faf-daily
+      size: 1Gi
+    pvc:
+      namespace: faf-apps
