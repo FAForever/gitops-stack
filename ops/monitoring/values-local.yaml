@@ -1,0 +1,17 @@
+victoria-metrics-k8s-stack:
+  grafana:
+    grafana.ini:
+      auth.github:
+        enabled: false
+      auth.anonymous:
+        enabled: true
+        org_role: Admin
+        org_name: "Main Org."
+    persistence:
+      enabled: false
+  prometheus-node-exporter:
+    enabled: false
+
+k8s-monitoring:
+  cluster:
+    name: faforever-localhost

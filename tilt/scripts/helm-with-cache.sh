@@ -3,7 +3,7 @@
 chart_cache_dir=$1
 shift
 
-chart=$1
+chart=$2
 
 mkdir -p "$chart_cache_dir"
 
