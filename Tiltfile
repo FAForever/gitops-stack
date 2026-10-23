@@ -273,40 +273,41 @@ agnostic_local_resource("wait-for-traefik-crd", cmd=["kubectl", "wait", "--for=c
 k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "wait-for-traefik-crd"], labels=["traefik"])
 k8s_resource(workload="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"], links=[link("http://traefik.{}".format(base_domain), "FAF Traefik")])
 
-monitoring_yaml = helm_with_build_cache("ops/monitoring", namespace="faf-ops", values=["config/local.yaml", "ops/monitoring/values-local.yaml"])
-k8s_yaml(monitoring_yaml)
+if (not is_ci):
+    monitoring_yaml = helm_with_build_cache("ops/monitoring", namespace="faf-ops", values=["config/local.yaml", "ops/monitoring/values-local.yaml"])
+    k8s_yaml(monitoring_yaml)
 
-monitoring_accounts = []
-monitoring_vm = []
-monitoring_crds = []
-monitoring_config = []
-for object in decode_yaml_stream(monitoring_yaml):
-    name = object["metadata"]["name"]
-    kind = object["kind"].lower()
-    if kind == "serviceaccount" or kind == "role" or kind == "clusterrole" or kind == "rolebinding" or kind == "clusterrolebinding":
-        monitoring_accounts.append(name + ":" + kind)
-    elif kind == "vmrule" or kind == "vmservicescrape" or kind == "vmnodescrape" or kind == "vmalertmanager" or kind == "vmalert" or kind == "vmagent" or kind == "vmsingle" or kind == "vmpodscrape":
-        monitoring_vm.append(name + ":" + kind)
-    elif kind == "customresourcedefinition":
-        monitoring_crds.append(name + ":" + kind)
-    elif kind == "configmap" or kind == "secret":
-        monitoring_config.append(name + ":" + kind)
+    monitoring_accounts = []
+    monitoring_vm = []
+    monitoring_crds = []
+    monitoring_config = []
+    for object in decode_yaml_stream(monitoring_yaml):
+        name = object["metadata"]["name"]
+        kind = object["kind"].lower()
+        if kind == "serviceaccount" or kind == "role" or kind == "clusterrole" or kind == "rolebinding" or kind == "clusterrolebinding":
+            monitoring_accounts.append(name + ":" + kind)
+        elif kind == "vmrule" or kind == "vmservicescrape" or kind == "vmnodescrape" or kind == "vmalertmanager" or kind == "vmalert" or kind == "vmagent" or kind == "vmsingle" or kind == "vmpodscrape":
+            monitoring_vm.append(name + ":" + kind)
+        elif kind == "customresourcedefinition":
+            monitoring_crds.append(name + ":" + kind)
+        elif kind == "configmap" or kind == "secret":
+            monitoring_config.append(name + ":" + kind)
 
-k8s_resource(new_name="monitoring-crds", objects=monitoring_crds, resource_deps=["namespaces"], labels=["monitoring"])
-k8s_resource(new_name="monitoring-setup", objects=monitoring_accounts + monitoring_config, resource_deps=["namespaces", "monitoring-crds"], labels=["monitoring"])
-k8s_resource(workload="monitoring-grafana", objects=["grafana:ingressroute"], resource_deps=["monitoring-setup"], labels=["monitoring"], links=[link("http://grafana.{}".format(base_domain), "FAF Grafana")])
-k8s_resource(workload="monitoring-kube-state-metrics", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-loki", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(new_name="monitoring-alloy-logs", objects=["monitoring-alloy-logs:alloy"], resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-loki-gateway", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-loki-results-cache", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-alloy-operator", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-victoria-metrics-operator", objects=["monitoring-victoria-metrics-operator-admission:validatingwebhookconfiguration"], resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-victoria-metrics-operator-cleanup-hook", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-k8s-monitoring-add-finalizer", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-k8s-monitoring-remove-alloy-and-finalizer", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(new_name="monitoring-k8s-stack", objects=["monitoring-victoria-metrics-k8s-stack-core-dns:service", "monitoring-victoria-metrics-k8s-stack-kube-controller-manager:service", "monitoring-victoria-metrics-k8s-stack-kube-etcd:service", "monitoring-victoria-metrics-k8s-stack-kube-scheduler:service"], resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(new_name="monitoring-vm", objects=monitoring_vm, resource_deps=["monitoring-victoria-metrics-operator", "monitoring-victoria-metrics-operator-cleanup-hook"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-crds", objects=monitoring_crds, resource_deps=["namespaces"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-setup", objects=monitoring_accounts + monitoring_config, resource_deps=["namespaces", "monitoring-crds"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-grafana", objects=["grafana:ingressroute"], resource_deps=["monitoring-setup"], labels=["monitoring"], links=[link("http://grafana.{}".format(base_domain), "FAF Grafana")])
+    k8s_resource(workload="monitoring-kube-state-metrics", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-loki", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-alloy-logs", objects=["monitoring-alloy-logs:alloy"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-loki-gateway", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-loki-results-cache", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-alloy-operator", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-victoria-metrics-operator", objects=["monitoring-victoria-metrics-operator-admission:validatingwebhookconfiguration"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-victoria-metrics-operator-cleanup-hook", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-k8s-monitoring-add-finalizer", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-k8s-monitoring-remove-alloy-and-finalizer", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-k8s-stack", objects=["monitoring-victoria-metrics-k8s-stack-core-dns:service", "monitoring-victoria-metrics-k8s-stack-kube-controller-manager:service", "monitoring-victoria-metrics-k8s-stack-kube-etcd:service", "monitoring-victoria-metrics-k8s-stack-kube-scheduler:service"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-vm", objects=monitoring_vm, resource_deps=["monitoring-victoria-metrics-operator", "monitoring-victoria-metrics-operator-cleanup-hook"], labels=["monitoring"])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
 postgres_init_user_yaml, postgres_resource_yaml = filter_yaml(postgres_yaml, {"app": "postgres-sync-db-user"})
