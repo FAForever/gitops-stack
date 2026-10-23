@@ -93,12 +93,13 @@ def cronjob_to_job(yaml):
 def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""):
     cache_dir = ".helm-cache"
     
+    chart_name = chart.split("/")[-1]
     chart_resource = chart.replace("/", "-") + "-" + specifier
     chart_cache_path = os.path.join(cache_dir, chart, specifier).replace("\\", "/")
     cached_yaml = os.path.join(chart_cache_path, "yaml")
     value_flags = [fragment for value in values for fragment in ("--values", value)]
     set_flags = [fragment for set_value in set for fragment in ("--set", set_value)]
-    command = ["./tilt/scripts/helm-with-cache.sh", chart_cache_path, chart, "--include-crds"]
+    command = ["./tilt/scripts/helm-with-cache.sh", chart_cache_path, chart_name, chart, "--include-crds"]
     if namespace:
         command.extend(["--namespace", namespace])
     command.extend(value_flags)
@@ -240,7 +241,7 @@ k8s_resource(new_name="init-apps", objects=["init-apps:serviceaccount:faf-infra"
 
 if not is_ci:
     k8s_yaml(helm_with_build_cache("tilt/reloader", namespace="faf-ops", values=["config/local.yaml"]))
-    k8s_resource(workload="release-name-reloader", new_name="reloader", objects=["release-name-reloader:serviceaccount", "release-name-reloader-metadata-role:role", "release-name-reloader-role:clusterrole", "release-name-reloader-metadata-role-binding:rolebinding", "release-name-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
+    k8s_resource(workload="reloader-reloader", new_name="reloader", objects=["reloader-reloader:serviceaccount", "reloader-reloader-metadata-role:role", "reloader-reloader-role:clusterrole", "reloader-reloader-metadata-role-binding:rolebinding", "reloader-reloader-role-binding:clusterrolebinding"], resource_deps=["namespaces"], labels=["core"])
 
 storage_yaml = helm_with_build_cache("cluster/storage", values=["config/local.yaml"], set=["dataPath="+data_absolute_path])
 storage_yaml = to_hostpath_storage(storage_yaml)
@@ -270,7 +271,43 @@ for object in decode_yaml_stream(traefik_yaml):
 k8s_resource(new_name="traefik-crds", objects=traefik_crds, labels=["traefik"])
 agnostic_local_resource("wait-for-traefik-crd", cmd=["kubectl", "wait", "--for=condition=established", "--timeout=60s", "crd/ingressroutes.traefik.io"], resource_deps=["traefik-crds"], labels=["traefik"])
 k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "wait-for-traefik-crd"], labels=["traefik"])
-k8s_resource(workload="release-name-traefik", new_name="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"], links=[link("http://traefik.{}".format(base_domain), "FAF Traefik")])
+k8s_resource(workload="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"], links=[link("http://traefik.{}".format(base_domain), "FAF Traefik")])
+
+if (not is_ci):
+    monitoring_yaml = helm_with_build_cache("ops/monitoring", namespace="faf-ops", values=["config/local.yaml", "ops/monitoring/values-local.yaml"])
+    k8s_yaml(monitoring_yaml)
+
+    monitoring_accounts = []
+    monitoring_vm = []
+    monitoring_crds = []
+    monitoring_config = []
+    for object in decode_yaml_stream(monitoring_yaml):
+        name = object["metadata"]["name"]
+        kind = object["kind"].lower()
+        if kind == "serviceaccount" or kind == "role" or kind == "clusterrole" or kind == "rolebinding" or kind == "clusterrolebinding":
+            monitoring_accounts.append(name + ":" + kind)
+        elif kind == "vmrule" or kind == "vmservicescrape" or kind == "vmnodescrape" or kind == "vmalertmanager" or kind == "vmalert" or kind == "vmagent" or kind == "vmsingle" or kind == "vmpodscrape":
+            monitoring_vm.append(name + ":" + kind)
+        elif kind == "customresourcedefinition":
+            monitoring_crds.append(name + ":" + kind)
+        elif kind == "configmap" or kind == "secret":
+            monitoring_config.append(name + ":" + kind)
+
+    k8s_resource(new_name="monitoring-crds", objects=monitoring_crds, resource_deps=["namespaces"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-setup", objects=monitoring_accounts + monitoring_config, resource_deps=["namespaces", "monitoring-crds"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-grafana", objects=["grafana:ingressroute"], resource_deps=["monitoring-setup"], labels=["monitoring"], links=[link("http://grafana.{}".format(base_domain), "FAF Grafana")])
+    k8s_resource(workload="monitoring-kube-state-metrics", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-loki", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-alloy-logs", objects=["monitoring-alloy-logs:alloy"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-loki-gateway", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-loki-results-cache", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-alloy-operator", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-victoria-metrics-operator", objects=["monitoring-victoria-metrics-operator-admission:validatingwebhookconfiguration"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-victoria-metrics-operator-cleanup-hook", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-k8s-monitoring-add-finalizer", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(workload="monitoring-k8s-monitoring-remove-alloy-and-finalizer", resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-k8s-stack", objects=["monitoring-victoria-metrics-k8s-stack-core-dns:service", "monitoring-victoria-metrics-k8s-stack-kube-controller-manager:service", "monitoring-victoria-metrics-k8s-stack-kube-etcd:service", "monitoring-victoria-metrics-k8s-stack-kube-scheduler:service"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+    k8s_resource(new_name="monitoring-vm", objects=monitoring_vm, resource_deps=["monitoring-victoria-metrics-operator", "monitoring-victoria-metrics-operator-cleanup-hook"], labels=["monitoring"])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
 postgres_init_user_yaml, postgres_resource_yaml = filter_yaml(postgres_yaml, {"app": "postgres-sync-db-user"})
@@ -327,12 +364,12 @@ k8s_resource(new_name="wordpress-config", objects=["wordpress:configmap", "wordp
 k8s_resource(workload="wordpress", objects=["wordpress:ingressroute"], resource_deps=["traefik"], labels=["website"], links=[link("http://direct.{}".format(base_domain), "FAF Wordpress")])
 
 k8s_yaml(helm_with_build_cache("apps/wikijs", namespace="faf-apps", values=["config/local.yaml"]))
-k8s_resource(new_name="wikijs-config", objects=["wikijs:configmap", "wikijs:secret", "wikijs-sso:configmap"], labels=["wiki"])
-k8s_resource(workload="wikijs", objects=["wikijs:ingressroute"], resource_deps=["traefik"] + postgres_setup_resources, labels=["wiki"], links=[link("http://wiki.{}".format(base_domain), "FAF Wiki")])
+k8s_resource(new_name="wikijs-config", objects=["wikijs:configmap", "wikijs:secret", "wikijs-sso:configmap"], labels=["misc"])
+k8s_resource(workload="wikijs", objects=["wikijs:ingressroute"], resource_deps=["traefik"] + postgres_setup_resources, labels=["misc"], links=[link("http://wiki.{}".format(base_domain), "FAF Wiki")])
 
 k8s_yaml(helm_with_build_cache("apps/nodebb", namespace="faf-apps", values=["config/local.yaml"]))
-k8s_resource(new_name="nodebb-config", objects=["nodebb:configmap", "nodebb:secret"], labels=["forum"])
-k8s_resource(workload="nodebb", objects=["nodebb:ingressroute"], resource_deps=["traefik"] + mongodb_setup_resources, labels=["forum"], links=[link("http://forum.{}".format(base_domain), "FAF Forum")])
+k8s_resource(new_name="nodebb-config", objects=["nodebb:configmap", "nodebb:secret"], labels=["misc"])
+k8s_resource(workload="nodebb", objects=["nodebb:ingressroute"], resource_deps=["traefik"] + mongodb_setup_resources, labels=["misc"], links=[link("http://forum.{}".format(base_domain), "FAF Forum")])
 
 k8s_yaml(keep_objects_of_kind(helm_with_build_cache("apps/debezium", namespace="faf-apps", values=["config/local.yaml"]), kinds=["ConfigMap", "Secret"]))
 k8s_resource(new_name="debezium-config", objects=["debezium:configmap", "debezium:secret"], labels=["database"])
@@ -398,11 +435,11 @@ replay_server_deps = ["faf-db-migrations"]
 replay_server_labels = ["replay"]
 proxy_local_service_if_set(service_name="faf-replay-server", service_chart="apps/faf-replay-server", service_namespace="faf-apps", service_deps=replay_server_deps, service_labels=replay_server_labels)
 
-tournaments_labels = ["tournaments"]
+tournaments_labels = ["misc"]
 tournaments_links = [link("http://tournaments.{}".format(base_domain), "FAF Tournaments")]
 proxy_local_service_if_set(service_name="faf-tournaments", service_chart="apps/faf-tournaments", service_namespace="faf-apps", service_deps=["volumes"], service_labels=tournaments_labels, service_links=tournaments_links)
 
-daily_labels = ["daily"]
+daily_labels = ["misc"]
 daily_links = [link("http://daily.{}".format(base_domain), "FAF Daily")]
 proxy_local_service_if_set(service_name="faf-daily", service_chart="apps/faf-daily", service_namespace="faf-apps", service_deps=["volumes"], service_labels=daily_labels, service_links=daily_links)
 
