@@ -22,7 +22,7 @@ spec:
         prometheus.io/path: '/q/metrics'
     spec:
       containers:
-        - image: faforever/faf-message-broker:1.0.1
+        - image: faforever/faf-message-broker:1.1.0
           imagePullPolicy: Always
           name: faf-message-broker
           envFrom:
@@ -32,7 +32,7 @@ spec:
                 name: faf-message-broker
           resources:
             limits:
-              memory: 4Gi
+              memory: 6Gi
             requests:
               memory: 250Mi
           ports:

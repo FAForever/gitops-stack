@@ -17,3 +17,4 @@ data:
   PUBLISH_UNKNOWN_MESSAGES: "true"
   ALLOWED_HOST: "lobby.{{.Values.baseDomain}},ws.{{.Values.baseDomain}}"
   POLICY_SERVER_URL: "http://faf-policy-server:8097"
+  REAL_IP_HEADER: "CF-Connecting-IP"
