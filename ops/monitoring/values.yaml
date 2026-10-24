@@ -55,6 +55,8 @@ victoria-metrics-k8s-stack:
         api_url: https://api.github.com/user
         org_name: FAForever
         org_mapping: $__env{GITHUB_ORG_MAPPING}
+      users:
+        auto_assign_org_role: None
     admin:
       existingSecret: grafana
       userKey: admin-user
