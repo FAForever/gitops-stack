@@ -22,7 +22,7 @@ spec:
         prometheus.io/path: '/q/metrics'
     spec:
       containers:
-        - image: faforever/faf-player-service:main
+        - image: faforever/faf-player-service:1.0.0
           imagePullPolicy: Always
           name: faf-player-service
           envFrom:
