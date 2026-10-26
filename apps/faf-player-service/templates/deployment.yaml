@@ -21,6 +21,17 @@ spec:
         prometheus.io/port: '9000'
         prometheus.io/path: '/q/metrics'
     spec:
+      initContainers:
+        - name: geolite-db-dl
+          image: ghcr.io/maxmind/geoipupdate:v7.1.1
+          envFrom:
+            - configMapRef:
+                name: faf-player-service
+            - secretRef:
+                name: faf-player-service
+          volumeMounts:
+            - name: geolite-db
+              mountPath: /usr/share/GeoIP
       containers:
         - image: faforever/faf-player-service:1.0.0
           imagePullPolicy: Always
@@ -49,4 +60,7 @@ spec:
               path: /q/health
             failureThreshold: 3
             periodSeconds: 10
+      volumes:
+        - name: geolite-db
+          emptyDir: {}
       restartPolicy: Always

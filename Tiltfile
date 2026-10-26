@@ -213,7 +213,7 @@ def proxy_local_service_if_set(service_name, service_chart, service_namespace, a
             service_objects.append(object["metadata"]["name"] + ":" + object["kind"].lower())
         k8s_resource(new_name=service_name, objects=service_objects, resource_deps=all_service_deps, labels=service_labels, links=service_links, pod_readiness="ignore")
     elif (service_yaml):
-        if service_name == "faf-icebreaker":
+        if service_name == "faf-icebreaker" or service_name == "faf-player-service":
             service_yaml = remove_init_container(service_yaml)
 
         k8s_yaml(service_yaml)
