@@ -37,6 +37,12 @@ databasesAndUsers:
     usernameKey: DATABASE_USER
     passwordKey: DATABASE_PASSWORD
 
+  - configMapRef: faf-player-service
+    secretRef: faf-player-service
+    databaseKey: DATABASE_NAME
+    usernameKey: DATABASE_USER
+    passwordKey: DATABASE_PASSWORD
+
   # League service database
   - configMapRef: faf-api
     secretRef: faf-api
