@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-player-service
+  labels:
+    app: faf-player-service
+data:
+  DATABASE_NAME: "faf_lobby"
+  DATABASE_USER: "faf-player-service"
+  DATABASE_HOST: "mariadb"
+  RABBITMQ_USER: "faf-player-service"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  GEOIPUPDATE_EDITION_IDS: "GeoLite2-Country"
+  GEO_IP_DATABASE_PATH: "/geoip/GeoLite2-Country.mmdb"
