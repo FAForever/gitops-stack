@@ -22,7 +22,7 @@ spec:
         prometheus.io/path: '/q/metrics'
     spec:
       containers:
-        - image: faforever/faf-message-broker:1.1.2
+        - image: faforever/faf-message-broker:1.1.3
           imagePullPolicy: Always
           name: faf-message-broker
           envFrom:
