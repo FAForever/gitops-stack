@@ -21,7 +21,7 @@ spec:
         prometheus.io/path: "/metrics/per-object"
     spec:
       containers:
-        - image: rabbitmq:3.13.7-management-alpine
+        - image: rabbitmq:4.4.0-management-alpine
           imagePullPolicy: Always
           name: rabbitmq
           ports:
