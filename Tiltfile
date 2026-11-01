@@ -331,16 +331,16 @@ for object in decode_yaml_stream(mariadb_init_user_yaml):
     mariadb_setup_resources.append(object["metadata"]["name"])
     k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mariadb", "faf-api-config", "faf-user-service-config", "faf-lobby-server-config", "faf-player-service-config", "faf-replay-server-config", "faf-policy-server-config", "faf-league-service-config", "wordpress-config", "ergochat-config", "faf-icebreaker-config"], labels=["database"])
 
-mongodb_yaml = helm_with_build_cache("infra/mongodb", namespace="faf-infra", values=["config/local.yaml"])
-mongodb_init_user_yaml, mongodb_resource_yaml = filter_yaml(mongodb_yaml, {"app": "mongodb-sync-db-user"})
-k8s_yaml(mongodb_init_user_yaml)
-k8s_yaml(mongodb_resource_yaml)
-k8s_yaml(helm_with_build_cache("apps/faf-mongodb", namespace="faf-apps", values=["config/local.yaml"]))
-k8s_resource(workload="mongodb", objects=["mongodb:configmap", "mongodb:secret", "mongodb:service:faf-apps"], port_forwards=["27017"], resource_deps=["volumes"], labels=["database"])
-mongodb_setup_resources = []
-for object in decode_yaml_stream(mongodb_init_user_yaml):
-    mongodb_setup_resources.append(object["metadata"]["name"])
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mongodb", "nodebb-config"], labels=["database"])
+# mongodb_yaml = helm_with_build_cache("infra/mongodb", namespace="faf-infra", values=["config/local.yaml"])
+# mongodb_init_user_yaml, mongodb_resource_yaml = filter_yaml(mongodb_yaml, {"app": "mongodb-sync-db-user"})
+# k8s_yaml(mongodb_init_user_yaml)
+# k8s_yaml(mongodb_resource_yaml)
+# k8s_yaml(helm_with_build_cache("apps/faf-mongodb", namespace="faf-apps", values=["config/local.yaml"]))
+# k8s_resource(workload="mongodb", objects=["mongodb:configmap", "mongodb:secret", "mongodb:service:faf-apps"], port_forwards=["27017"], resource_deps=["volumes"], labels=["database"])
+# mongodb_setup_resources = []
+# for object in decode_yaml_stream(mongodb_init_user_yaml):
+#     mongodb_setup_resources.append(object["metadata"]["name"])
+#     k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mongodb", "nodebb-config"], labels=["database"])
 
 rabbitmq_yaml = helm_with_build_cache("apps/rabbitmq", namespace="faf-apps", values=["config/local.yaml"])
 rabbitmq_init_user_yaml, rabbitmq_resource_yaml = filter_yaml(rabbitmq_yaml, {"app": "rabbitmq-sync-user"})
@@ -367,9 +367,9 @@ k8s_yaml(helm_with_build_cache("apps/wikijs", namespace="faf-apps", values=["con
 k8s_resource(new_name="wikijs-config", objects=["wikijs:configmap", "wikijs:secret", "wikijs-sso:configmap"], labels=["misc"])
 k8s_resource(workload="wikijs", objects=["wikijs:ingressroute"], resource_deps=["traefik"] + postgres_setup_resources, labels=["misc"], links=[link("http://wiki.{}".format(base_domain), "FAF Wiki")])
 
-k8s_yaml(helm_with_build_cache("apps/nodebb", namespace="faf-apps", values=["config/local.yaml"]))
-k8s_resource(new_name="nodebb-config", objects=["nodebb:configmap", "nodebb:secret"], labels=["misc"])
-k8s_resource(workload="nodebb", objects=["nodebb:ingressroute"], resource_deps=["traefik"] + mongodb_setup_resources, labels=["misc"], links=[link("http://forum.{}".format(base_domain), "FAF Forum")])
+# k8s_yaml(helm_with_build_cache("apps/nodebb", namespace="faf-apps", values=["config/local.yaml"]))
+# k8s_resource(new_name="nodebb-config", objects=["nodebb:configmap", "nodebb:secret"], labels=["misc"])
+# k8s_resource(workload="nodebb", objects=["nodebb:ingressroute"], resource_deps=["traefik"] + mongodb_setup_resources, labels=["misc"], links=[link("http://forum.{}".format(base_domain), "FAF Forum")])
 
 k8s_yaml(keep_objects_of_kind(helm_with_build_cache("apps/debezium", namespace="faf-apps", values=["config/local.yaml"]), kinds=["ConfigMap", "Secret"]))
 k8s_resource(new_name="debezium-config", objects=["debezium:configmap", "debezium:secret"], labels=["database"])
