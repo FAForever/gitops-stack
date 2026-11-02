@@ -23,6 +23,9 @@ victoria-metrics-k8s-stack:
         test: test
 
   grafana:
+    plugins:
+      - victoriametrics-metrics-datasource
+
     # Inject env specific values
     envFromConfigMaps:
       - name: grafana
