@@ -25,7 +25,7 @@ victoria-metrics-k8s-stack:
   grafana:
     # Inject env specific values
     envFromConfigMaps:
-     - name: grafana
+      - name: grafana
     # Inject Github OAuth credentials
     envFromSecret: grafana
 
@@ -81,14 +81,14 @@ victoria-metrics-k8s-stack:
           url: https://raw.githubusercontent.com/argoproj/argo-cd/master/examples/dashboard.json
           datasource: prometheus
 
-    additionalDataSources:
+  defaultDatasources:
+    extra:
       - access: proxy
         isDefault: false # Don't change this, another one is default and it won't work
         name: loki
         orgId: 1
         type: loki
-        url: http://monitoring-loki-gateway:80
-
+        url: http://monitoring-loki-gateway
 
 # Configuring Loki is quite involved, as the Helm chart seems to be fully production grade for multi-tenant SaaS setups
 # That is way, way too much for us
@@ -166,7 +166,7 @@ k8s-monitoring:
       presets:
         - filesystem-log-reader
         - daemonset
-  
+
   podLogsViaLoki:
     enabled: true
     collector: alloy-logs

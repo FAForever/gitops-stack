@@ -99,7 +99,7 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
     cached_yaml = os.path.join(chart_cache_path, "yaml")
     value_flags = [fragment for value in values for fragment in ("--values", value)]
     set_flags = [fragment for set_value in set for fragment in ("--set", set_value)]
-    command = ["./tilt/scripts/helm-with-cache.sh", chart_cache_path, chart_name, chart, "--include-crds"]
+    command = ["./tilt/scripts/helm-with-cache.sh", chart_cache_path, chart_name, chart, "--include-crds", "--skip-tests"]
     if namespace:
         command.extend(["--namespace", namespace])
     command.extend(value_flags)
@@ -273,41 +273,37 @@ agnostic_local_resource("wait-for-traefik-crd", cmd=["kubectl", "wait", "--for=c
 k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "wait-for-traefik-crd"], labels=["traefik"])
 k8s_resource(workload="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"], links=[link("http://traefik.{}".format(base_domain), "FAF Traefik")])
 
-if (not is_ci):
-    monitoring_yaml = helm_with_build_cache("ops/monitoring", namespace="faf-ops", values=["config/local.yaml", "ops/monitoring/values-local.yaml"])
-    k8s_yaml(monitoring_yaml)
+_, monitoring_yaml = filter_yaml(helm_with_build_cache("ops/monitoring", namespace="faf-ops", values=["config/local.yaml", "ops/monitoring/values-local.yaml"]), kind="Job")
+k8s_yaml(monitoring_yaml)
 
-    monitoring_accounts = []
-    monitoring_vm = []
-    monitoring_crds = []
-    monitoring_config = []
-    for object in decode_yaml_stream(monitoring_yaml):
-        name = object["metadata"]["name"]
-        kind = object["kind"].lower()
-        if kind == "serviceaccount" or kind == "role" or kind == "clusterrole" or kind == "rolebinding" or kind == "clusterrolebinding":
-            monitoring_accounts.append(name + ":" + kind)
-        elif kind == "vmrule" or kind == "vmservicescrape" or kind == "vmnodescrape" or kind == "vmalertmanager" or kind == "vmalert" or kind == "vmagent" or kind == "vmsingle" or kind == "vmpodscrape":
-            monitoring_vm.append(name + ":" + kind)
-        elif kind == "customresourcedefinition":
-            monitoring_crds.append(name + ":" + kind)
-        elif kind == "configmap" or kind == "secret":
-            monitoring_config.append(name + ":" + kind)
+monitoring_accounts = []
+monitoring_vm = []
+monitoring_crds = []
+monitoring_config = []
+for object in decode_yaml_stream(monitoring_yaml):
+    name = object["metadata"]["name"]
+    kind = object["kind"].lower()
+    if kind == "serviceaccount" or kind == "role" or kind == "clusterrole" or kind == "rolebinding" or kind == "clusterrolebinding":
+        monitoring_accounts.append(name + ":" + kind)
+    elif kind == "vmrule" or kind == "vmservicescrape" or kind == "vmnodescrape" or kind == "vmalertmanager" or kind == "vmalert" or kind == "vmagent" or kind == "vmsingle" or kind == "vmpodscrape":
+        monitoring_vm.append(name + ":" + kind)
+    elif kind == "customresourcedefinition":
+        monitoring_crds.append(name + ":" + kind)
+    elif kind == "configmap" or kind == "secret":
+        monitoring_config.append(name + ":" + kind)
 
-    k8s_resource(new_name="monitoring-crds", objects=monitoring_crds, resource_deps=["namespaces"], labels=["monitoring"])
-    k8s_resource(new_name="monitoring-setup", objects=monitoring_accounts + monitoring_config, resource_deps=["namespaces", "monitoring-crds"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-grafana", objects=["grafana:ingressroute"], resource_deps=["monitoring-setup"], labels=["monitoring"], links=[link("http://grafana.{}".format(base_domain), "FAF Grafana")])
-    k8s_resource(workload="monitoring-kube-state-metrics", resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-loki", resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(new_name="monitoring-alloy-logs", objects=["monitoring-alloy-logs:alloy"], resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-loki-gateway", resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-loki-results-cache", resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-alloy-operator", resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-victoria-metrics-operator", objects=["monitoring-victoria-metrics-operator-admission:validatingwebhookconfiguration"], resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-victoria-metrics-operator-cleanup-hook", resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-k8s-monitoring-add-finalizer", resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(workload="monitoring-k8s-monitoring-remove-alloy-and-finalizer", resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(new_name="monitoring-k8s-stack", objects=["monitoring-victoria-metrics-k8s-stack-core-dns:service", "monitoring-victoria-metrics-k8s-stack-kube-controller-manager:service", "monitoring-victoria-metrics-k8s-stack-kube-etcd:service", "monitoring-victoria-metrics-k8s-stack-kube-scheduler:service"], resource_deps=["monitoring-setup"], labels=["monitoring"])
-    k8s_resource(new_name="monitoring-vm", objects=monitoring_vm, resource_deps=["monitoring-victoria-metrics-operator", "monitoring-victoria-metrics-operator-cleanup-hook"], labels=["monitoring"])
+k8s_resource(new_name="monitoring-crds", objects=monitoring_crds, resource_deps=["namespaces"], labels=["monitoring"])
+k8s_resource(new_name="monitoring-setup", objects=monitoring_accounts + monitoring_config, resource_deps=["namespaces", "monitoring-crds"], labels=["monitoring"])
+k8s_resource(workload="monitoring-grafana", objects=["grafana:ingressroute"], resource_deps=["monitoring-setup"], labels=["monitoring"], links=[link("http://grafana.{}".format(base_domain), "FAF Grafana")])
+k8s_resource(workload="monitoring-kube-state-metrics", resource_deps=["monitoring-setup"], labels=["monitoring"])
+k8s_resource(workload="monitoring-loki", resource_deps=["monitoring-setup"], labels=["monitoring"])
+k8s_resource(new_name="monitoring-alloy-logs", objects=["monitoring-alloy-logs:alloy"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+k8s_resource(workload="monitoring-loki-gateway", resource_deps=["monitoring-setup"], labels=["monitoring"])
+k8s_resource(workload="monitoring-loki-results-cache", resource_deps=["monitoring-setup"], labels=["monitoring"])
+k8s_resource(workload="monitoring-alloy-operator", resource_deps=["monitoring-setup", "monitoring-alloy-logs", "monitoring-loki-gateway"], labels=["monitoring"])
+k8s_resource(workload="monitoring-victoria-metrics-operator", objects=["monitoring-victoria-metrics-operator-admission:validatingwebhookconfiguration"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+k8s_resource(new_name="monitoring-k8s-stack", objects=["monitoring-victoria-metrics-k8s-stack-core-dns:service", "monitoring-victoria-metrics-k8s-stack-kube-controller-manager:service", "monitoring-victoria-metrics-k8s-stack-kube-etcd:service", "monitoring-victoria-metrics-k8s-stack-kube-scheduler:service"], resource_deps=["monitoring-setup"], labels=["monitoring"])
+k8s_resource(new_name="monitoring-vm", objects=monitoring_vm, resource_deps=["monitoring-victoria-metrics-operator"], labels=["monitoring"])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
 postgres_init_user_yaml, postgres_resource_yaml = filter_yaml(postgres_yaml, {"app": "postgres-sync-db-user"})
@@ -367,6 +363,10 @@ k8s_yaml(helm_with_build_cache("apps/wikijs", namespace="faf-apps", values=["con
 k8s_resource(new_name="wikijs-config", objects=["wikijs:configmap", "wikijs:secret", "wikijs-sso:configmap"], labels=["misc"])
 k8s_resource(workload="wikijs", objects=["wikijs:ingressroute"], resource_deps=["traefik"] + postgres_setup_resources, labels=["misc"], links=[link("http://wiki.{}".format(base_domain), "FAF Wiki")])
 
+nodebb_config_yaml, _ = filter_yaml(helm_with_build_cache("apps/nodebb", namespace="faf-apps", values=["config/local.yaml"]), kind="ConfigMap|Secret")
+k8s_yaml(nodebb_config_yaml)
+k8s_resource(new_name="nodebb-config", objects=["nodebb:configmap", "nodebb:secret"], labels=["misc"])
+
 # k8s_yaml(helm_with_build_cache("apps/nodebb", namespace="faf-apps", values=["config/local.yaml"]))
 # k8s_resource(new_name="nodebb-config", objects=["nodebb:configmap", "nodebb:secret"], labels=["misc"])
 # k8s_resource(workload="nodebb", objects=["nodebb:ingressroute"], resource_deps=["traefik"] + mongodb_setup_resources, labels=["misc"], links=[link("http://forum.{}".format(base_domain), "FAF Forum")])
@@ -380,7 +380,8 @@ hydra_links = [link("http://hydra.{}/.well-known/openid-configuration".format(ba
 hydra_yaml = helm_with_build_cache("apps/ory-hydra", namespace="faf-apps", values=["config/local.yaml"])
 hydra_client_create_yaml, hydra_resources_yaml = filter_yaml(hydra_yaml, {"app": "ory-hydra-create-clients"})
 _, hydra_resources_yaml = filter_yaml(hydra_resources_yaml, {"app": "ory-hydra-janitor"})
-hydra_resources_yaml = patch_config(hydra_resources_yaml, "ory-hydra", {"URLS_SELF_ISSUER": "http://ory-hydra:4444", "URLS_SELF_PUBLIC": "http://hydra.{}".format(base_domain), "URLS_LOGIN": "http://user.{}/oauth2/login".format(base_domain), "URLS_CONSENT": "http://user.{}/oauth2/consent".format(base_domain), "DEV": "true"})
+hydra_patch = {"URLS_SELF_ISSUER": "http://ory-hydra:4444", "URLS_SELF_PUBLIC": "http://hydra.{}".format(base_domain), "URLS_LOGIN": "http://user.{}/oauth2/login".format(base_domain), "URLS_CONSENT": "http://user.{}/oauth2/consent".format(base_domain), "URLS_DEVICE_VERIFICATION": "http://user.{}/oauth2/device-login".format(base_domain), "URLS_DEVICE_SUCCESS": "http://user.{}/oauth2/device-done".format(base_domain), "DEV": "true"}
+hydra_resources_yaml = patch_config(hydra_resources_yaml, "ory-hydra", hydra_patch)
 k8s_yaml(hydra_resources_yaml)
 k8s_yaml(hydra_client_create_yaml)
 k8s_resource(new_name="ory-hydra-config", objects=["ory-hydra:configmap", "ory-hydra:secret"], labels=hydra_labels)

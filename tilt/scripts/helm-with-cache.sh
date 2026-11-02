@@ -7,7 +7,7 @@ chart=$2
 
 mkdir -p "$chart_cache_dir"
 
-if [ -s "$chart_cache_dir/args" ] && cmp -s -- "$chart_cache_dir/args" <(echo -n "$@") && [ -s "$chart_cache_dir/files" ] && cmp -s -- "$chart_cache_dir/files" <(find "$chart" -type f -name "*.yaml" | sort) && [ -s "$chart_cache_dir/md5sum" ] && md5sum --status -c "$chart_cache_dir/md5sum" && [ -s "$chart_cache_dir/yaml" ]; then
+if [ -s "$chart_cache_dir/args" ] && cmp -s -- "$chart_cache_dir/args" <(echo -n "$@") && [ -s "$chart_cache_dir/files" ] && cmp -s -- "$chart_cache_dir/files" <(find "$chart" -type f -name "*.yaml" | sort) && [ -s "$chart_cache_dir/md5sum" ] && md5sum --status -c "$chart_cache_dir/md5sum"; then
     echo "$chart matches cached yaml"
     exit 0
 fi
@@ -25,6 +25,8 @@ echo "$template_files" > "$chart_cache_dir/files"
 
 echo "Saving template sums"
 find "$chart" -type f -name "*.yaml" -exec md5sum {} + > "$chart_cache_dir/md5sum"
+
+find "$chart_cache_dir" -type f -name "yaml" -exec md5sum {} + >> "$chart_cache_dir/md5sum"
 
 for ARGUMENT in "$@"
 do
