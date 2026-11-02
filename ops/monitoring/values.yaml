@@ -24,7 +24,7 @@ victoria-metrics-k8s-stack:
 
   grafana:
     plugins:
-      - victoriametrics-metrics-datasource
+      - loki
 
     # Inject env specific values
     envFromConfigMaps:
@@ -85,6 +85,13 @@ victoria-metrics-k8s-stack:
           datasource: prometheus
 
   defaultDatasources:
+    victoriametrics:
+      datasources:
+        - name: VictoriaMetrics
+          type: prometheus
+          access: proxy
+          uid: VictoriaMetrics
+          isDefault: true
     extra:
       - access: proxy
         isDefault: false # Don't change this, another one is default and it won't work
