@@ -33,7 +33,7 @@ spec:
             - name: geolite-db
               mountPath: /usr/share/GeoIP
       containers:
-        - image: faforever/faf-player-service:1.0.0
+        - image: faforever/faf-player-service:1.0.1
           imagePullPolicy: Always
           name: faf-player-service
           envFrom:
