@@ -34,6 +34,17 @@ victoria-metrics-k8s-stack:
       enabled: true
       existingClaim: grafana-pvc
 
+    # Installed via GF_PLUGINS_PREINSTALL_SYNC before Grafana starts
+    # Unpinned plugins are updated to the latest compatible version on every startup
+    # Plugins installed any other way (e.g. via the UI) are NOT updated, so declare them here
+    plugins:
+      - victoriametrics-metrics-datasource
+      - grafana-advisor-app
+      - grafana-exploretraces-app
+      - grafana-lokiexplore-app
+      - grafana-metricsdrilldown-app
+      - grafana-pyroscope-app
+
     # Disable sidecar installing default dashboards to allow custom dashboards
     # https://docs.victoriametrics.com/helm/victoriametrics-k8s-stack/#adding-external-dashboards
     sidecar:
