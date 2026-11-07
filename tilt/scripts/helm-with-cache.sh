@@ -12,12 +12,16 @@ if [ -s "$chart_cache_dir/args" ] && cmp -s -- "$chart_cache_dir/args" <(echo -n
     exit 0
 fi
 
-if helm dependency list "$chart" | grep -qE '.*(missing|wrong version)\s*$'; then 
+if helm dependency list "$chart" | grep -q -e '.*(missing|wrong version)\s*$' -e 'WARNING:.*$'; then
     helm dependency update "$chart"
 fi
 
 echo "Generating yaml from helm in $chart"
 helm template "$@" > "$chart_cache_dir/yaml"
+if [ ! -s "$chart_cache_dir/yaml" ]; then
+    rm "$chart_cache_dir/yaml"
+    exit 1
+fi
 
 echo "Saving template files"
 template_files=$(find "$chart" -type f -name "*.yaml" | sort)

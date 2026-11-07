@@ -13,14 +13,20 @@ is_ci = os.getenv("CI", False)
 windows_bash_path = cfg.get("windows-bash-path", "C:\\Program Files\\Git\\bin\\bash.exe")
 host_ip = cfg.get("host-ip", "")
 local_services = cfg.get("local", [])
-applications = cfg.get("run", [])
 base_domain = cfg.get("base-domain", "faforever.localhost")
+requested_run = cfg.get("run", [])
 
-specified_services = applications
-if (specified_services):
-    specified_services = specified_services + ["populate-featured-mod-files", "create-hosts-file-content", "populate-db"]
+run_groups = {
+    'client': ['faf-message-broker', 'faf-lobby-server', 'ergochat', 'faf-api', 'faf-league-service', 'faf-player-service', 'faf-replay-server', 'faf-icebreaker', 'faf-user-service']
+}
 
-config.set_enabled_resources(specified_services)
+run_resources = []
+
+for requested in requested_run:
+    if requested in run_groups:
+        run_resources += run_groups[requested]
+    else:
+        run_resources.append(requested)
 
 data_relative_path = ".local-data"
 if os.name == "nt":
@@ -114,7 +120,11 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
     else:
         deps = [chart]
         deps.extend(values)
-        agnostic_local_resource(name=chart_resource + "-helm", cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
+        chart_resource_helm_name = chart_resource + "helm"
+        agnostic_local_resource(name=chart_resource_helm_name, cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
+
+        if chart_name in run_resources:
+            run_resources.append(chart_resource_helm_name)
 
         if not os.path.exists(cached_yaml):
             agnostic_local(command)
@@ -387,8 +397,12 @@ k8s_yaml(hydra_client_create_yaml)
 k8s_resource(new_name="ory-hydra-config", objects=["ory-hydra:configmap", "ory-hydra:secret"], labels=hydra_labels)
 k8s_resource(workload="ory-hydra-migration", resource_deps=["ory-hydra-config"] + postgres_setup_resources, labels=hydra_labels)
 k8s_resource(workload="ory-hydra", objects=["ory-hydra:ingressroute"], resource_deps=hydra_deps, port_forwards=["4444", "4445"], labels=hydra_labels, links=hydra_links)
+
 for object in decode_yaml_stream(hydra_client_create_yaml):
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["ory-hydra"], labels=["hydra"])
+    client_create_name = object["metadata"]["name"]
+    if run_resources:
+        run_resources.append(client_create_name)
+    k8s_resource(workload=client_create_name, resource_deps=["ory-hydra", "faf-website-config", "faf-voting-config", "nodebb-config"], labels=["hydra"])
 
 k8s_yaml(keep_objects_of_kind(helm_with_build_cache("apps/faf-voting", namespace="faf-apps", values=["config/local.yaml"]), kinds=["ConfigMap", "Secret"]))
 k8s_resource(new_name="faf-voting-config", objects=["faf-voting:configmap", "faf-voting:secret"], labels=["voting"])
@@ -452,3 +466,8 @@ icebreaker_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
 icebreaker_labels = ["api"]
 icebreaker_patch = {"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false", "QUARKUS_LOG_CONSOLE_JSON_ENABLED": "false"}
 proxy_local_service_if_set(service_name="faf-icebreaker", service_chart="apps/faf-icebreaker", service_namespace="faf-apps", service_deps=icebreaker_deps, service_labels=icebreaker_labels, additional_values=["apps/faf-icebreaker/values-prod.yaml"], config_patch=icebreaker_patch)
+
+if (run_resources):
+    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db"]
+
+config.set_enabled_resources(run_resources)
