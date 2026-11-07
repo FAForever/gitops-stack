@@ -285,7 +285,7 @@ for object in decode_yaml_stream(monitoring_yaml):
     kind = object["kind"].lower()
     if kind == "serviceaccount" or kind == "role" or kind == "clusterrole" or kind == "rolebinding" or kind == "clusterrolebinding":
         monitoring_accounts.append(name + ":" + kind)
-    elif kind == "vmrule" or kind == "vmservicescrape" or kind == "vmnodescrape" or kind == "vmalertmanager" or kind == "vmalert" or kind == "vmagent" or kind == "vmsingle" or kind == "vmpodscrape":
+    elif kind == "vmrule" or kind == "vmservicescrape" or kind == "vmnodescrape" or kind == "vmalertmanager" or kind == "vmalert" or kind == "vmagent" or kind == "vmsingle" or kind == "vlsingle" or kind == "vmpodscrape" or kind == "vmauth" or kind == "vlagent":
         monitoring_vm.append(name + ":" + kind)
     elif kind == "customresourcedefinition":
         monitoring_crds.append(name + ":" + kind)
@@ -296,11 +296,6 @@ k8s_resource(new_name="monitoring-crds", objects=monitoring_crds, resource_deps=
 k8s_resource(new_name="monitoring-setup", objects=monitoring_accounts + monitoring_config, resource_deps=["namespaces", "monitoring-crds"], labels=["monitoring"])
 k8s_resource(workload="monitoring-grafana", objects=["grafana:ingressroute"], resource_deps=["monitoring-setup"], labels=["monitoring"], links=[link("http://grafana.{}".format(base_domain), "FAF Grafana")])
 k8s_resource(workload="monitoring-kube-state-metrics", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-loki", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(new_name="monitoring-alloy-logs", objects=["monitoring-alloy-logs:alloy"], resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-loki-gateway", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-loki-results-cache", resource_deps=["monitoring-setup"], labels=["monitoring"])
-k8s_resource(workload="monitoring-alloy-operator", resource_deps=["monitoring-setup", "monitoring-alloy-logs", "monitoring-loki-gateway"], labels=["monitoring"])
 k8s_resource(workload="monitoring-victoria-metrics-operator", objects=["monitoring-victoria-metrics-operator-admission:validatingwebhookconfiguration"], resource_deps=["monitoring-setup"], labels=["monitoring"])
 k8s_resource(new_name="monitoring-k8s-stack", objects=["monitoring-victoria-metrics-k8s-stack-core-dns:service", "monitoring-victoria-metrics-k8s-stack-kube-controller-manager:service", "monitoring-victoria-metrics-k8s-stack-kube-etcd:service", "monitoring-victoria-metrics-k8s-stack-kube-scheduler:service"], resource_deps=["monitoring-setup"], labels=["monitoring"])
 k8s_resource(new_name="monitoring-vm", objects=monitoring_vm, resource_deps=["monitoring-victoria-metrics-operator"], labels=["monitoring"])
