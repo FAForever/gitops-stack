@@ -22,6 +22,21 @@ victoria-metrics-k8s-stack:
       externalLabels:
         test: test
 
+  vlsingle:
+    enabled: true
+    spec:
+      retentionPeriod: 30d
+      storage:
+        resources:
+          requests:
+            storage: 10Gi
+
+  vlagent:
+    enabled: true
+    spec:
+      k8sCollector:
+        enabled: true
+
   grafana:
 
     # Inject env specific values
@@ -39,9 +54,9 @@ victoria-metrics-k8s-stack:
     # Plugins installed any other way (e.g. via the UI) are NOT updated, so declare them here
     plugins:
       - victoriametrics-metrics-datasource
+      - victoriametrics-logs-datasource
       - grafana-advisor-app
       - grafana-exploretraces-app
-      - grafana-lokiexplore-app
       - grafana-metricsdrilldown-app
       - grafana-pyroscope-app
 
@@ -101,94 +116,6 @@ victoria-metrics-k8s-stack:
           access: proxy
           uid: VictoriaMetrics
           isDefault: true
-    extra:
-      - access: proxy
-        isDefault: false # Don't change this, another one is default and it won't work
-        name: loki
-        orgId: 1
-        type: loki
-        url: http://monitoring-loki-gateway
-
-# Configuring Loki is quite involved, as the Helm chart seems to be fully production grade for multi-tenant SaaS setups
-# That is way, way too much for us
-# VictoriaLogs is an alternative that we need to evaluate later
-loki:
-
-  deploymentMode: SingleBinary
-
-  # Disable Simple Scalable
-  read:
-    replicas: 0
-  backend:
-    replicas: 0
-  write:
-    replicas: 0
-
-  loki:
-    commonConfig:
-      replication_factor: 1
-    storage:
-      type: 'filesystem'
-    auth_enabled: false
-
-    schemaConfig:
-      configs:
-        - from: 2024-01-01
-          store: tsdb
-          index:
-            prefix: index_
-            period: 24h
-          object_store: 'filesystem'
-          schema: v13
-
-    compactor:
-      compaction_interval: 10m
-      retention_enabled: true
-      retention_delete_delay: 2h
-      retention_delete_worker_count: 16
-      delete_request_store: filesystem
-    limits_config:
-      retention_period: 168h
-
-  # We know it's working
-  test:
-    enabled: false
-  lokiCanary:
-    enabled: false
-
-  # Mofo uses 8GB of RAM by default
-  # TODO: reverse engineer loki-stack further and/or move to victorialogs faster
-  chunksCache:
-    enabled: false
-
-  # Disable anti-affinity
-  singleBinary:
-    replicas: 1
-    affinity: {}
-
-  gateway:
-    affinity: {}
-
-
-k8s-monitoring:
-  # Where Alloy pushes data to
-  # We can add our own Loki, Thanos...
-  destinations:
-    local-loki:
-      type: loki
-      url: http://monitoring-loki-gateway/loki/api/v1/push
-
-  # We are using 1% of this chart, just logs for now, as it implements lots of things that vm-stack provides
-  # We could switch to this + vmsingle
-  collectors:
-    alloy-logs:
-      presets:
-        - filesystem-log-reader
-        - daemonset
-
-  podLogsViaLoki:
-    enabled: true
-    collector: alloy-logs
 
 infisical-secret:
   name: grafana
