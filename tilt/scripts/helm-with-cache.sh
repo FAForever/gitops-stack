@@ -52,7 +52,7 @@ mkdir -p "$chart_cache_dir"
 if [ -s "$chart_cache_dir/args" ] && cmp -s -- "$chart_cache_dir/args" <(echo -n "$@"); then
     echo "$chart matches cached args"
 else
-    echo "$chart does not match cached args"
+    echo "$chart does not match cached args $(cat "$chart_cache_dir"/args)"
     generate_yaml "$@"
     exit 0
 fi
@@ -60,7 +60,7 @@ fi
 if [ -s "$chart_cache_dir/files" ] && cmp -s -- "$chart_cache_dir/files" <(find "$chart" -type f -name "*.yaml" | sort); then
     echo "$chart matches cached files"
 else
-    echo "$chart does not match cached files"
+    echo "$chart does not match cached files $(cat "$chart_cache_dir"/files)"
     generate_yaml "$@"
     exit 0
 fi
