@@ -11,7 +11,3 @@ victoria-metrics-k8s-stack:
       enabled: false
   prometheus-node-exporter:
     enabled: false
-
-k8s-monitoring:
-  cluster:
-    name: faforever-localhost
