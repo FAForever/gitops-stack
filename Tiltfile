@@ -273,7 +273,7 @@ agnostic_local_resource("wait-for-traefik-crd", cmd=["kubectl", "wait", "--for=c
 k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "wait-for-traefik-crd"], labels=["traefik"])
 k8s_resource(workload="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"], links=[link("http://traefik.{}".format(base_domain), "FAF Traefik")])
 
-_, monitoring_yaml = filter_yaml(helm_with_build_cache("ops/monitoring", namespace="faf-ops", values=["config/local.yaml", "ops/monitoring/values-local.yaml"]), kind="Job")
+monitoring_yaml = helm_with_build_cache("ops/monitoring", namespace="faf-ops", values=["config/local.yaml", "ops/monitoring/values-local.yaml"])
 k8s_yaml(monitoring_yaml)
 
 monitoring_accounts = []
@@ -304,6 +304,8 @@ k8s_resource(workload="monitoring-alloy-operator", resource_deps=["monitoring-se
 k8s_resource(workload="monitoring-victoria-metrics-operator", objects=["monitoring-victoria-metrics-operator-admission:validatingwebhookconfiguration"], resource_deps=["monitoring-setup"], labels=["monitoring"])
 k8s_resource(new_name="monitoring-k8s-stack", objects=["monitoring-victoria-metrics-k8s-stack-core-dns:service", "monitoring-victoria-metrics-k8s-stack-kube-controller-manager:service", "monitoring-victoria-metrics-k8s-stack-kube-etcd:service", "monitoring-victoria-metrics-k8s-stack-kube-scheduler:service"], resource_deps=["monitoring-setup"], labels=["monitoring"])
 k8s_resource(new_name="monitoring-vm", objects=monitoring_vm, resource_deps=["monitoring-victoria-metrics-operator"], labels=["monitoring"])
+k8s_resource(workload="monitoring-victoria-metrics-operator-cleanup-hook", resource_deps=["monitoring-victoria-metrics-operator"], labels=["monitoring"], trigger_mode=TRIGGER_MODE_MANUAL, auto_init=False)
+k8s_resource(workload="monitoring-victoria-metrics-k8s-stack-sync-job", resource_deps=["monitoring-setup"], labels=["monitoring"])
 
 postgres_yaml = helm_with_build_cache("infra/postgres", namespace="faf-infra", values=["config/local.yaml"])
 postgres_init_user_yaml, postgres_resource_yaml = filter_yaml(postgres_yaml, {"app": "postgres-sync-db-user"})
