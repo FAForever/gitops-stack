@@ -164,10 +164,13 @@ loki:
   # Disable anti-affinity
   singleBinary:
     replicas: 1
-    affinity: null
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution: []
 
   gateway:
-    affinity: null
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution: []
 
 
 k8s-monitoring:
