@@ -1,5 +1,47 @@
 #!/bin/bash
 
+generate_yaml() {
+  if helm dependency list "$chart" | grep -qE '(.*(missing|wrong version)\s*$|WARNING:.*$)'; then
+      helm dependency update "$chart"
+  fi
+
+  echo "Generating yaml from helm in $chart"
+  helm template "$@" > "$chart_cache_dir/yaml"
+  if [ ! -s "$chart_cache_dir/yaml" ]; then
+      rm "$chart_cache_dir/yaml"
+      exit 1
+  fi
+
+  echo "Saving template files"
+  template_files=$(find "$chart" -type f -name "*.yaml" | sort)
+  echo "$template_files" > "$chart_cache_dir/files"
+
+  echo "Saving template sums"
+  find "$chart" -type f -name "*.yaml" -exec md5sum {} + > "$chart_cache_dir/md5sum"
+
+  find "$chart_cache_dir" -type f -name "yaml" -exec md5sum {} + >> "$chart_cache_dir/md5sum"
+
+  for ARGUMENT in "$@"
+  do
+      KEY=$(echo "$ARGUMENT" | cut -f1 -d=)
+      VALUE=$(echo "$ARGUMENT" | cut -f2 -d=)
+
+      if [[ "$KEY" == "--values" ]] && [[ "$VALUE" != "--values" ]]; then
+          md5sum "$VALUE" >> "$chart_cache_dir/md5sum"
+      fi
+
+      if [[ $PREVIOUS_KEY == "--values" ]] && [[ "$PREVIOUS_VALUE" == "--values" ]]; then
+          md5sum "$VALUE" >> "$chart_cache_dir/md5sum"
+      fi
+
+      PREVIOUS_KEY="$KEY"
+      PREVIOUS_VALUE="$VALUE"
+  done
+
+  echo "Saving args"
+  echo -n "$@" > "$chart_cache_dir/args"
+}
+
 chart_cache_dir=$1
 shift
 
@@ -7,47 +49,28 @@ chart=$2
 
 mkdir -p "$chart_cache_dir"
 
-if [ -s "$chart_cache_dir/args" ] && cmp -s -- "$chart_cache_dir/args" <(echo -n "$@") && [ -s "$chart_cache_dir/files" ] && cmp -s -- "$chart_cache_dir/files" <(find "$chart" -type f -name "*.yaml" | sort) && [ -s "$chart_cache_dir/md5sum" ] && md5sum --status -c "$chart_cache_dir/md5sum"; then
-    echo "$chart matches cached yaml"
+if [ -s "$chart_cache_dir/args" ] && cmp -s -- "$chart_cache_dir/args" <(echo -n "$@"); then
+    echo "$chart matches cached args"
+else
+    echo "$chart does not match cached args $(cat "$chart_cache_dir"/args)"
+    generate_yaml "$@"
     exit 0
 fi
 
-if helm dependency list "$chart" | grep -qE '(.*(missing|wrong version)\s*$|WARNING:.*$)'; then
-    helm dependency update "$chart"
+if [ -s "$chart_cache_dir/files" ] && cmp -s -- "$chart_cache_dir/files" <(find "$chart" -type f -name "*.yaml" | sort); then
+    echo "$chart matches cached files"
+else
+    echo "$chart does not match cached files $(cat "$chart_cache_dir"/files)"
+    generate_yaml "$@"
+    exit 0
 fi
 
-echo "Generating yaml from helm in $chart"
-helm template "$@" > "$chart_cache_dir/yaml"
-if [ ! -s "$chart_cache_dir/yaml" ]; then
-    rm "$chart_cache_dir/yaml"
-    exit 1
+if [ -s "$chart_cache_dir/md5sum" ] && md5sum --status -c "$chart_cache_dir/md5sum"; then
+    echo "$chart matches cached md5sums"
+else
+    echo "$chart does not match cached md5sums"
+    generate_yaml "$@"
+    exit 0
 fi
 
-echo "Saving template files"
-template_files=$(find "$chart" -type f -name "*.yaml" | sort)
-echo "$template_files" > "$chart_cache_dir/files"
-
-echo "Saving template sums"
-find "$chart" -type f -name "*.yaml" -exec md5sum {} + > "$chart_cache_dir/md5sum"
-
-find "$chart_cache_dir" -type f -name "yaml" -exec md5sum {} + >> "$chart_cache_dir/md5sum"
-
-for ARGUMENT in "$@"
-do
-    KEY=$(echo "$ARGUMENT" | cut -f1 -d=)
-    VALUE=$(echo "$ARGUMENT" | cut -f2 -d=)
-
-    if [[ "$KEY" == "--values" ]] && [[ "$VALUE" != "--values" ]]; then
-        md5sum "$VALUE" >> "$chart_cache_dir/md5sum"
-    fi
-
-    if [[ $PREVIOUS_KEY == "--values" ]] && [[ "$PREVIOUS_VALUE" == "--values" ]]; then
-        md5sum "$VALUE" >> "$chart_cache_dir/md5sum"
-    fi
-
-    PREVIOUS_KEY="$KEY"
-    PREVIOUS_VALUE="$VALUE"
-done
-
-echo "Saving args"
-echo -n "$@" > "$chart_cache_dir/args"
+echo "$chart matches cached yaml"
