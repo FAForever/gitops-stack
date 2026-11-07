@@ -12,7 +12,7 @@ if [ -s "$chart_cache_dir/args" ] && cmp -s -- "$chart_cache_dir/args" <(echo -n
     exit 0
 fi
 
-if helm dependency list "$chart" | grep -q -e '.*(missing|wrong version)\s*$' -e 'WARNING:.*$'; then
+if helm dependency list "$chart" | grep -qE '(.*(missing|wrong version)\s*$|WARNING:.*$)'; then
     helm dependency update "$chart"
 fi
 
