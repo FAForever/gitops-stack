@@ -617,14 +617,14 @@ accounts:
     # whether to allow clients that remain on the server even
     # when they have no active connections. The possible values are:
     # "disabled", "opt-in", "opt-out", or "mandatory".
-    always-on: "disabled"
+    always-on: "mandatory"
 
     # whether to mark always-on clients away when they have no active connections:
     auto-away: "mandatory"
 
     # QUIT always-on clients from the server if they go this long without connecting
     # (use 0 or omit for no expiration):
-    #always-on-expiration: 90d
+    always-on-expiration: 30d
 
   # vhosts controls the assignment of vhosts (strings displayed in place of the user's
   # hostname/IP) by the HostServ service
