@@ -71,18 +71,6 @@ def keep_objects_of_kind(yaml, kinds):
     objects = decode_yaml_stream(yaml)
     return encode_yaml_stream([object for object in objects if object["kind"] in kinds])
 
-def remove_init_container(yaml):
-    objects = decode_yaml_stream(yaml)
-    for object in objects:
-        if "spec" in object:
-            spec = object["spec"]
-            if "template" in spec:
-                template = spec["template"]
-                if "spec" in template and "initContainers" in template["spec"]:
-                    template["spec"].pop("initContainers", None)
-
-    return encode_yaml_stream(objects)
-
 def cronjob_to_job(yaml):
     objects = decode_yaml_stream(yaml)
     for object in objects:
@@ -223,9 +211,6 @@ def proxy_local_service_if_set(service_name, service_chart, service_namespace, a
             service_objects.append(object["metadata"]["name"] + ":" + object["kind"].lower())
         k8s_resource(new_name=service_name, objects=service_objects, resource_deps=all_service_deps, labels=service_labels, links=service_links, pod_readiness="ignore")
     elif (service_yaml):
-        if service_name == "faf-icebreaker" or service_name == "faf-player-service":
-            service_yaml = remove_init_container(service_yaml)
-
         k8s_yaml(service_yaml)
         k8s_resource(workload=service_name, objects=service_objects, resource_deps=all_service_deps, labels=service_labels, links=service_links)
 

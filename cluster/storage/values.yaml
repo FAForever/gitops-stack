@@ -103,3 +103,8 @@ managedStorages:
       size: 1Gi
     pvc:
       namespace: faf-apps
+  - pv:
+      name: geoip
+      size: 1Gi
+    pvc:
+      namespace: faf-apps

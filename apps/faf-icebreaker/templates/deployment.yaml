@@ -21,17 +21,6 @@ spec:
         prometheus.io/port: '8080'
         prometheus.io/path: '/q/metrics'
     spec:
-      initContainers:
-        - name: geolite-db-dl
-          image: ghcr.io/maxmind/geoipupdate:v7.1.1
-          envFrom:
-            - configMapRef:
-                name: faf-icebreaker
-            - secretRef:
-                name: faf-icebreaker
-          volumeMounts:
-            - name: geolite-db
-              mountPath: /usr/share/GeoIP
       containers:
         - image: "faforever/faf-icebreaker:{{ .Values.image.tag }}"
           imagePullPolicy: Always
@@ -61,6 +50,7 @@ spec:
       restartPolicy: Always
       volumes:
         - name: geolite-db
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: geoip-pvc
       securityContext:
         fsGroup: 1000
