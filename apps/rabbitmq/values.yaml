@@ -18,6 +18,10 @@ users:
     secretRef: faf-player-service
     usernameKey: RABBITMQ_USER
     passwordKey: RABBITMQ_PASSWORD
+  - configMapRef: faf-game-service
+    secretRef: faf-game-service
+    usernameKey: RABBITMQ_USER
+    passwordKey: RABBITMQ_PASSWORD
   - configMapRef: faf-api
     secretRef: faf-api
     usernameKey: RABBIT_USERNAME
