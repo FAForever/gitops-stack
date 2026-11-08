@@ -28,6 +28,9 @@ for requested in requested_run:
     else:
         run_resources.append(requested)
 
+if (run_resources):
+    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db", "storage"]
+
 data_relative_path = ".local-data"
 if os.name == "nt":
     faf_data_dir = cfg.get("faf-data-dir", "C:/ProgramData/FAForever")
@@ -248,7 +251,7 @@ for object in decode_yaml_stream(storage_yaml):
     kind = object["kind"].lower()
     volume_identifiers.append(name + ":" + kind)
 
-k8s_resource(new_name="volumes", objects=volume_identifiers, labels=["core"], trigger_mode=TRIGGER_MODE_MANUAL)
+k8s_resource(new_name="storage", objects=volume_identifiers, labels=["core"], trigger_mode=TRIGGER_MODE_MANUAL)
 
 traefik_yaml = helm_with_build_cache("cluster/traefik", values=["config/local.yaml", "cluster/traefik/values-local.yaml"], set=["traefik.ingressRoute.dashboard.matchRule='Host(`traefik.{}`)'".format(base_domain)], namespace="traefik")
 k8s_yaml(traefik_yaml)
@@ -305,7 +308,7 @@ postgres_init_user_yaml, postgres_resource_yaml = filter_yaml(postgres_yaml, {"a
 k8s_yaml(postgres_init_user_yaml)
 k8s_yaml(postgres_resource_yaml)
 k8s_yaml(helm_with_build_cache("apps/faf-postgres", namespace="faf-apps", values=["config/local.yaml"]))
-k8s_resource(workload="postgres", objects=["postgres:configmap", "postgres:secret", "postgres:service:faf-apps"], port_forwards=["5432"], resource_deps=["volumes"], labels=["database"])
+k8s_resource(workload="postgres", objects=["postgres:configmap", "postgres:secret", "postgres:service:faf-apps"], port_forwards=["5432"], resource_deps=["storage"], labels=["database"])
 postgres_setup_resources = []
 for object in decode_yaml_stream(postgres_init_user_yaml):
     postgres_setup_resources.append(object["metadata"]["name"])
@@ -316,7 +319,7 @@ mariadb_init_user_yaml, mariadb_resource_yaml = filter_yaml(mariadb_yaml, {"app"
 k8s_yaml(mariadb_init_user_yaml)
 k8s_yaml(mariadb_resource_yaml)
 k8s_yaml(helm_with_build_cache("apps/faf-mariadb", namespace="faf-apps", values=["config/local.yaml"]))
-k8s_resource(workload="mariadb", objects=["mariadb:configmap", "mariadb:secret", "mariadb:service:faf-apps"], port_forwards=["3306"], resource_deps=["volumes"], labels=["database"])
+k8s_resource(workload="mariadb", objects=["mariadb:configmap", "mariadb:secret", "mariadb:service:faf-apps"], port_forwards=["3306"], resource_deps=["storage"], labels=["database"])
 mariadb_setup_resources = []
 for object in decode_yaml_stream(mariadb_init_user_yaml):
     mariadb_setup_resources.append(object["metadata"]["name"])
@@ -327,7 +330,7 @@ for object in decode_yaml_stream(mariadb_init_user_yaml):
 # k8s_yaml(mongodb_init_user_yaml)
 # k8s_yaml(mongodb_resource_yaml)
 # k8s_yaml(helm_with_build_cache("apps/faf-mongodb", namespace="faf-apps", values=["config/local.yaml"]))
-# k8s_resource(workload="mongodb", objects=["mongodb:configmap", "mongodb:secret", "mongodb:service:faf-apps"], port_forwards=["27017"], resource_deps=["volumes"], labels=["database"])
+# k8s_resource(workload="mongodb", objects=["mongodb:configmap", "mongodb:secret", "mongodb:service:faf-apps"], port_forwards=["27017"], resource_deps=["storage"], labels=["database"])
 # mongodb_setup_resources = []
 # for object in decode_yaml_stream(mongodb_init_user_yaml):
 #     mongodb_setup_resources.append(object["metadata"]["name"])
@@ -337,7 +340,7 @@ rabbitmq_yaml = helm_with_build_cache("apps/rabbitmq", namespace="faf-apps", val
 rabbitmq_init_user_yaml, rabbitmq_resource_yaml = filter_yaml(rabbitmq_yaml, {"app": "rabbitmq-sync-user"})
 k8s_yaml(rabbitmq_init_user_yaml)
 k8s_yaml(rabbitmq_resource_yaml)
-k8s_resource(workload="rabbitmq", objects=["rabbitmq:configmap", "rabbitmq:secret"], port_forwards=["15672", "5672"], resource_deps=["volumes"], labels=["rabbitmq"])
+k8s_resource(workload="rabbitmq", objects=["rabbitmq:configmap", "rabbitmq:secret"], port_forwards=["15672", "5672"], resource_deps=["storage"], labels=["rabbitmq"])
 rabbitmq_setup_resources = []
 for object in decode_yaml_stream(rabbitmq_init_user_yaml):
     rabbitmq_setup_resources.append(object["metadata"]["name"])
@@ -441,18 +444,17 @@ proxy_local_service_if_set(service_name="faf-replay-server", service_chart="apps
 
 tournaments_labels = ["misc"]
 tournaments_links = [link("http://tournaments.{}".format(base_domain), "FAF Tournaments")]
-proxy_local_service_if_set(service_name="faf-tournaments", service_chart="apps/faf-tournaments", service_namespace="faf-apps", service_deps=["volumes"], service_labels=tournaments_labels, service_links=tournaments_links)
+proxy_local_service_if_set(service_name="faf-tournaments", service_chart="apps/faf-tournaments", service_namespace="faf-apps", service_deps=["storage"], service_labels=tournaments_labels, service_links=tournaments_links)
 
 daily_labels = ["misc"]
 daily_links = [link("http://daily.{}".format(base_domain), "FAF Daily")]
-proxy_local_service_if_set(service_name="faf-daily", service_chart="apps/faf-daily", service_namespace="faf-apps", service_deps=["volumes"], service_labels=daily_labels, service_links=daily_links)
+proxy_local_service_if_set(service_name="faf-daily", service_chart="apps/faf-daily", service_namespace="faf-apps", service_deps=["storage"], service_labels=daily_labels, service_links=daily_links)
 
 icebreaker_deps = ["faf-db-migrations", "ory-hydra"] + rabbitmq_setup_resources
 icebreaker_labels = ["api"]
 icebreaker_patch = {"HYDRA_URL": "http://ory-hydra:4444", "XIRSYS_ENABLED": "false", "XIRSYS_TURN_ENABLED": "false", "CLOUDFLARE_ENABLED": "false", "QUARKUS_LOG_CONSOLE_JSON_ENABLED": "false"}
 proxy_local_service_if_set(service_name="faf-icebreaker", service_chart="apps/faf-icebreaker", service_namespace="faf-apps", service_deps=icebreaker_deps, service_labels=icebreaker_labels, additional_values=["apps/faf-icebreaker/values-prod.yaml"], config_patch=icebreaker_patch)
 
-if (run_resources):
-    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db"]
+
 
 config.set_enabled_resources(run_resources)
