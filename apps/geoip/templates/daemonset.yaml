@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: geoip-update
+  name: geoip-update
+  annotations:
+    reloader.stakater.com/auto: "true"
+    keel.sh/trigger: poll
+    keel.sh/policy: force
+    keel.sh/matchTag: "true"
+    keel.sh/pollSchedule: "@hourly"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: geoip
+  template:
+    metadata:
+      labels:
+        app: geoip
+    spec:
+      containers:
+        - image: ghcr.io/maxmind/geoipupdate:v8
+          imagePullPolicy: Always
+          name: geoip
+          envFrom:
+            - configMapRef:
+                name: geoip
+            - secretRef:
+                name: geoip
+          volumeMounts:
+            - name: geolite-db
+              mountPath: /usr/share/GeoIP
+      restartPolicy: Always
+      volumes:
+        - name: geolite-db
+          persistentVolumeClaim:
+            claimName: geoip-pvc

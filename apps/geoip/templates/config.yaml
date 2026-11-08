@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: geoip
+  labels:
+    app: geoip
+data:
+  GEOIPUPDATE_EDITION_IDS: "GeoLite2-City GeoLite2-Country"
+  GEOIPUPDATE_FREQUENCY: "24"
+  GEOIPUPDATE_VERBOSE: "1"
