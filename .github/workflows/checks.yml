@@ -26,8 +26,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .helm-cache
-          key: ${{ github.ref_name }}
+          key: ${{ github.ref_name }}-${{ hashFiles('apps/**/*.yaml', 'cluster/traefik/**/*.yaml', 'cluster/storage/**/*.yaml', 'infra/**/*.yaml', 'ops/monitoring/**/*.yaml') }}
           restore-keys: |
+            ${{ github.ref_name }}
             develop
             ${{ github.base_ref }}
 
