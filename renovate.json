@@ -1,17 +1,19 @@
 {
     "argocd": {
-        "fileMatch": [
-            "\\.yaml$"
+        "managerFilePatterns": [
+            "/\\.yaml$/"
         ]
     },
     "kubernetes": {
-        "fileMatch": ["\\.yaml$"]
+        "managerFilePatterns": [
+            "/\\.yaml$/"
+        ]
     },
     "extends": [
         "config:recommended",
         "schedule:earlyMondays"
     ],
-    "baseBranches": [
+    "baseBranchPatterns": [
         "develop"
     ],
     "dependencyDashboard": true
