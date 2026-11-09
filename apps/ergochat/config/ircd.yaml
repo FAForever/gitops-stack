@@ -1104,11 +1104,11 @@ history:
 
   # if the in-memory backend is enabled for a channel, how many channel-specific events
   # (messages, joins, parts) should be retained?
-  channel-length: 2048
+  channel-length: 8192
 
   # if the in-memory backend is enabled for a user, how many direct messages
   # and notices should be retained?
-  client-length: 256
+  client-length: 2048
 
   # how long should we try to preserve messages?
   # if `autoresize-window` is 0, the in-memory message buffers are preallocated to
@@ -1133,7 +1133,7 @@ history:
   restrictions:
     # if this is set, messages older than this cannot be retrieved by anyone
     # (and will eventually be deleted from persistent storage, if that's enabled)
-    expire-time: 1w
+    expire-time: 4w
 
     # this restricts access to channel history (it can be overridden by channel
     # owners). options are: 'none' (no restrictions), 'registration-time'
@@ -1183,7 +1183,7 @@ history:
     # if persistent history is enabled, create additional index tables,
     # allowing deletion of JSON export of an account's messages. this
     # may be needed for compliance with data privacy regulations.
-    enable-account-indexing: false
+    enable-account-indexing: true
 
   # options to control storage of TAGMSG
   tagmsg-storage:
