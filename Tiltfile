@@ -29,7 +29,7 @@ for requested in requested_run:
         run_resources.append(requested)
 
 if (run_resources):
-    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db", "storage"]
+    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db"]
 
 data_relative_path = ".local-data"
 if os.name == "nt":
@@ -114,8 +114,7 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
         chart_resource_helm_name = chart_resource + "helm"
         agnostic_local_resource(name=chart_resource_helm_name, cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
 
-        if chart_name in run_resources:
-            run_resources.append(chart_resource_helm_name)
+        run_resources.append(chart_resource_helm_name)
 
         if not os.path.exists(cached_yaml):
             agnostic_local(command)
