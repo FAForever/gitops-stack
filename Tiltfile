@@ -17,7 +17,7 @@ base_domain = cfg.get("base-domain", "faforever.localhost")
 requested_run = cfg.get("run", [])
 
 run_groups = {
-    'client': ['faf-message-broker', 'faf-lobby-server', 'ergochat', 'faf-api', 'faf-league-service', 'faf-player-service', 'faf-replay-server', 'faf-icebreaker', 'faf-user-service']
+    "client": ["faf-message-broker", "faf-lobby-server", "ergochat", "faf-api", "faf-league-service", "faf-player-service", "faf-game-service", "faf-replay-server", "faf-icebreaker", "faf-user-service"]
 }
 
 run_resources = []
@@ -29,7 +29,7 @@ for requested in requested_run:
         run_resources.append(requested)
 
 if (run_resources):
-    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db", "storage"]
+    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db", "reloader"]
 
 data_relative_path = ".local-data"
 if os.name == "nt":
@@ -114,8 +114,7 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
         chart_resource_helm_name = chart_resource + "helm"
         agnostic_local_resource(name=chart_resource_helm_name, cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
 
-        if chart_name in run_resources:
-            run_resources.append(chart_resource_helm_name)
+        run_resources.append(chart_resource_helm_name)
 
         if not os.path.exists(cached_yaml):
             agnostic_local(command)
@@ -324,7 +323,7 @@ k8s_resource(workload="mariadb", objects=["mariadb:configmap", "mariadb:secret",
 mariadb_setup_resources = []
 for object in decode_yaml_stream(mariadb_init_user_yaml):
     mariadb_setup_resources.append(object["metadata"]["name"])
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mariadb", "faf-api-config", "faf-user-service-config", "faf-lobby-server-config", "faf-player-service-config", "faf-replay-server-config", "faf-policy-server-config", "faf-league-service-config", "wordpress-config", "ergochat-config", "faf-icebreaker-config"], labels=["database"])
+    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "mariadb", "faf-api-config", "faf-user-service-config", "faf-lobby-server-config", "faf-player-service-config", "faf-game-service-config", "faf-replay-server-config", "faf-policy-server-config", "faf-league-service-config", "wordpress-config", "ergochat-config", "faf-icebreaker-config"], labels=["database"])
 
 # mongodb_yaml = helm_with_build_cache("infra/mongodb", namespace="faf-infra", values=["config/local.yaml"])
 # mongodb_init_user_yaml, mongodb_resource_yaml = filter_yaml(mongodb_yaml, {"app": "mongodb-sync-db-user"})
@@ -345,7 +344,7 @@ k8s_resource(workload="rabbitmq", objects=["rabbitmq:configmap", "rabbitmq:secre
 rabbitmq_setup_resources = []
 for object in decode_yaml_stream(rabbitmq_init_user_yaml):
     rabbitmq_setup_resources.append(object["metadata"]["name"])
-    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "rabbitmq", "faf-api-config", "faf-icebreaker-config", "faf-lobby-server-config", "faf-player-service-config", "faf-message-broker-config", "debezium-config", "faf-league-service-config", "faf-user-service-config"], labels=["rabbitmq"])
+    k8s_resource(workload=object["metadata"]["name"], resource_deps=["init-apps", "rabbitmq", "faf-api-config", "faf-icebreaker-config", "faf-lobby-server-config", "faf-player-service-config", "faf-game-service-config", "faf-message-broker-config", "debezium-config", "faf-league-service-config", "faf-user-service-config"], labels=["rabbitmq"])
 
 k8s_yaml(cronjob_to_job(helm_with_build_cache("apps/faf-db-migrations", namespace="faf-apps", values=["config/local.yaml"])))
 k8s_resource(workload="faf-db-migrations", objects=["faf-db-migrations:secret"], resource_deps=mariadb_setup_resources, labels=["database"])
@@ -438,6 +437,10 @@ proxy_local_service_if_set(service_name="faf-message-broker", service_chart="app
 player_service_deps = rabbitmq_setup_resources + mariadb_setup_resources
 player_service_labels = ["lobby"]
 proxy_local_service_if_set(service_name="faf-player-service", service_chart="apps/faf-player-service", service_namespace="faf-apps", service_deps=player_service_deps, service_labels=player_service_labels)
+
+game_service_deps = rabbitmq_setup_resources + mariadb_setup_resources
+game_service_labels = ["lobby"]
+proxy_local_service_if_set(service_name="faf-game-service", service_chart="apps/faf-game-service", service_namespace="faf-apps", service_deps=game_service_deps, service_labels=game_service_labels)
 
 replay_server_deps = ["faf-db-migrations"]
 replay_server_labels = ["replay"]

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-game-service
+  labels:
+    app: faf-game-service
+data:
+  DATABASE_NAME: "faf_lobby"
+  DATABASE_USER: "faf-game-service"
+  DATABASE_HOST: "mariadb"
+  RABBITMQ_USER: "faf-game-service"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
