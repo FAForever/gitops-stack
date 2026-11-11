@@ -29,7 +29,7 @@ for requested in requested_run:
         run_resources.append(requested)
 
 if (run_resources):
-    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db"]
+    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db", "reloader"]
 
 data_relative_path = ".local-data"
 if os.name == "nt":
