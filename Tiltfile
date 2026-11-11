@@ -447,6 +447,10 @@ tournaments_labels = ["misc"]
 tournaments_links = [link("http://tournaments.{}".format(base_domain), "FAF Tournaments")]
 proxy_local_service_if_set(service_name="faf-tournaments", service_chart="apps/faf-tournaments", service_namespace="faf-apps", service_deps=["storage"], service_labels=tournaments_labels, service_links=tournaments_links)
 
+webclient_labels = ["misc"]
+webclient_links = [link("http://webclient.{}".format(base_domain), "FAF Webclient")]
+proxy_local_service_if_set(service_name="faf-webclient", service_chart="apps/faf-webclient", service_namespace="faf-apps", service_labels=webclient_labels, service_links=webclient_links)
+
 daily_labels = ["misc"]
 daily_links = [link("http://daily.{}".format(base_domain), "FAF Daily")]
 proxy_local_service_if_set(service_name="faf-daily", service_chart="apps/faf-daily", service_namespace="faf-apps", service_deps=["storage"], service_labels=daily_labels, service_links=daily_links)

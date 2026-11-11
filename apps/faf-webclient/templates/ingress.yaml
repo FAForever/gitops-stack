@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: faf-webclient
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`webclient.{{.Values.baseDomain}}`)
+      kind: Rule
+      services:
+        - name: faf-webclient
+          port: 8098

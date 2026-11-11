@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faf-webclient
+  labels:
+    app: faf-webclient
+  annotations:
+    reloader.stakater.com/auto: "true"
+    # Pushing to main in FAForever/webclient is the release: the image is
+    # republished as `latest`, and Keel rolls it out. Same as faf-tournaments.
+    keel.sh/policy: force
+    keel.sh/matchTag: "true"
+    keel.sh/trigger: poll
+    keel.sh/pollSchedule: "@every 2m"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: faf-webclient
+  template:
+    metadata:
+      labels:
+        app: faf-webclient
+    spec:
+      containers:
+        - image: faforever/faf-webclient:latest
+          imagePullPolicy: Always
+          name: faf-webclient
+          envFrom:
+            - configMapRef:
+                name: faf-webclient
+            # Optional: without the service login secret the site still runs.
+            - secretRef:
+                name: faf-webclient
+                optional: true
+          ports:
+            - containerPort: 8098
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8098
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8098
+            periodSeconds: 10
+      restartPolicy: Always

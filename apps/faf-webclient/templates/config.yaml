@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-webclient
+  labels:
+    app: faf-webclient
+data:
+  PORT: "8098"
+  # Every FAF host the site talks to and links to (api., hydra., chat., lobby.,
+  # content., replay., ...) is derived from this, so the test cluster's copy
+  # uses the test servers.
+  FAF_BASE_DOMAIN: "{{.Values.baseDomain}}"
+  # The "FAF Web (public)" client in apps/ory-hydra: the service login for
+  # reading maps, mods and replays from the API. Its secret is
+  # FAF_API_CLIENT_SECRET in this app's secret; without it those tabs say the
+  # login is missing and the rest of the site works.
+  FAF_API_CLIENT_ID: "4af17687-69ac-4a03-9307-f77e7dee8641"
+  # The "FAF Web" client in apps/ory-hydra: players logging in for the chat.
+  # A public client (PKCE), so there is no secret for it.
+  FAF_LOGIN_CLIENT_ID: "5dfd4eb7-0e09-4bf2-a815-cc0e90b435e6"
