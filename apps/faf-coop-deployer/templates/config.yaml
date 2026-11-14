@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faf-coop-deployer
+data:
+  PORT: "8080"
+  FAF_HYDRA_BASE: "https://hydra.faforever.com"
+  COOP_MAP_REPO: "https://github.com/FAForever/faf-coop-maps"
+  GIT_WORKDIR: "/tmp/coop-maps"
+  MAP_DIR: "/maps"
+  DRY_RUN: "false"
