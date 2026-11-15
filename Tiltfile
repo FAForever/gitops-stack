@@ -17,7 +17,7 @@ base_domain = cfg.get("base-domain", "faforever.localhost")
 requested_run = cfg.get("run", [])
 
 run_groups = {
-    'client': ['faf-message-broker', 'faf-lobby-server', 'ergochat', 'faf-api', 'faf-league-service', 'faf-player-service', 'faf-replay-server', 'faf-icebreaker', 'faf-user-service']
+    "client": ["faf-message-broker", "faf-lobby-server", "ergochat", "faf-api", "faf-league-service", "faf-player-service", "faf-game-service", "faf-replay-server", "faf-icebreaker", "faf-user-service"]
 }
 
 run_resources = []
@@ -28,8 +28,8 @@ for requested in requested_run:
     else:
         run_resources.append(requested)
 
-if (run_resources):
-    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db", "storage"]
+if run_resources:
+    run_resources += ["populate-featured-mod-files", "create-hosts-file-content", "populate-db", "storage", "reloader"]
 
 data_relative_path = ".local-data"
 if os.name == "nt":
@@ -114,7 +114,7 @@ def helm_with_build_cache(chart, namespace="", values=[], set=[], specifier = ""
         chart_resource_helm_name = chart_resource + "helm"
         agnostic_local_resource(name=chart_resource_helm_name, cmd=command, labels=["helm"], deps=deps, allow_parallel=True)
 
-        if chart_name in run_resources:
+        if run_resources:
             run_resources.append(chart_resource_helm_name)
 
         if not os.path.exists(cached_yaml):

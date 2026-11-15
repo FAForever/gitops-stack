@@ -1,18 +1,55 @@
-# What is this?
+# Overview
 
-The gitops stack is the deployment infrastructure of the FAForever project. Currently it only contains a subset of service, but in the long term, all services shall be migrate from faf-stack to here.
+The gitops stack is the deployment infrastructure of the FAForever project. It describes everything that runs on our Kubernetes clusters, and [ArgoCD](https://argo-cd.readthedocs.io) keeps the clusters in sync with the state of this repository.
 
-# Branching
+## Repository Layout
 
-* **main** branch = Production state
-* **develop** branch = Testing state
+Every directory below `apps/`, `infra/`, `ops/` and `cluster/` is a Helm chart that ArgoCD deploys as its own application.
 
-Until things are settled the current workflow is:
-* Test changes on develop
-* Cherry pick working stuff on to main
-* Rebase and force push develop afterwards
+| Directory | Contents | Namespace |
+|-----------|----------|-----------|
+| `apps/` | FAF services and the third-party apps they rely on (API, lobby server, website, forums, message broker, ...) | `faf-apps` |
+| `infra/` | Databases and other stateful infrastructure (MariaDB, PostgreSQL, MongoDB) | `faf-infra` |
+| `ops/` | Operational tooling (Infisical, Keel, monitoring) | `faf-ops` |
+| `cluster/` | Cluster-wide services that are not FAF-specific (ArgoCD, Traefik, storage). See [cluster/README.md](cluster/README.md) | named after the directory |
+| `common/` | Shared library charts used as dependencies by other charts (e.g. `infisical-secret` for pulling secrets from Infisical) | - |
+| `config/` | Environment-wide Helm values (`test.yaml`, `prod.yaml`, `local.yaml`) such as base domain and Infisical environment | - |
+| `tilt/`, `Tiltfile`, `tilt_config.json` | Local development setup, see [Local Development Using Tilt](#local-development-using-tilt) | - |
+| `scripts/`, `utils/`, `testing/` | Helper scripts and ad-hoc manifests for debugging and testing | - |
 
-# Maintenance / Release management
+## ArgoCD Applications
+
+The `app-set-*.yaml` files define ArgoCD [ApplicationSets](https://argo-cd.readthedocs.io/en/stable/user-guide/application-set/) that generate one application per chart directory:
+
+* `app-set-test.yaml` deploys the `develop` branch to the test cluster
+* `app-set-prod.yaml` deploys the `main` branch to the production cluster
+* `app-set-local.yaml` deploys the `develop` branch to a local cluster using `config/local.yaml`
+
+Each application is rendered with two layers of values on top of the chart's own `values.yaml`:
+
+1. The environment-wide file from `config/` (e.g. `/config/test.yaml`)
+2. The chart's environment-specific override (e.g. `apps/faf-api/values-test.yaml`), if one exists
+
+Secrets are not stored in this repository. They are synced from Infisical into the cluster via the `infisical-secret` common chart.
+
+# Deployment Process
+
+| Branch | Cluster | Domain |
+|--------|---------|--------|
+| `develop` | Test | faforever.xyz |
+| `main` | Production | faforever.com |
+
+ArgoCD syncs both branches automatically, so a push to either branch deploys right away. Changes move through the clusters like this:
+
+1. **Open a pull request against `develop`.** The CI checks in `.github/workflows/checks.yml` run on every pull request to `develop`. Renovate also opens its dependency update PRs against `develop`.
+2. **Merge into `develop`.** ArgoCD rolls the change out to the test cluster.
+3. **Verify on the test cluster.** Check that the affected services start and work as expected. If something breaks, fix it on `develop` before promoting.
+4. **Promote to production.** Cherry-pick the verified commits from `develop` onto `main`. ArgoCD then rolls them out to the production cluster.
+5. **Realign `develop`.** Rebase `develop` onto `main` and force-push it, so that the two branches share the same history again.
+
+Where possible, avoid committing directly to `main` and send changes through `develop` first, so that what reaches production has been tested.
+
+# Release Management
 
 This repository and the cluster are setup to do the following:
 
@@ -65,28 +102,84 @@ done
 
 # Local Development Using Tilt
 
-This repository aims to provide a ready-to-go [Tilt](https://docs.tilt.dev/) setup for ephemeral FAF infrastructure local development on kubernetes.
+This repository provides a ready-to-go [Tilt](https://docs.tilt.dev/) setup for running ephemeral FAF infrastructure on a local Kubernetes cluster.
 
 ## Prerequisites
+
 * [Tilt](https://docs.tilt.dev/install.html)
-* Kubernetes ([Docker Desktop](https://docs.docker.com/desktop/kubernetes/) or [Minikube](https://minikube.sigs.k8s.io/docs/) are recommended for those new to kubernetes) [Tilt cluster setup](https://docs.tilt.dev/choosing_clusters)
-* [helm](https://helm.sh/docs/intro/install/) must be installed to generate the k8s from the helm charts in the gitops repo
-* For Windows users:
-    * A bash program. By default git bash is used with an assumed installation directory of C:/Program Files/Git
-* System Resource Usage
-    * For local development containers takee about 4GB with docker desktop on windows full k8s used 11GB
+* A local Kubernetes cluster. [Docker Desktop](https://docs.docker.com/desktop/kubernetes/) or [Minikube](https://minikube.sigs.k8s.io/docs/) are recommended if you are new to Kubernetes. See also Tilt's guide on [choosing a cluster](https://docs.tilt.dev/choosing_clusters).
+* [Helm](https://helm.sh/docs/intro/install/), used to render the Kubernetes manifests from the charts in this repository.
+* **Windows only:** a bash executable. Git Bash at `C:\Program Files\Git\bin\bash.exe` is used by default; set `windows-bash-path` in `tilt_config.json` to use a different one.
+* **Resources:** expect roughly 4 GB of memory for the containers alone. With Docker Desktop on Windows, the full Kubernetes setup used about 11 GB.
 
-## Startup Services
-In the root directory of the repository run `tilt up`. This will start all the faf services in the correct order. The status of each service can be viewed in the tilt UI by visiting <http://localhost:10350>. This is the control server for tilt where you can restart services or disable them for substitution by services you would like to run from source code as you actively develop them.
+## Starting the Services
 
-## Development
-To develop against the FAF infrastructure you can insert the service in tilt that you are actively developing by adding it to the local list in your tilt_config.json file or as --local when you run tilt up. This will proxy the connections in the cluster to that service to your locally running instance. Some tweaks may need to be made to the default configuration parameters in the source code. The proper values can be found in the configMaps in each of the services kubernetes deploy yaml files. You may need to specify your host-ip in the config or arguments in order to get the proxied connections to work
+From the repository root, run:
+
+```sh
+tilt up
+```
+
+This starts the FAF services in dependency order. By default every service runs; use the `run` setting (see [Configuration](#configuration)) to start only a subset. Open the Tilt UI at <http://localhost:10350> to see the status of each service, restart services, or disable them.
+
+## Configuration
+
+Settings can be put in `tilt_config.json` in the repository root, or passed on the command line after `--` (for example `tilt up -- --local faf-api --host-ip 192.168.1.10`). List settings such as `run` and `local` can be repeated on the command line.
+
+| Key | Description | Default |
+|---|---|---|
+| `run` | Services (or groups of services) to start. The `client` group starts everything needed to connect the FAF client. | None (everything runs) |
+| `local` | Services you are running yourself from source. Traffic for these is proxied from the cluster to your machine. | None |
+| `host-ip` | IP address of your machine, used when proxying `local` services. Only needed when `hostname` is not set. | None |
+| `hostname` | Hostname of your machine, used when proxying `local` services. | `host.docker.internal` on Windows with Docker Desktop, otherwise none |
+| `base-domain` | Base domain for all services. | `faforever.localhost` |
+| `faf-data-dir` | FAF data directory. | `C:/ProgramData/FAForever` on Windows, `~/.faforever` elsewhere |
+| `windows-bash-path` | Path to `bash.exe` on Windows. | `C:\Program Files\Git\bin\bash.exe` |
+| `default-pull-policy` | Image pull policy for containers. | `IfNotPresent` |
+
+Example:
+
+```json
+{
+  "run": ["client"],
+  "local": ["faf-api"]
+}
+```
+
+### Run Groups
+
+`run` accepts individual service names, group names, or a mix of both. Groups are defined in `run_groups` at the top of the `Tiltfile`. The available groups are:
+
+| Group | Description |
+|---|---|
+| `client` | The minimal set of services needed to connect with the FAF client |
+
+Whenever `run` is set, the `populate-db`, `populate-featured-mod-files`, `create-hosts-file-content` and `reloader` resources and the OAuth client setup jobs are also enabled. Tilt starts the dependencies of every enabled resource (databases, Traefik, Hydra and so on) automatically.
+
+For example, to run only what the client needs:
+
+```sh
+tilt up -- --run client
+```
+
+Or to run the client services plus the website:
+
+```sh
+tilt up -- --run client --run wordpress
+```
+
+## Developing a Service
+
+To work on a service, add its name to `local` (in `tilt_config.json` or with `--local` on the command line) and run it from source on your machine. Requests inside the cluster for that service are then forwarded to your local instance.
+
+You may need to adjust the service's default configuration to match the cluster. The values the cluster uses can be found in that service's ConfigMap under `apps/`. If the proxied connections do not reach your machine, set `hostname`, or `host-ip` if your machine has no hostname the cluster can resolve.
 
 ## Test Data
-The default test data that is loaded can be found in [faf-db](https://github.com/FAForever/db/blob/develop/test-data.sql).
-You can load the data at anytime by manually triggering the popualte-db resource under the Database label. This needs to be done the first time for data to exist.
+
+The default test data comes from [faf-db](https://github.com/FAForever/db/blob/develop/test-data.sql). It is not loaded automatically: trigger the `populate-db` resource (under the **database** label in the Tilt UI) once after first startup, and again any time you want to reset the data.
 
 ## Endpoints
-Locally traefik uses the same ingress routes as we do in production just with a default base domain of faforever.localhost. So accessible domains will be api.faforever.localhost, hydra.faforever.localhost etc. By default these should resolve to 127.0.0.1. If they do not you can manually modify your hosts file to add the local dns records. For convenience the resource create-hosts-file-content
-will output the necessary lines for the hosts file when run after every service has started.
 
+Traefik uses the same ingress routes locally as in production, with a base domain of `faforever.localhost`. Services are reachable at `api.faforever.localhost`, `hydra.faforever.localhost`, and so on.
+
+These names should resolve to `127.0.0.1` automatically. If they don't, add them to your hosts file. Once all services are up, trigger the `create-hosts-file-content` resource to print the lines you need.
