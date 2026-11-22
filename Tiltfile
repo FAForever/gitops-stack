@@ -435,11 +435,11 @@ message_broker_labels = ["lobby"]
 message_broker_patch = {"HYDRA_TOKEN_ISSUER": "http://ory-hydra:4444", "USE_POLICY_SERVER": "false", "QUARKUS_LOG_CONSOLE_JSON_ENABLED": "false", "QUARKUS_LOG_CATEGORY__COM_FAFOREVER__LEVEL":"DEBUG", "QUARKUS_LOG_CATEGORY__IO_QUARKUS_WEBSOCKETS_NEXT_TRAFFIC__LEVEL":"DEBUG", "QUARKUS_WEBSOCKETS_NEXT_SERVER_TRAFFIC_LOGGING_ENABLED":"true"}
 proxy_local_service_if_set(service_name="faf-message-broker", service_chart="apps/faf-message-broker", service_namespace="faf-apps", service_deps=message_broker_deps, service_labels=message_broker_labels, config_patch=message_broker_patch)
 
-player_service_deps = rabbitmq_setup_resources + mariadb_setup_resources
+player_service_deps = ["faf-db-migrations"] + rabbitmq_setup_resources
 player_service_labels = ["lobby"]
 proxy_local_service_if_set(service_name="faf-player-service", service_chart="apps/faf-player-service", service_namespace="faf-apps", service_deps=player_service_deps, service_labels=player_service_labels)
 
-game_service_deps = rabbitmq_setup_resources + mariadb_setup_resources
+game_service_deps = ["faf-db-migrations"] + rabbitmq_setup_resources
 game_service_labels = ["lobby"]
 proxy_local_service_if_set(service_name="faf-game-service", service_chart="apps/faf-game-service", service_namespace="faf-apps", service_deps=game_service_deps, service_labels=game_service_labels)
 
