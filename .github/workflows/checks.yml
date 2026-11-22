@@ -40,4 +40,7 @@ jobs:
       - name: Test Using Local Config
         run: tilt ci --timeout "5m"
 
+      - name: list registry
+        run: ls .registry
+
       

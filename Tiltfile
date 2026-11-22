@@ -267,7 +267,7 @@ for object in decode_yaml_stream(traefik_yaml):
         traefik_crds.append(name + ":" + kind)
 
 k8s_resource(new_name="traefik-crds", objects=traefik_crds, labels=["traefik"])
-agnostic_local_resource("wait-for-traefik-crd", cmd=["kubectl", "wait", "--for=condition=established", "--timeout=60s", "crd/ingressroutes.traefik.io"], resource_deps=["traefik-crds"], labels=["traefik"])
+agnostic_local_resource("wait-for-traefik-crd", cmd=["kubectl", "wait", "--for=create", "--for=condition=established", "--timeout=60s", "crd/ingressroutes.traefik.io"], resource_deps=["traefik-crds"], labels=["traefik"])
 k8s_resource(new_name="traefik-setup", objects=traefik_identifiers, resource_deps=["namespaces", "wait-for-traefik-crd"], labels=["traefik"])
 k8s_resource(workload="traefik", port_forwards=["443:8443", "80:8000"], resource_deps=["traefik-setup"], labels=["traefik"], links=[link("http://traefik.{}".format(base_domain), "FAF Traefik")])
 
@@ -295,7 +295,7 @@ k8s_resource(new_name="monitoring-setup", objects=monitoring_accounts + monitori
 k8s_resource(workload="monitoring-grafana", objects=["grafana:ingressroute"], resource_deps=["monitoring-setup"], labels=["monitoring"], links=[link("http://grafana.{}".format(base_domain), "FAF Grafana")])
 k8s_resource(workload="monitoring-kube-state-metrics", resource_deps=["monitoring-setup"], labels=["monitoring"])
 k8s_resource(workload="monitoring-loki", resource_deps=["monitoring-setup"], labels=["monitoring"])
-agnostic_local_resource("wait-for-alloy-crd", cmd=["kubectl", "wait", "--for=condition=established", "--timeout=60s", "crd/alloys.collectors.grafana.com"], resource_deps=["monitoring-crds"], labels=["monitoring"])
+agnostic_local_resource("wait-for-alloy-crd", cmd=["kubectl", "wait", "--for=create", "--for=condition=established", "--timeout=60s", "crd/alloys.collectors.grafana.com"], resource_deps=["monitoring-crds"], labels=["monitoring"])
 k8s_resource(new_name="monitoring-alloy-logs", objects=["monitoring-alloy-logs:alloy"], resource_deps=["monitoring-setup", "wait-for-alloy-crd"], labels=["monitoring"])
 k8s_resource(workload="monitoring-loki-gateway", resource_deps=["monitoring-setup"], labels=["monitoring"])
 k8s_resource(workload="monitoring-loki-results-cache", resource_deps=["monitoring-setup"], labels=["monitoring"])
