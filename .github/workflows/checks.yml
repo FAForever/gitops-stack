@@ -22,7 +22,7 @@ jobs:
         with:
           path: |
             .helm-cache
-            .registry
+            ${{ env.GITHUB_WORKSPACE }}/.registry
           key: ${{ github.ref_name }}-${{ hashFiles('apps/**/*.yaml', 'cluster/traefik/**/*.yaml', 'cluster/storage/**/*.yaml', 'infra/**/*.yaml', 'ops/monitoring/**/*.yaml') }}
           restore-keys: |
             ${{ github.ref_name }}
