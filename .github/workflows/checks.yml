@@ -31,6 +31,9 @@ jobs:
 
       - uses: azure/setup-helm@v5.0.1
 
+      - name: pwd
+        run: pwd
+
       - name: Create Registry
         run: docker run -d -p "127.0.0.1:5000:5000" --network bridge --name kind-registry --env REGISTRY_STORAGE_DELETE_ENABLED=true -v ${{ github.workspace }}/.registry:/var/lib/registry registry:3
 
