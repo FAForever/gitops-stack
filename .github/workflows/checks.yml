@@ -34,8 +34,11 @@ jobs:
       - name: pwd
         run: pwd
 
+      - name: workspace
+        run: echo "$GITHUB_WORKSPACE ${{ github.workspace }}"
+
       - name: Create Registry
-        run: docker run -d -p "127.0.0.1:5000:5000" --network bridge --name kind-registry --env REGISTRY_STORAGE_DELETE_ENABLED=true -v ${{ github.workspace }}/.registry:/var/lib/registry registry:3
+        run: docker run -d -p "127.0.0.1:5000:5000" --network bridge --name kind-registry --env REGISTRY_STORAGE_DELETE_ENABLED=true -v $GITHUB_WORKSPACE/.registry:/var/lib/registry registry:3
 
       - name: Create k8s Kind Cluster
         run: ctlptl apply -f tilt/ctlptl.yaml
