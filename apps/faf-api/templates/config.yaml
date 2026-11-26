@@ -36,3 +36,4 @@ data:
   USERNAME_RESERVATION_TIME_IN_MONTHS: "3"
   # Temporary fix because Hydra v2 dropped the trailing slash
   JWT_FAF_HYDRA_ISSUER: https://hydra.{{.Values.baseDomain}}
+  DESYNC_REPORT_MAX_UPLOAD_SIZE: 10MB
