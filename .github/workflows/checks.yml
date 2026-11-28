@@ -11,26 +11,31 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: docker/tilt:latest
+      image: tiltdev/tilt:latest
 
     steps:
       - uses: actions/checkout@v6
 
-      - uses: azure/setup-helm@v5.0.1
-
-      - name: Create k8s Kind Cluster
-        run: ctlptl create cluster kind --registry=ctlptl-registry
-
-      - name: Cache Helm Output
+      - name: Cache Helm and Registry
         id: cache-helm-output
         uses: actions/cache@v5
         with:
-          path: .helm-cache
+          path: |
+            .helm-cache
+            ${{ env.GITHUB_WORKSPACE }}/.registry
           key: ${{ github.ref_name }}-${{ hashFiles('apps/**/*.yaml', 'cluster/traefik/**/*.yaml', 'cluster/storage/**/*.yaml', 'infra/**/*.yaml', 'ops/monitoring/**/*.yaml') }}
           restore-keys: |
             ${{ github.ref_name }}
             develop
             ${{ github.base_ref }}
+
+      - uses: azure/setup-helm@v5.0.1
+
+      - name: Create Registry
+        run: docker run -d -p "127.0.0.1:5000:5000" --network bridge --name kind-registry --env REGISTRY_STORAGE_DELETE_ENABLED=true -v $GITHUB_WORKSPACE/.registry:/var/lib/registry registry:3
+
+      - name: Create k8s Kind Cluster
+        run: ctlptl apply -f tilt/ctlptl.yaml
 
       - name: Test Using Local Config
         run: tilt ci --timeout "5m"
